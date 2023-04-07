@@ -1,0 +1,2 @@
+"use strict";(self["webpackJsonp_proactiveServiceSaas"]=self["webpackJsonp_proactiveServiceSaas"]||[]).push([[413],{64413:function(e,t,a){a.r(t),a.d(t,{default:function(){return i}});var s=function(){var e=this,t=e._self._c;return t("div",{staticClass:"home"},[t("h1",{staticClass:"hello-text"},[e._v(e._s(e.$t("cseedFrame.msg.welcome",[e.$t(e.projectName)])))])])},r=[],c={data(){return{projectName:"主动服务"}}},l=c,n=a(1001),o=(0,n.Z)(l,s,r,!1,null,"60e8af8d",null),i=o.exports}}]);
+//# sourceMappingURL=413.99822c8a.js.map
