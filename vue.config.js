@@ -7,7 +7,7 @@ const PORT = process.env.PORT || '8686'
 const isPord = process.env.NODE_ENV === 'production'
 
 const apiPrefix = process.env.VUE_APP_API_PREFIX
-const baseUrl = isPord ? `/${apiPrefix}/请换成网关中配置的前端代理地址` : '/' // `/${packageName}/`
+const baseUrl = isPord ? `/${apiPrefix}/proactive_service` : '/' // `/${packageName}/`
 
 console.log(`project “${process.env.VUE_APP_PROJECT_NAME}” now start`)
 console.log('project id:', process.env.VUE_APP_PROJECT_ID)
