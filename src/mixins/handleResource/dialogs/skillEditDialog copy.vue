@@ -1,0 +1,261 @@
+<template>
+  <div style="width:60%;margin:20px auto">
+    <el-form
+      :model="ruleForm"
+      :rules="rules"
+      ref="ruleForm"
+      label-width="120px"
+      class="demo-ruleForm"
+    >
+      <div>
+        <el-form-item label="技能名称" prop="skillName">
+          <el-input v-model="ruleForm.skillName"></el-input>
+        </el-form-item>
+        <el-form-item label="应用包名" prop="appPkg">
+          <el-input v-model="ruleForm.appPkg"></el-input>
+        </el-form-item>
+        <el-form-item label="应用版本号" prop="appVer">
+          <el-input v-model="ruleForm.appVer"></el-input>
+        </el-form-item>
+        <el-form-item label="启动动作" prop="startAction">
+          <el-select v-model="ruleForm.startAction" placeholder="请选择启动动作">
+            <el-option label="activity" :value="100001"></el-option>
+            <el-option label="broadcast" :value="100002"></el-option>
+            <el-option label="service" :value="100003"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="启动方式" prop="startMethod">
+          <el-select v-model="ruleForm.startMethod" placeholder="请选择启动方式">
+            <el-option label="uri" :value="200001"></el-option>
+            <el-option label="action" :value="200002"></el-option>
+            <el-option label="className" :value="200003"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="启动参数" prop="startParam">
+          <el-input v-model="ruleForm.startParam"></el-input>
+        </el-form-item>
+        <el-form-item label="拓展参数" prop="extendParam">
+          <div v-for="(item,index) in ruleForm.extendParam" :key="index+'item'" style="margin:5px 0">
+            <el-input v-model="item.key" placeholder="请填写key" style="width:calc(50% - 5px);margin-right:10px"></el-input>
+            <el-input v-model="item.value" placeholder="请填写value" style="width:calc(50% - 5px)"></el-input>
+          </div>
+          <div class="addextendParamMapping" @click="addextendParam(ruleForm.extendParam)">
+            + 添加参数
+          </div>
+        </el-form-item>
+        <el-form-item label="扩展参数映射" prop="extendParamMapping">
+          <div v-for="(item,index) in ruleForm.extendParamMapping" :key="index+'item'" style="margin:5px 0">
+            <el-input v-model="item.skillKey" placeholder="请填写技能key" style="width:calc(50% - 25px);"></el-input>
+            <div style="display:inline-block;width:50px;text-align:center">对应</div>
+            <el-input v-model="item.eventkey" placeholder="请填写事件key" style="width:calc(50% - 25px)"></el-input>
+          </div>
+          <div class="addextendParamMapping" @click="addextendParamMapping(ruleForm.extendParamMapping)">
+            + 添加参数
+          </div>
+        </el-form-item>
+        <el-form-item label="技能描述" prop="skillDesc">
+          <el-input type="textarea" v-model="ruleForm.skillDesc"></el-input>
+        </el-form-item>
+        <el-form-item label="是否做异常处理" prop="isErrorAction">
+          <el-radio-group v-model="ruleForm.isErrorAction" @input="addErrorActionInfo">
+            <el-radio :label="0">否</el-radio>
+            <el-radio :label="1">是</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <div v-if="ruleForm.isErrorAction">
+          <el-form
+            :model="ruleForm.errorActionInfo"
+            :rules="rules"
+            ref="ruleForm2"
+            label-width="120px"
+            class="demo-ruleForm"
+          >
+            <el-form-item label="应用包名" prop="appPkg">
+              <el-input v-model="ruleForm.errorActionInfo.appPkg"></el-input>
+            </el-form-item>
+            <el-form-item label="应用版本号" prop="appVer">
+              <el-input v-model="ruleForm.errorActionInfo.appVer"></el-input>
+            </el-form-item>
+            <el-form-item label="启动动作" prop="startAction">
+              <el-select v-model="ruleForm.errorActionInfo.startAction" placeholder="请选择启动动作">
+                <el-option label="activity" :value="100001"></el-option>
+                <el-option label="broadcast" :value="100002"></el-option>
+                <el-option label="service" :value="100003"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="启动方式" prop="startMethod">
+              <el-select v-model="ruleForm.errorActionInfo.startMethod" placeholder="请选择启动方式">
+                <el-option label="uri" :value="200001"></el-option>
+                <el-option label="action" :value="200002"></el-option>
+                <el-option label="className" :value="200003"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="启动参数" prop="startParam">
+              <el-input v-model="ruleForm.errorActionInfo.startParam"></el-input>
+            </el-form-item>
+            <el-form-item label="拓展参数" prop="extendParam">
+              <div v-for="(item,index) in ruleForm.errorActionInfo.extendParam" :key="index+'item'" style="margin:5px 0">
+                <el-input v-model="item.key" placeholder="请填写key" style="width:calc(50% - 5px);margin-right:10px"></el-input>
+                <el-input v-model="item.value" placeholder="请填写value" style="width:calc(50% - 5px)"></el-input>
+              </div>
+              <div class="addextendParamMapping" @click="addextendParam(ruleForm.errorActionInfo.extendParam)">
+                + 添加参数
+              </div>
+            </el-form-item>
+            <el-form-item label="扩展参数映射" prop="extendParamMapping">
+              <div v-for="(item,index) in ruleForm.errorActionInfo.extendParamMapping" :key="index+'item'" style="margin:5px 0">
+                <el-input v-model="item.skillKey" placeholder="请填写技能key" style="width:calc(50% - 25px);"></el-input>
+                <div style="display:inline-block;width:50px;text-align:center">对应</div>
+                <el-input v-model="item.eventkey" placeholder="请填写事件key" style="width:calc(50% - 25px)"></el-input>
+              </div>
+              <div class="addextendParamMapping" @click="addextendParamMapping(ruleForm.errorActionInfo.extendParamMapping)">
+                + 添加参数
+              </div>
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
+
+      <el-form-item>
+        <el-button type="primary" @click="submitForm">保存</el-button>
+        <el-button @click="$emit('go-back')">取消</el-button>
+      </el-form-item>
+    </el-form>
+  </div>
+</template>
+
+<script>
+import { ApiRequest } from '@/framework/services/CustomApi'
+export default {
+  props: {
+    row: {
+      type: Object,
+      default () {
+        return {}
+      }
+    },
+    mode: {
+      type: String,
+      default: ''
+    }
+  },
+  data () {
+    return {
+      ruleForm: {
+        skillName: '',
+        extendParam: [
+          {
+            key: '',
+            value: ''
+          }
+        ],
+        extendParamMapping: [{
+          eventkey: '',
+          skillKey: ''
+        }],
+        isErrorAction: 0
+      },
+      rules: {
+        skillName: [
+          { required: true, message: '请输入技能名称' },
+          { required: true, message: '请输入技能名称' }
+        ],
+        appPkg: [
+          { required: true, message: '请输入应用包名' }
+        ],
+        appVer: [
+          { required: true, message: '请输入应用版本号' }
+        ],
+        startAction: [
+          { required: true, message: '请选择启动动作' }
+        ],
+        startMethod: [
+          { required: true, message: '请选择启动方式' }
+        ],
+        startParam: [
+          { required: true, message: '请输入启动参数' }
+        ]
+      }
+    }
+  },
+  methods: {
+    addErrorActionInfo (flag) {
+      if (flag === 1) {
+        this.$set(this.ruleForm, 'errorActionInfo', {
+          extendParam: [
+            {
+              key: '',
+              value: ''
+            }
+          ],
+          extendParamMapping: [{
+            eventkey: '',
+            skillKey: ''
+          }]
+        })
+      } else {
+        this.$set(this.ruleForm, 'errorActionInfo', {})
+      }
+    },
+    addextendParam (data) {
+      data.push({
+        key: '',
+        value: ''
+      })
+    },
+    addextendParamMapping (data) {
+      data.push({
+        eventkey: '',
+        skillKey: ''
+      })
+    },
+    submitForm () {
+      this.$refs.ruleForm.validate((valid) => {
+        if (this.ruleForm.isErrorAction) {
+          this.$refs.ruleForm2.validate((valid2) => {
+            if (valid && valid2) {
+              ApiRequest(this.mode === 'edit' ? 'updateSkill' : 'addSkill', this.ruleForm).then(res => {
+                this.$emit('go-back', true)
+                this.$message({
+                  type: 'success',
+                  message: '保存成功！'
+                })
+              })
+            } else {
+              return false
+            }
+          })
+        } else {
+          if (valid) {
+            ApiRequest(this.mode === 'edit' ? 'updateSkill' : 'addSkill', this.ruleForm).then(res => {
+              this.$emit('go-back', true)
+              this.$message({
+                type: 'success',
+                message: '保存成功！'
+              })
+            })
+          } else {
+            return false
+          }
+        }
+      })
+    }
+  },
+  created () {
+    debugger
+    if (this.mode === 'edit') {
+      ApiRequest('getSkill', { id: this.row.id }).then(data => {
+        this.ruleForm = data
+      })
+    }
+  }
+}
+</script>
+
+<style lang="stylus" scoped>
+.addextendParamMapping
+  border: 1px dashed #ccc
+  border-radius: 5px
+  text-align center
+  margin-top 10px
+</style>
