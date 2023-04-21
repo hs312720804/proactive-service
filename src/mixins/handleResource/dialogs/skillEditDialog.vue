@@ -68,7 +68,7 @@
                       show-word-limit placeholder="请填写技能key" style="width:calc(50% - 25px);"
             ></el-input>
             <div style="display:inline-block;width:50px;text-align:center">对应</div>
-            <el-input v-model="item.eventkey"
+            <el-input v-model="item.eventKey"
                       maxlength="50"
                       show-word-limit placeholder="请填写事件key" style="width:calc(50% - 25px)"
             ></el-input>
@@ -151,7 +151,7 @@
                           show-word-limit placeholder="请填写技能key" style="width:calc(50% - 25px);"
                 ></el-input>
                 <div style="display:inline-block;width:50px;text-align:center">对应</div>
-                <el-input v-model="item.eventkey"
+                <el-input v-model="item.eventKey"
                           maxlength="50"
                           show-word-limit placeholder="请填写事件key" style="width:calc(50% - 25px)"
                 ></el-input>
@@ -198,7 +198,7 @@ export default {
           }
         ],
         extendParamMapping: [{
-          eventkey: '',
+          eventKey: '',
           skillKey: ''
         }],
         isErrorAction: 0
@@ -238,7 +238,7 @@ export default {
             }
           ],
           extendParamMapping: [{
-            eventkey: '',
+            eventKey: '',
             skillKey: ''
           }]
         })
@@ -254,7 +254,7 @@ export default {
     },
     addextendParamMapping (data) {
       data.push({
-        eventkey: '',
+        eventKey: '',
         skillKey: ''
       })
     },
