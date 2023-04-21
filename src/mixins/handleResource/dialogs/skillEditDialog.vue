@@ -9,13 +9,22 @@
     >
       <div>
         <el-form-item label="技能名称" prop="skillName">
-          <el-input v-model="ruleForm.skillName"></el-input>
+          <el-input v-model="ruleForm.skillName"
+                    maxlength="50"
+                    show-word-limit
+          ></el-input>
         </el-form-item>
         <el-form-item label="应用包名" prop="appPkg">
-          <el-input v-model="ruleForm.appPkg"></el-input>
+          <el-input v-model="ruleForm.appPkg"
+                    maxlength="50"
+                    show-word-limit
+          ></el-input>
         </el-form-item>
         <el-form-item label="应用版本号" prop="appVer">
-          <el-input v-model="ruleForm.appVer"></el-input>
+          <el-input v-model="ruleForm.appVer"
+                    maxlength="10"
+                    show-word-limit
+          ></el-input>
         </el-form-item>
         <el-form-item label="启动动作" prop="startAction">
           <el-select v-model="ruleForm.startAction" placeholder="请选择启动动作">
@@ -32,12 +41,21 @@
           </el-select>
         </el-form-item>
         <el-form-item label="启动参数" prop="startParam">
-          <el-input v-model="ruleForm.startParam"></el-input>
+          <el-input v-model="ruleForm.startParam"
+                    maxlength="200"
+                    show-word-limit
+          ></el-input>
         </el-form-item>
         <el-form-item label="拓展参数" prop="extendParam">
           <div v-for="(item,index) in ruleForm.extendParam" :key="index+'item'" style="margin:5px 0">
-            <el-input v-model="item.key" placeholder="请填写key" style="width:calc(50% - 5px);margin-right:10px"></el-input>
-            <el-input v-model="item.value" placeholder="请填写value" style="width:calc(50% - 5px)"></el-input>
+            <el-input v-model="item.key" placeholder="请填写key" style="width:calc(50% - 5px);margin-right:10px"
+                      maxlength="50"
+                      show-word-limit
+            ></el-input>
+            <el-input v-model="item.value" placeholder="请填写value" style="width:calc(50% - 5px)"
+                      maxlength="50"
+                      show-word-limit
+            ></el-input>
           </div>
           <div class="addextendParamMapping" @click="addextendParam(ruleForm.extendParam)">
             + 添加参数
@@ -45,16 +63,25 @@
         </el-form-item>
         <el-form-item label="扩展参数映射" prop="extendParamMapping">
           <div v-for="(item,index) in ruleForm.extendParamMapping" :key="index+'item'" style="margin:5px 0">
-            <el-input v-model="item.skillKey" placeholder="请填写技能key" style="width:calc(50% - 25px);"></el-input>
+            <el-input v-model="item.skillKey"
+                      maxlength="50"
+                      show-word-limit placeholder="请填写技能key" style="width:calc(50% - 25px);"
+            ></el-input>
             <div style="display:inline-block;width:50px;text-align:center">对应</div>
-            <el-input v-model="item.eventkey" placeholder="请填写事件key" style="width:calc(50% - 25px)"></el-input>
+            <el-input v-model="item.eventkey"
+                      maxlength="50"
+                      show-word-limit placeholder="请填写事件key" style="width:calc(50% - 25px)"
+            ></el-input>
           </div>
           <div class="addextendParamMapping" @click="addextendParamMapping(ruleForm.extendParamMapping)">
             + 添加参数
           </div>
         </el-form-item>
         <el-form-item label="技能描述" prop="skillDesc">
-          <el-input type="textarea" v-model="ruleForm.skillDesc"></el-input>
+          <el-input type="textarea" v-model="ruleForm.skillDesc"
+                    maxlength="200"
+                    show-word-limit
+          ></el-input>
         </el-form-item>
         <el-form-item label="是否做异常处理" prop="isErrorAction">
           <el-radio-group v-model="ruleForm.isErrorAction" @input="addErrorActionInfo">
@@ -71,10 +98,16 @@
             class="demo-ruleForm"
           >
             <el-form-item label="应用包名" prop="appPkg">
-              <el-input v-model="ruleForm.errorActionInfo.appPkg"></el-input>
+              <el-input v-model="ruleForm.errorActionInfo.appPkg"
+                        maxlength="50"
+                        show-word-limit
+              ></el-input>
             </el-form-item>
             <el-form-item label="应用版本号" prop="appVer">
-              <el-input v-model="ruleForm.errorActionInfo.appVer"></el-input>
+              <el-input v-model="ruleForm.errorActionInfo.appVer"
+                        maxlength="10"
+                        show-word-limit
+              ></el-input>
             </el-form-item>
             <el-form-item label="启动动作" prop="startAction">
               <el-select v-model="ruleForm.errorActionInfo.startAction" placeholder="请选择启动动作">
@@ -91,12 +124,21 @@
               </el-select>
             </el-form-item>
             <el-form-item label="启动参数" prop="startParam">
-              <el-input v-model="ruleForm.errorActionInfo.startParam"></el-input>
+              <el-input v-model="ruleForm.errorActionInfo.startParam"
+                        maxlength="200"
+                        show-word-limit
+              ></el-input>
             </el-form-item>
             <el-form-item label="拓展参数" prop="extendParam">
               <div v-for="(item,index) in ruleForm.errorActionInfo.extendParam" :key="index+'item'" style="margin:5px 0">
-                <el-input v-model="item.key" placeholder="请填写key" style="width:calc(50% - 5px);margin-right:10px"></el-input>
-                <el-input v-model="item.value" placeholder="请填写value" style="width:calc(50% - 5px)"></el-input>
+                <el-input v-model="item.key" placeholder="请填写key"
+                          maxlength="50"
+                          show-word-limit style="width:calc(50% - 5px);margin-right:10px"
+                ></el-input>
+                <el-input v-model="item.value" placeholder="请填写value"
+                          maxlength="50"
+                          show-word-limit style="width:calc(50% - 5px)"
+                ></el-input>
               </div>
               <div class="addextendParamMapping" @click="addextendParam(ruleForm.errorActionInfo.extendParam)">
                 + 添加参数
@@ -104,9 +146,15 @@
             </el-form-item>
             <el-form-item label="扩展参数映射" prop="extendParamMapping">
               <div v-for="(item,index) in ruleForm.errorActionInfo.extendParamMapping" :key="index+'item'" style="margin:5px 0">
-                <el-input v-model="item.skillKey" placeholder="请填写技能key" style="width:calc(50% - 25px);"></el-input>
+                <el-input v-model="item.skillKey"
+                          maxlength="50"
+                          show-word-limit placeholder="请填写技能key" style="width:calc(50% - 25px);"
+                ></el-input>
                 <div style="display:inline-block;width:50px;text-align:center">对应</div>
-                <el-input v-model="item.eventkey" placeholder="请填写事件key" style="width:calc(50% - 25px)"></el-input>
+                <el-input v-model="item.eventkey"
+                          maxlength="50"
+                          show-word-limit placeholder="请填写事件key" style="width:calc(50% - 25px)"
+                ></el-input>
               </div>
               <div class="addextendParamMapping" @click="addextendParamMapping(ruleForm.errorActionInfo.extendParamMapping)">
                 + 添加参数
@@ -164,7 +212,8 @@ export default {
           { required: true, message: '请输入应用包名' }
         ],
         appVer: [
-          { required: true, message: '请输入应用版本号' }
+          { required: true, message: '请输入应用版本号' },
+          { pattern: /^[0-9]*$/, message: '只能输入数字', trigger: 'blur' }
         ],
         startAction: [
           { required: true, message: '请选择启动动作' }
