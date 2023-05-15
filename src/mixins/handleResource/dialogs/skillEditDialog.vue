@@ -14,32 +14,34 @@
                     show-word-limit
           ></el-input>
         </el-form-item>
-        <el-form-item label="应用包名" prop="appPkg">
-          <el-input v-model="ruleForm.appPkg"
-                    maxlength="50"
-                    show-word-limit
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="应用版本号" prop="appVer">
-          <el-input v-model="ruleForm.appVer"
-                    maxlength="10"
-                    show-word-limit
-          ></el-input>
-        </el-form-item>
         <el-form-item label="启动动作" prop="startAction">
-          <el-select v-model="ruleForm.startAction" placeholder="请选择启动动作">
+          <el-select v-model="ruleForm.startAction" placeholder="请选择启动动作" @change="handleStartActionChange">
             <el-option label="activity" :value="100001"></el-option>
             <el-option label="broadcast" :value="100002"></el-option>
             <el-option label="service" :value="100003"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="启动方式" prop="startMethod">
-          <el-select v-model="ruleForm.startMethod" placeholder="请选择启动方式">
+          <el-select v-model="ruleForm.startMethod" placeholder="请选择启动方式" @change="handleStartMethodChange">
             <el-option label="uri" :value="200001"></el-option>
             <el-option label="action" :value="200002"></el-option>
             <el-option label="className" :value="200003"></el-option>
           </el-select>
         </el-form-item>
+        <div v-if="(ruleForm.startAction !== 100002 & ruleForm.startMethod !== 200001)||ruleForm.startAction === ''">
+          <el-form-item label="应用包名" prop="appPkg" v-show="showAppPkg">
+            <el-input v-model="ruleForm.appPkg"
+                      maxlength="50"
+                      show-word-limit
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="应用版本号" prop="appVer" v-show="showAppVer">
+            <el-input v-model="ruleForm.appVer"
+                      maxlength="10"
+                      show-word-limit
+            ></el-input>
+          </el-form-item>
+        </div>
         <el-form-item label="启动参数" prop="startParam">
           <el-input v-model="ruleForm.startParam"
                     maxlength="200"
@@ -97,32 +99,34 @@
             label-width="120px"
             class="demo-ruleForm"
           >
-            <el-form-item label="应用包名" prop="appPkg">
-              <el-input v-model="ruleForm.errorActionInfo.appPkg"
-                        maxlength="50"
-                        show-word-limit
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="应用版本号" prop="appVer">
-              <el-input v-model="ruleForm.errorActionInfo.appVer"
-                        maxlength="10"
-                        show-word-limit
-              ></el-input>
-            </el-form-item>
             <el-form-item label="启动动作" prop="startAction">
-              <el-select v-model="ruleForm.errorActionInfo.startAction" placeholder="请选择启动动作">
+              <el-select v-model="ruleForm.errorActionInfo.startAction" placeholder="请选择启动动作" @change="handleErrorStartActionChange">
                 <el-option label="activity" :value="100001"></el-option>
                 <el-option label="broadcast" :value="100002"></el-option>
                 <el-option label="service" :value="100003"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item label="启动方式" prop="startMethod">
-              <el-select v-model="ruleForm.errorActionInfo.startMethod" placeholder="请选择启动方式">
+              <el-select v-model="ruleForm.errorActionInfo.startMethod" placeholder="请选择启动方式" @change="handleErrorStartMethodChange">
                 <el-option label="uri" :value="200001"></el-option>
                 <el-option label="action" :value="200002"></el-option>
                 <el-option label="className" :value="200003"></el-option>
               </el-select>
             </el-form-item>
+            <div v-if="(ruleForm.errorActionInfo.startAction !== 100002 & ruleForm.errorActionInfo.startMethod !== 200001)||ruleForm.errorActionInfo.startAction === ''">
+              <el-form-item label="应用包名" prop="appPkg">
+                <el-input v-model="ruleForm.errorActionInfo.appPkg"
+                          maxlength="50"
+                          show-word-limit
+                ></el-input>
+              </el-form-item>
+              <el-form-item label="应用版本号" prop="appVer">
+                <el-input v-model="ruleForm.errorActionInfo.appVer"
+                          maxlength="10"
+                          show-word-limit
+                ></el-input>
+              </el-form-item>
+            </div>
             <el-form-item label="启动参数" prop="startParam">
               <el-input v-model="ruleForm.errorActionInfo.startParam"
                         maxlength="200"
@@ -201,22 +205,26 @@ export default {
           eventKey: '',
           skillKey: ''
         }],
-        isErrorAction: 0
+        isErrorAction: 0,
+        startAction: '',
+        appPkg: '',
+        appVer: ''
       },
+      showAppPkg: true,
+      showAppVer: true,
       rules: {
         skillName: [
-          { required: true, message: '请输入技能名称' },
           { required: true, message: '请输入技能名称' }
         ],
         appPkg: [
-          { required: true, message: '请输入应用包名' }
+          { required: true, message: '请输入应用包名', trigger: 'blur' }
         ],
         appVer: [
-          { required: true, message: '请输入应用版本号' },
+          { required: true, message: '请输入应用版本号', trigger: 'blur' },
           { pattern: /^[0-9]*$/, message: '只能输入数字', trigger: 'blur' }
         ],
         startAction: [
-          { required: true, message: '请选择启动动作' }
+          { required: true, message: '请选择启动动作', trigger: 'change' }
         ],
         startMethod: [
           { required: true, message: '请选择启动方式' }
@@ -228,6 +236,38 @@ export default {
     }
   },
   methods: {
+    handleStartActionChange (value) {
+      if (value === 100002) {
+        this.$set(this.ruleForm, 'appPkg', '')
+        this.$set(this.ruleForm, 'appVer', '')
+      }
+    },
+    handleStartMethodChange (value) {
+      if (value === 200001) {
+        this.$set(this.ruleForm, 'appPkg', '')
+        this.$set(this.ruleForm, 'appVer', '')
+      }
+    },
+    handleErrorStartActionChange (value) {
+      if (value === 100002) {
+        const { verCode, ...rest } = this.ruleForm.errorActionInfo
+        this.$set(this.ruleForm, 'errorActionInfo', {
+          ...rest,
+          appPkg: '',
+          appVer: ''
+        })
+      }
+    },
+    handleErrorStartMethodChange (value) {
+      if (value === 200001) {
+        const { verCode, ...rest } = this.ruleForm.errorActionInfo
+        this.$set(this.ruleForm, 'errorActionInfo', {
+          ...rest,
+          appPkg: '',
+          appVer: ''
+        })
+      }
+    },
     addErrorActionInfo (flag) {
       if (flag === 1) {
         this.$set(this.ruleForm, 'errorActionInfo', {
