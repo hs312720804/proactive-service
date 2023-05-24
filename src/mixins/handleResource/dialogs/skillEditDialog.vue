@@ -208,16 +208,16 @@ export default {
         isErrorAction: 0,
         startAction: '',
         appPkg: '',
-        appVer: ''
+        appVer: 1
       },
       showAppPkg: true,
       showAppVer: true,
       rules: {
         skillName: [
-          { required: true, message: '请输入技能名称' }
+          { required: true, pattern: /^(?!\s+$).*/, message: '请输入技能名称' }
         ],
         appPkg: [
-          { required: true, message: '请输入应用包名', trigger: 'blur' }
+          { required: true, pattern: /^(?!\s+$).*/, message: '请输入应用包名', trigger: 'blur' }
         ],
         appVer: [
           { required: true, message: '请输入应用版本号', trigger: 'blur' },
@@ -230,7 +230,7 @@ export default {
           { required: true, message: '请选择启动方式' }
         ],
         startParam: [
-          { required: true, message: '请输入启动参数' }
+          { required: true, pattern: /^(?!\s+$).*/, message: '请输入启动参数' }
         ]
       }
     }
