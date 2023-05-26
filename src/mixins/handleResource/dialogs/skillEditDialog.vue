@@ -85,13 +85,13 @@
                     show-word-limit
           ></el-input>
         </el-form-item>
-        <el-form-item label="是否做异常处理" prop="isErrorAction">
-          <el-radio-group v-model="ruleForm.isErrorAction" @input="addErrorActionInfo">
+        <el-form-item label="是否做异常处理" prop="errorActionFlag">
+          <el-radio-group v-model="ruleForm.errorActionFlag" @input="addErrorActionInfo">
             <el-radio :label="0">否</el-radio>
             <el-radio :label="1">是</el-radio>
           </el-radio-group>
         </el-form-item>
-        <div v-if="ruleForm.isErrorAction">
+        <div v-if="ruleForm.errorActionFlag">
           <el-form
             :model="ruleForm.errorActionInfo"
             :rules="rules"
@@ -205,7 +205,7 @@ export default {
           eventKey: '',
           skillKey: ''
         }],
-        isErrorAction: 0,
+        errorActionFlag: 0,
         startAction: '',
         appPkg: '',
         appVer: 1
@@ -271,6 +271,7 @@ export default {
     addErrorActionInfo (flag) {
       if (flag === 1) {
         this.$set(this.ruleForm, 'errorActionInfo', {
+          appVer: 1,
           extendParam: [
             {
               key: '',
@@ -300,7 +301,7 @@ export default {
     },
     submitForm () {
       this.$refs.ruleForm.validate((valid) => {
-        if (this.ruleForm.isErrorAction) {
+        if (this.ruleForm.errorActionFlag) {
           this.$refs.ruleForm2.validate((valid2) => {
             if (valid && valid2) {
               ApiRequest(this.mode === 'edit' ? 'updateSkill' : 'addSkill', this.ruleForm).then(res => {
