@@ -39,6 +39,16 @@ export default function createRoutes (frameRoutes = []) {
       name: 'serviceDelivery',
       component: () => import(/* webpackChunkName: "LowcodeEngine" */ '@/views/LowcodeEngine/Index.vue')
     },
+    {
+      path: '/service-interaction',
+      name: 'service-interaction',
+      component: () => import(/* webpackChunkName: "service" */ '@/views/serviceInteraction/List.vue')
+    },
+    {
+      path: '/interaction-detail',
+      name: 'interaction-detail',
+      component: () => import(/* webpackChunkName: "service" */ '@/views/serviceInteraction/Detail.vue')
+    },
     // {
     //   path: '/baseListTest',
     //   name: 'baseListTest',
