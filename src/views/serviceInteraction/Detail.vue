@@ -14,6 +14,7 @@
         :name="item.id.toString()"
         :closable="true"
       >
+        <Verion></Verion>
         {{item.id}}
       </el-tab-pane>
     </el-tabs>
@@ -21,7 +22,11 @@
 </template>
 <script>
 import store from 'cseed-frame/store/_index'
+import Verion from '@/components/Version.vue'
 export default {
+  components: {
+    Verion
+  },
   data () {
     return {
       activeTabId: '',
