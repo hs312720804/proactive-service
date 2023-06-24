@@ -14,8 +14,8 @@
         :name="item.id.toString()"
         :closable="true"
       >
-        <Verion></Verion>
-        {{item.id}}
+        <Verion :serviceId="item.id"></Verion>
+        <Flowchart :serviceId="item.id" :statu="'edit'"></Flowchart>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -23,9 +23,11 @@
 <script>
 import store from 'cseed-frame/store/_index'
 import Verion from '@/components/Version.vue'
+import Flowchart from '@/components/Flowchart.vue'
 export default {
   components: {
-    Verion
+    Verion,
+    Flowchart
   },
   data () {
     return {
@@ -44,7 +46,6 @@ export default {
   },
   methods: {
     init () {
-      console.error('init')
       this.tabsArr = store.getters.tabsArr
       this.activeTabId = store.getters.activeTab.id.toString()
     },

@@ -231,10 +231,6 @@ export default {
   },
   async created () {
     await this.initList()
-    // this.$store.commit('services/setABC', 1)
-    // this.getFirstService({
-    //   id: this.listArr[0].id
-    // })
   }
 }
 </script>

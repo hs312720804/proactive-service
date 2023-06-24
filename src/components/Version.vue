@@ -25,6 +25,11 @@
 </template>
 <script>
 export default {
+  props: {
+    serviceId: {
+      type: Number
+    }
+  },
   data () {
     return {
       editStatuStr: '未编辑'
