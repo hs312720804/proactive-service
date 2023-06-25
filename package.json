@@ -11,6 +11,11 @@
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s 0"
   },
   "dependencies": {
+    "@antv/x6": "^2.11.1",
+    "@antv/x6-plugin-dnd": "^2.0.5",
+    "@antv/x6-plugin-snapline": "^2.1.7",
+    "@antv/x6-plugin-transform": "^2.1.7",
+    "@antv/x6-vue-shape": "^2.0.11",
     "@ccprivate/framework-saas-mirco": "^1.8.0",
     "@ccprivate/utils": "^0.2.4",
     "@ccprivate/vue-cli-plugin-framework-loader": "^1.7.1",

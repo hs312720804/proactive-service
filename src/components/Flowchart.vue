@@ -1,20 +1,21 @@
 <template>
   <div class="flowchart-component-wrapper">
-    <div class="flowchart-render-container">flowchart-render-container</div>
-    <FlowComposition></FlowComposition>
-    <Operate></Operate>
-    <Detail class="detail-wrapper"></Detail>
+    <Graph :showNodeDetail="showNodeDetail" @updateDetail="updateDetail"></Graph>
+    <Detail
+      v-if="showDetail"
+      class="detail-wrapper"
+      :showNodeDetail.sync="showNodeDetail"
+      @update:showNodeDetail="showNodeDetail = $event"
+    ></Detail>
   </div>
 </template>
 <script>
-import FlowComposition from '@/components/Flow/Composition'
-import Operate from '@/components/Flow/Operate'
+import Graph from '@/components/Flow/Graph'
 import Detail from '@/components/Flow/Detail'
 
 export default {
   components: {
-    FlowComposition,
-    Operate,
+    Graph,
     Detail
   },
   props: {
@@ -28,18 +29,30 @@ export default {
   },
   data () {
     return {
-
+      showNodeDetail: false
+    }
+  },
+  methods: {
+    updateDetail (data) {
+      console.debug('updateDetail', data)
+      this.showNodeDetail = data
     }
   },
   computed: {
     isEdit () {
       return this.statu === 'edit'
+    },
+    showDetail () {
+      return this.showNodeDetail && this.isEdit
     }
   }
 }
 </script>
 <style lang="stylus" scoped>
 .flowchart-component-wrapper {
+  display block
+  width 100%
+  height 68vh
   .detail-wrapper {
 
   }

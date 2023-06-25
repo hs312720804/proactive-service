@@ -2,7 +2,7 @@
   <div class="detail-page-wrapper">
     <el-page-header @back="goBack" content="交互详情"></el-page-header>
     <el-tabs
-      style="margin-top: 20px;"
+      style="margin-top: 10px;"
       v-model="activeTabId"
       type="card"
       @tab-remove="removeTab"
@@ -122,7 +122,7 @@ export default {
 <style lang="stylus" scoped>
 .detail-page-wrapper {
     width 100%
-    height 100%
+    // height 100%
     background-color #fff
     padding 20px
     box-sizing border-box
