@@ -3,7 +3,7 @@
     <FlowComposition @drag="handleDrag"></FlowComposition>
     <!-- 解决画布resize后,节点被遮挡问题 -->
     <div style="width: 100%;height: 100%">
-      <div class="graph-simply-container" id="graphContainer"></div>
+      <div class="graph-simply-container" :id="containerId"></div>
     </div>
     <Operate
       @add="addZoom"
@@ -12,6 +12,7 @@
   </div>
 </template>
 <script>
+import store from 'cseed-frame/store/_index'
 import { Graph, Shape, ObjectExt } from '@antv/x6'
 import { Dnd } from '@antv/x6-plugin-dnd' // 拖拽
 import { Snapline } from '@antv/x6-plugin-snapline' // 对齐线
@@ -27,6 +28,9 @@ export default {
     showNodeDetail: { // 显示节点详情
       type: Boolean,
       default: false
+    },
+    serviceId: {
+      type: Number
     }
   },
   data () {
@@ -48,20 +52,21 @@ export default {
         shape: 'ellipse', // 使用 ellipse 渲染
         x: 160, // Number，必选，节点位置的 x 值
         y: 180, // Number，必选，节点位置的 y 值
-        width: 80, // Number，可选，节点大小的 width 值
-        height: 40, // Number，可选，节点大小的 height 值
+        width: 100, // Number，可选，节点大小的 width 值
+        height: 50, // Number，可选，节点大小的 height 值
         attrs: {
           body: {
-            fill: '#F39C12',
-            stroke: '#000',
+            fill: '#eff4ff',
+            stroke: '#5f95ff',
+            strokeWidth: 1,
             rx: 16,
             ry: 16
           },
           label: {
-            text: 'World',
+            text: '开始',
             fill: '#333',
-            fontSize: 18,
-            fontWeight: 'bold',
+            fontSize: 16,
+            fontWeight: 'normal',
             fontVariant: 'small-caps'
           }
         },
@@ -83,9 +88,9 @@ export default {
   },
   methods: {
     initGraph () {
-      console.debug('initGraph: ')
+      // console.debug('initGraph: ')
       this.graph = new Graph({
-        container: document.getElementById('graphContainer'),
+        container: document.getElementById(this.containerId),
         interacting: true, // 交互 是否允许
         width: '100%',
         height: '100%',
@@ -128,7 +133,78 @@ export default {
         dndContainer: document.querySelector('.composition-content')
       })
     },
-    initShapeConfig () {
+    handleDrag (e) {
+      // console.debug('handleDrag: ', e)
+      const type = e.currentTarget.dataset.type
+      let node = null
+      if (type === 'judge') {
+        node = this.graph.createNode({
+          shape: 'custom-polygon',
+          attrs: {
+            body: {
+              refPoints: '0,10 10,0 20,10 10,20'
+            }
+          },
+          label: '判定',
+          data: {
+            type
+          }
+        })
+      } else if (type === 'dialogue' || type === 'skill') {
+        node = this.graph.createNode({
+          shape: 'rect',
+          width: 200,
+          height: 80,
+          data: {
+            type
+          }
+        })
+      } else if (type === 'skill') {
+        node = this.graph.createNode({
+          shape: 'rect',
+          width: 100,
+          height: 40,
+          attrs: {
+            body: {
+              rx: 6,
+              ry: 6
+            }
+          },
+          data: {
+            type
+          }
+        })
+      }
+      // : this.graph.createNode({
+      //   width: 60,
+      //   height: 60,
+      //   shape: 'circle',
+      //   label: 'Circle',
+      //   attrs: {
+      //     body: {
+      //       stroke: '#8f8f8f',
+      //       strokeWidth: 1,
+      //       fill: '#fff'
+      //     }
+      //   },
+      //   data: {
+      //     type
+      //   }
+      // })
+      this.dnd.start(node, e)
+    },
+    addZoom () {
+      // 偏移歪了
+      this.graph.zoom(0.1).centerContent()
+    },
+    reduceZoom () {
+      this.graph.zoom(-0.1).centerContent()
+    },
+    initConfig () {
+      this.initShapeConfig()
+      this.initRhombicNode()
+    },
+    initShapeConfig () { // 初始化矩形图形配置
       // https://x6.antv.antgroup.com/tutorial/basic/node#:~:text=%7D-,%E5%AE%9A%E5%88%B6%E8%8A%82%E7%82%B9,-%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87
       Shape.Rect.config({ // config 改变rect默认设置 ， 同修改全局的有个regiserNode
         width: 80,
@@ -182,37 +258,117 @@ export default {
         }
       })
     },
-    handleDrag (e) {
-      console.debug('handleDrag: ', e)
-      const type = e.currentTarget.dataset.type
-      const node =
-        type === 'rect'
-          ? this.graph.createNode({
-            shape: 'rect',
-            width: 100,
-            height: 40
-          })
-          : this.graph.createNode({
-            width: 60,
-            height: 60,
-            shape: 'circle',
-            label: 'Circle',
+    initRhombicNode () { // 初始化菱形节点
+      // #region 初始化图形
+      const ports = {
+        groups: {
+          top: {
+            position: 'top',
             attrs: {
-              body: {
-                stroke: '#8f8f8f',
+              circle: {
+                r: 4,
+                magnet: true,
+                stroke: '#5F95FF',
                 strokeWidth: 1,
-                fill: '#fff'
+                fill: '#fff',
+                style: {
+                  visibility: 'hidden'
+                }
               }
             }
-          })
-      this.dnd.start(node, e)
-    },
-    addZoom () {
-      // 偏移歪了
-      this.graph.zoom(0.1).centerContent()
-    },
-    reduceZoom () {
-      this.graph.zoom(-0.1).centerContent()
+          },
+          right: {
+            position: 'right',
+            attrs: {
+              circle: {
+                r: 4,
+                magnet: true,
+                stroke: '#5F95FF',
+                strokeWidth: 1,
+                fill: '#fff',
+                style: {
+                  visibility: 'hidden'
+                }
+              }
+            }
+          },
+          bottom: {
+            position: 'bottom',
+            attrs: {
+              circle: {
+                r: 4,
+                magnet: true,
+                stroke: '#5F95FF',
+                strokeWidth: 1,
+                fill: '#fff',
+                style: {
+                  visibility: 'hidden'
+                }
+              }
+            }
+          },
+          left: {
+            position: 'left',
+            attrs: {
+              circle: {
+                r: 4,
+                magnet: true,
+                stroke: '#5F95FF',
+                strokeWidth: 1,
+                fill: '#fff',
+                style: {
+                  visibility: 'hidden'
+                }
+              }
+            }
+          }
+        },
+        items: [
+          {
+            group: 'top'
+          },
+          {
+            group: 'right'
+          },
+          {
+            group: 'bottom'
+          },
+          {
+            group: 'left'
+          }
+        ]
+      }
+      Graph.registerNode(
+        'custom-polygon',
+        {
+          inherit: 'polygon',
+          width: 66,
+          height: 36,
+          attrs: {
+            body: {
+              strokeWidth: 1,
+              stroke: '#5F95FF',
+              fill: '#EFF4FF'
+            },
+            text: {
+              fontSize: 12,
+              fill: '#262626'
+            }
+          },
+          ports: {
+            ...ports,
+            items: [
+              {
+                group: 'top'
+              },
+              {
+                group: 'bottom'
+              }
+            ]
+          }
+        },
+        true
+      )
     },
     initGraphListen () {
       this.graph.on('node:removed', ({ node, index, options }) => {
@@ -253,6 +409,9 @@ export default {
       this.graph.on('node:click', ({ e, x, y, node, view }) => {
         console.debug('node:click: ', e, x, y, node, view)
         this.$emit('updateDetail', true)
+        // save to vuex
+        store.commit('flow/setNodeDetailInfo', node)
+        store.commit('flow/setNodeType', node.data.type)
       })
       this.graph.on('resize', ({ width, height }) => {
         console.debug('resize: ', width, height)
@@ -260,16 +419,14 @@ export default {
       })
     }
   },
-  //   watch: {
-  //     showNodeDetail (newval, oldval) {
-  //     //   console.debug('newval: ', newval)
-  //     //   console.debug('oldval: ', oldval)
-  //     //   if (newval) {}
-  //     }
-  //   },
+  computed: {
+    containerId () {
+      return `graphContainer_${this.$props.serviceId}`
+    }
+  },
   mounted () {
-    this.initShapeConfig()
     this.initGraph()
+    this.initConfig()
     this.initGraphListen()
   }
 }

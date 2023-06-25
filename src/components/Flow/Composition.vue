@@ -3,12 +3,12 @@
     <div class="composition-header">组件：</div>
     <div class="composition-content">
       <svg
-        class="rhombic"
+        class="rhombic judge"
         preserveAspectRatio="xMidYMid"
         viewBox="0 0 246 82"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        data-type="rhombic"
+        data-type="judge"
         @mousedown="startDrag"
       >
         <path
@@ -23,7 +23,7 @@
               font-size="40" stroke="#000" fill="#0000ff"
         >判定</text>
       </svg>
-      <div data-type="rect" class="dnd-rect" @mousedown="startDrag">
+      <div data-type="dialogue" class="dnd-rect" @mousedown="startDrag">
         对话框
       </div>
     </div>

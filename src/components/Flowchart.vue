@@ -1,6 +1,6 @@
 <template>
   <div class="flowchart-component-wrapper">
-    <Graph :showNodeDetail="showNodeDetail" @updateDetail="updateDetail"></Graph>
+    <Graph :serviceId="serviceId" :showNodeDetail="showNodeDetail" @updateDetail="updateDetail"></Graph>
     <Detail
       v-if="showDetail"
       class="detail-wrapper"
