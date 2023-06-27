@@ -4,6 +4,7 @@
     <Detail
       v-if="showDetail"
       class="detail-wrapper"
+      :serviceId="serviceId"
       :showNodeDetail.sync="showNodeDetail"
       @update:showNodeDetail="showNodeDetail = $event"
     ></Detail>
@@ -12,7 +13,6 @@
 <script>
 import Graph from '@/components/Flow/Graph'
 import Detail from '@/components/Flow/Detail'
-
 export default {
   components: {
     Graph,
@@ -37,6 +37,9 @@ export default {
       console.debug('updateDetail', data)
       this.showNodeDetail = data
     }
+    // updateNodeInfo (nodeData) {
+    //   console.debug('updateNodeInfo', nodeData)
+    // }
   },
   computed: {
     isEdit () {

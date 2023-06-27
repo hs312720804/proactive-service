@@ -43,7 +43,7 @@ export default new Vuex.Store({
     // 针对enum模块下的数据做持久化缓存
     createPersistedState({
       key: 'example',
-      paths: ['example', 'services']
+      paths: ['example', 'services', 'flow']
     })
   ]
 })

@@ -11,6 +11,7 @@
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s 0"
   },
   "dependencies": {
+    "@antv/layout": "^0.3.23",
     "@antv/x6": "^2.11.1",
     "@antv/x6-plugin-dnd": "^2.0.5",
     "@antv/x6-plugin-snapline": "^2.1.7",

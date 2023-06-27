@@ -1,6 +1,6 @@
 <template>
   <div :class="[showNodeDetail ? 'limit-graph' : '', 'graph-component']">
-    <FlowComposition @drag="handleDrag"></FlowComposition>
+    <FlowComposition @drag="handleCompositionDrag"></FlowComposition>
     <!-- 解决画布resize后,节点被遮挡问题 -->
     <div style="width: 100%;height: 100%">
       <div class="graph-simply-container" :id="containerId"></div>
@@ -17,6 +17,7 @@ import { Graph, Shape, ObjectExt } from '@antv/x6'
 import { Dnd } from '@antv/x6-plugin-dnd' // 拖拽
 import { Snapline } from '@antv/x6-plugin-snapline' // 对齐线
 import { Transform } from '@antv/x6-plugin-transform' // 拉动节点 显示图形转换
+import { DagreLayout } from '@antv/layout' // 层次布局
 import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
 export default {
@@ -50,10 +51,14 @@ export default {
       startNode: { // 开始节点
         id: 'start', // String，节点的唯一标识
         shape: 'ellipse', // 使用 ellipse 渲染
-        x: 160, // Number，必选，节点位置的 x 值
-        y: 180, // Number，必选，节点位置的 y 值
+        // x: 160, // Number，必选，节点位置的 x 值
+        // y: 180, // Number，必选，节点位置的 y 值
         width: 100, // Number，可选，节点大小的 width 值
         height: 50, // Number，可选，节点大小的 height 值
+        // size: {
+        //   width: 100,
+        //   height: 50
+        // },
         attrs: {
           body: {
             fill: '#eff4ff',
@@ -70,16 +75,6 @@ export default {
             fontVariant: 'small-caps'
           }
         },
-        // tools: [
-        //   {
-        //     name: 'button-remove',
-        //     args: {
-        //       x: '100%',
-        //       y: 0,
-        //       offset: { x: -10, y: 10 }
-        //     }
-        //   }
-        // ],
         data: {
           type: 'start'
         }
@@ -89,6 +84,8 @@ export default {
   methods: {
     initGraph () {
       // console.debug('initGraph: ')
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const scope = this
       this.graph = new Graph({
         container: document.getElementById(this.containerId),
         interacting: true, // 交互 是否允许
@@ -118,9 +115,18 @@ export default {
           resizing: this.resizingOptions
         })
       )
-      this.graph.fromJSON({
-        nodes: [this.startNode]
-      }) // render draw
+      const graphInfo = store.getters.graphList.find(item => item.serviceId === this.$props.serviceId)?.graphInfo
+      console.debug('graphInfo: ', graphInfo)
+      if (graphInfo) {
+        this.renderGraph(graphInfo)
+      } else {
+        this.renderGraph({
+          nodes: [this.startNode]
+        })
+      }
+      // this.renderGraph({
+      //   nodes: [this.startNode]
+      // })
       this.graph.centerContent() // 居中显示画布
       this.graph.use(
         new Snapline({
@@ -130,11 +136,34 @@ export default {
       this.dnd = new Dnd({
         target: this.graph,
         scaled: false,
-        dndContainer: document.querySelector('.composition-content')
+        dndContainer: document.querySelector('.composition-content'),
+        getDragNode: (beforeNode) => {
+          console.debug('before getDragNode: ', beforeNode)
+          return beforeNode.clone()
+        },
+        getDropNode: (afterNode) => {
+          console.debug('after getDropNode: ', afterNode)
+          // axios 请求生成id接口
+          return afterNode.clone().setData({
+            newId: '123'
+          })
+          // const cloneNode = afterNode.clone().size(width * 3, height * 3);
+          // const id = '123123'
+          // return cloneNode.setData({
+          //   newId: id
+          // })
+        }
       })
     },
-    handleDrag (e) {
-      // console.debug('handleDrag: ', e)
+    renderGraph (data) { // 渲染画布
+      this.graph.fromJSON(data)
+      store.commit('flow/setGraphList', {
+        serviceId: this.$props.serviceId,
+        graphInfo: this.graph.toJSON()
+      })
+    },
+    handleCompositionDrag (e) { // 拖拽组件回调
+      // console.debug('handleCompositionDrag: ', e)
       const type = e.currentTarget.dataset.type
       let node = null
       if (type === 'judge') {
@@ -145,16 +174,25 @@ export default {
               refPoints: '0,10 10,0 20,10 10,20'
             }
           },
+          size: {
+            width: 100,
+            height: 50
+          },
           label: '判定',
           data: {
             type
           }
+          // size: {
+          //   width: 100,
+          //   height: 80
+          // }
         })
-      } else if (type === 'dialogue' || type === 'skill') {
+      } else if (type === 'dialogue') {
         node = this.graph.createNode({
           shape: 'rect',
           width: 200,
           height: 80,
+          label: '对话框',
           data: {
             type
           }
@@ -175,22 +213,6 @@ export default {
           }
         })
       }
-      // : this.graph.createNode({
-      //   width: 60,
-      //   height: 60,
-      //   shape: 'circle',
-      //   label: 'Circle',
-      //   attrs: {
-      //     body: {
-      //       stroke: '#8f8f8f',
-      //       strokeWidth: 1,
-      //       fill: '#fff'
-      //     }
-      //   },
-      //   data: {
-      //     type
-      //   }
-      // })
       this.dnd.start(node, e)
     },
     addZoom () {
@@ -372,30 +394,29 @@ export default {
     },
     initGraphListen () {
       this.graph.on('node:removed', ({ node, index, options }) => {
-        console.debug('node:removed: ', node, index, options)
+        // console.debug('node:removed: ', node, index, options)
         return false
       })
+      this.graph.on('node:added', ({ node, index, options }) => {
+        // console.debug('node:added: ', node, index, options)
+        store.commit('flow/setGraphList', {
+          serviceId: this.$props.serviceId,
+          graphInfo: this.graph.toJSON()
+        })
+        store.commit('flow/setNodeList', {
+          serviceId: this.$props.serviceId,
+          nodeList: this.graph.getNodes()
+        })
+      })
       this.graph.on('cell:mouseenter', ({ cell }) => {
-        // console.debug('cell:mouseenter: ', cell)
         if (cell.isNode()) {
           cell.id !== 'start' && cell.addTools([
-            // {
-            //   name: 'boundary',
-            //   args: {
-            //     attrs: {
-            //       fill: '#7c68fc',
-            //       stroke: '#333',
-            //       'stroke-width': 1,
-            //       'fill-opacity': 0.2
-            //     }
-            //   }
-            // },
             {
               name: 'button-remove',
               args: {
                 x: '100%',
-                y: 0,
-                offset: { x: -10, y: 10 }
+                y: '50%',
+                offset: { x: -10, y: 0 }
               }
             }
           ])
@@ -406,16 +427,68 @@ export default {
       this.graph.on('cell:mouseleave', ({ cell }) => {
         cell.removeTools()
       })
-      this.graph.on('node:click', ({ e, x, y, node, view }) => {
-        console.debug('node:click: ', e, x, y, node, view)
+      this.graph.on('node:click', ({ e, x, y, node, view }) => { // 节点点击事件
+        // console.debug('node:click: ', e, x, y, node, view)
+        // console.debug('node:click: ', this.graph.getConnectedEdges('start')[0]?.getTarget())
         this.$emit('updateDetail', true)
         // save to vuex
         store.commit('flow/setNodeDetailInfo', node)
         store.commit('flow/setNodeType', node.data.type)
       })
       this.graph.on('resize', ({ width, height }) => {
-        console.debug('resize: ', width, height)
         this.graph.centerContent()
+      })
+    },
+    updateNodeInfo (payload) { // 更新节点信息 连线布局
+      // (1) update node data
+      // (2) update whole graph data
+      // (3) update vuex
+      // eg: nodeData { id: 48 label: "兜底方案也不满足的情况" type: "skill" } nodeType 'start'
+      const { serviceId, nodeType, nodeData } = payload
+      const { id, label, type } = nodeData
+      console.debug('updateNodeInfo: ', serviceId, nodeType, nodeData)
+      console.debug('updateNodeInfo: ', id, label, type)
+      if (serviceId !== this.$props.serviceId) return
+      if (type === 'skill' && nodeType === 'start') {
+        const node = {
+          id: id.toString(),
+          shape: 'rect',
+          width: 100,
+          height: 40,
+          label,
+          data: {
+            type
+          }
+        }
+        const edge = {
+          source: 'start',
+          target: id.toString()
+        }
+        const dagreLayout = new DagreLayout({
+          type: 'dagre',
+          rankDir: '',
+          align: 'UL',
+          rankSep: 40,
+          nodeSep: 40
+        })
+        const data = {
+          nodes: [this.startNode, node],
+          edges: [edge]
+        }
+        const model = dagreLayout.layout(data)
+        this.renderGraph(model)
+        console.debug('render ok: graph: ', this.graph.toJSON())
+        console.debug('渲染ok')
+      }
+    },
+    initVuexListen () {
+      store.subscribe((mutation, state) => {
+        // if(mutation === 'someMutation'){
+        //     doSomething()
+        // }
+        if (mutation.type === 'flow/updateGraphNodeInfo') {
+          this.updateNodeInfo(mutation.payload)
+        }
       })
     }
   },
@@ -428,6 +501,7 @@ export default {
     this.initGraph()
     this.initConfig()
     this.initGraphListen()
+    this.initVuexListen()
   }
 }
 </script>
