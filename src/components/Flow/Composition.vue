@@ -9,6 +9,7 @@
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         data-type="judge"
+        data-ctype="判定"
         @mousedown="startDrag"
       >
         <path
@@ -23,7 +24,7 @@
               font-size="40" stroke="#000" fill="#0000ff"
         >判定</text>
       </svg>
-      <div data-type="dialogue" class="dnd-rect" @mousedown="startDrag">
+      <div data-type="dialogue" data-ctype="对话框" class="dnd-rect" @mousedown="startDrag">
         对话框
       </div>
     </div>

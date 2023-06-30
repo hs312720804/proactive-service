@@ -28,6 +28,7 @@
                 v-if="startForm.NodeOrSkill === '1'"
                 v-model="startForm.NodeOrSkillVal"
                 placeholder="请选择技能"
+                filterable
                 @change="updateSkillPicked"
               >
                 <el-option
@@ -41,11 +42,13 @@
                 v-else
                 v-model="startForm.NodeOrSkillVal"
                 placeholder="请选择节点"
+                @change="updateNodePicked"
+                filterable
               >
                 <el-option
-                  v-for="item in nodeList"
+                  v-for="item in childNodeList"
                   :key="item.id"
-                  :label="item.nodeName"
+                  :label="item.attrs.text.text"
                   :value="item.id"
                 ></el-option>
               </el-select>
@@ -84,8 +87,7 @@ export default {
         NodeOrSkill: '',
         NodeOrSkillVal: null
       },
-      skillList: [],
-      nodeList: []
+      skillList: []
     }
   },
   methods: {
@@ -109,16 +111,28 @@ export default {
       }
     },
     updateSkillPicked () { // 更新选择的技能
-      console.debug('updateSkillPicked')
       // 提交到父组件 （1） 生成节点 生成连线 （2） 删除旧线旧节点(不用删除，直接覆盖)
       store.commit('flow/updateGraphNodeInfo', {
         serviceId: this.$props.serviceId,
-        nodeType: this.nodeType,
-        nodeData: {
+        nodeType: this.nodeType, // judge start dialogue
+        type: 'skill',
+        targetNodeInfo: {
           id: this.startForm.NodeOrSkillVal,
-          type: 'skill',
           label: this.skillList.find(item => item.id === this.startForm.NodeOrSkillVal).skillName
         }
+      })
+    },
+    updateNodePicked () { // 更新选择的节点
+      // 提交到父组件 （1） 生成节点 生成连线 （2） 删除旧线旧节点(不用删除，直接覆盖)
+      const pickNode = this.childNodeList.find(item => item.id === this.startForm.NodeOrSkillVal)
+      store.commit('flow/updateGraphNodeInfo', {
+        serviceId: this.$props.serviceId,
+        nodeType: this.nodeType, // judge start dialogue
+        type: 'node', // skill node
+        targetNodeInfo: pickNode
+        // targetNodePayload: { // 目标节点的额外数据
+        //   id: this.startForm.NodeOrSkillVal
+        // }
       })
     },
     reFill () {
@@ -140,6 +154,10 @@ export default {
       } else {
         return store.getters.nodeDetailInfo.getAttrs('label/text').text.text
       }
+    },
+    childNodeList () { // 除了开始节点以外的所有节点
+      const currentGraph = store.getters.graphList.find(item => item.serviceId === this.$props.serviceId)
+      return currentGraph?.nodeList.filter(item => item.id !== 'start')
     }
   },
   mounted () {

@@ -20,6 +20,7 @@ import { Transform } from '@antv/x6-plugin-transform' // 拉动节点 显示图�
 import { DagreLayout } from '@antv/layout' // 层次布局
 import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
+import { addJudgeNodeAPI } from '@/services/flow'
 export default {
   components: {
     FlowComposition,
@@ -143,15 +144,29 @@ export default {
         },
         getDropNode: (afterNode) => {
           console.debug('after getDropNode: ', afterNode)
-          // axios 请求生成id接口
-          return afterNode.clone().setData({
-            newId: '123'
-          })
-          // const cloneNode = afterNode.clone().size(width * 3, height * 3);
-          // const id = '123123'
-          // return cloneNode.setData({
-          //   newId: id
-          // })
+          const targetType = afterNode.getData().type
+          const targetCtype = afterNode.getData().ctype
+          const nodeList = this.graph.getNodes().filter((item) => item.getData().type === targetType)
+          return afterNode.clone().setAttrByPath('text/text', `${targetCtype}${nodeList.length + 1}`)
+        },
+        validateNode: async (node, options) => {
+          const { type } = node.getData()
+          try {
+            const res = await addJudgeNodeAPI({
+              title: type,
+              versionId: 1
+            })
+            // console.debug('addJudgeNodeAPI res: ', res)
+            if (res.code === 1000) {
+              const { nodeId } = res.data
+              node.setData({
+                id: nodeId.toString()
+              })
+              return true
+            }
+          } catch (error) {
+            return false
+          }
         }
       })
     },
@@ -161,10 +176,15 @@ export default {
         serviceId: this.$props.serviceId,
         graphInfo: this.graph.toJSON()
       })
+      store.commit('flow/setNodeList', {
+        serviceId: this.$props.serviceId,
+        nodeList: this.graph.getNodes()
+      })
     },
     handleCompositionDrag (e) { // 拖拽组件回调
-      // console.debug('handleCompositionDrag: ', e)
       const type = e.currentTarget.dataset.type
+      const ctype = e.currentTarget.dataset.ctype
+      // console.debug('handleCompositionDrag: ', type, ctype)
       let node = null
       if (type === 'judge') {
         node = this.graph.createNode({
@@ -178,9 +198,10 @@ export default {
             width: 100,
             height: 50
           },
-          label: '判定',
+          label: ctype,
           data: {
-            type
+            type,
+            ctype
           }
           // size: {
           //   width: 100,
@@ -192,9 +213,16 @@ export default {
           shape: 'rect',
           width: 200,
           height: 80,
-          label: '对话框',
+          label: ctype,
+          text: {
+            textAnchor: 'left', // 左对齐
+            refX: -5, // x 轴偏移量
+            refY: -5,
+            text: ctype
+          },
           data: {
-            type
+            type,
+            ctype
           }
         })
       } else if (type === 'skill') {
@@ -251,8 +279,9 @@ export default {
             fontSize: 14,
             fill: '#000',
             fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
-            textAnchor: 'middle',
-            textVerticalAnchor: 'middle'
+            textAnchor: 'left', // 左对齐
+            refX: -10, // x 轴偏移量
+            refY: -10
           }
         },
         propHooks: { // 自定义选项
@@ -374,7 +403,11 @@ export default {
             },
             text: {
               fontSize: 12,
-              fill: '#262626'
+              fill: '#262626',
+              textAnchor: 'left', // 左对齐
+              refX: -5, // x 轴偏移量
+              refY: -5,
+              text: '判定'
             }
           },
           ports: {
@@ -444,12 +477,11 @@ export default {
       // (2) update whole graph data
       // (3) update vuex
       // eg: nodeData { id: 48 label: "兜底方案也不满足的情况" type: "skill" } nodeType 'start'
-      const { serviceId, nodeType, nodeData } = payload
-      const { id, label, type } = nodeData
-      console.debug('updateNodeInfo: ', serviceId, nodeType, nodeData)
-      console.debug('updateNodeInfo: ', id, label, type)
+      const { serviceId, nodeType, targetNodeInfo, type } = payload
+      // console.debug('updateNodeInfo: ', id, label, type)
       if (serviceId !== this.$props.serviceId) return
       if (type === 'skill' && nodeType === 'start') {
+        const { id, label } = targetNodeInfo
         const node = {
           id: id.toString(),
           shape: 'rect',
@@ -479,6 +511,63 @@ export default {
         this.renderGraph(model)
         console.debug('render ok: graph: ', this.graph.toJSON())
         console.debug('渲染ok')
+      } else if (type === 'node' && nodeType === 'start') {
+        const { id } = targetNodeInfo
+        const targetNodeType = targetNodeInfo.getData().type
+        const edge = {
+          source: 'start',
+          target: id.toString()
+        }
+        const dagreLayout = new DagreLayout({
+          type: 'dagre',
+          rankDir: '',
+          align: 'UL',
+          rankSep: 40,
+          nodeSep: 40
+        })
+        if (targetNodeType === 'judge') { // 区分是什么节点 judge dialogue
+          const data = {
+            nodes: [this.startNode, {
+              id: id.toString(),
+              shape: 'custom-polygon',
+              attrs: {
+                body: {
+                  refPoints: '0,10 10,0 20,10 10,20'
+                }
+              },
+              size: {
+                width: 100,
+                height: 50
+              },
+              label: targetNodeInfo.getAttrByPath('text/text'),
+              data: {
+                type: nodeType,
+                ctype: targetNodeInfo.getAttrByPath('text/text')
+              }
+            }],
+            edges: [edge]
+          }
+          const model = dagreLayout.layout(data)
+          this.renderGraph(model)
+        } else if (targetNodeType === 'dialogue') {
+          const data = {
+            // this.startNode,
+            nodes: [this.startNode, {
+              id: id.toString(),
+              shape: 'rect',
+              width: 200,
+              height: 80,
+              label: targetNodeInfo.getAttrByPath('text/text'),
+              data: {
+                type: targetNodeType,
+                ctype: targetNodeInfo.getData().ctype
+              }
+            }],
+            edges: [edge]
+          }
+          const model = dagreLayout.layout(data)
+          this.renderGraph(model)
+        }
       }
     },
     initVuexListen () {
@@ -498,8 +587,8 @@ export default {
     }
   },
   mounted () {
-    this.initGraph()
     this.initConfig()
+    this.initGraph()
     this.initGraphListen()
     this.initVuexListen()
   }
