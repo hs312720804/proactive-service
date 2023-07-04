@@ -30,11 +30,9 @@ export default {
     showNodeDetail: { // 显示节点详情
       type: Boolean,
       default: false
-    },
-    serviceId: {
-      type: Number
     }
   },
+  inject: ['serviceId'],
   data () {
     return {
       graph: null, // 画布
@@ -116,7 +114,7 @@ export default {
           resizing: this.resizingOptions
         })
       )
-      const graphInfo = store.getters.graphList.find(item => item.serviceId === this.$props.serviceId)?.graphInfo
+      const graphInfo = store.getters.graphList.find(item => item.serviceId === this.serviceId)?.graphInfo
       console.debug('graphInfo: ', graphInfo)
       if (graphInfo) {
         this.renderGraph(graphInfo)
@@ -173,11 +171,11 @@ export default {
     renderGraph (data) { // 渲染画布
       this.graph.fromJSON(data)
       store.commit('flow/setGraphList', {
-        serviceId: this.$props.serviceId,
+        serviceId: this.serviceId,
         graphInfo: this.graph.toJSON()
       })
       store.commit('flow/setNodeList', {
-        serviceId: this.$props.serviceId,
+        serviceId: this.serviceId,
         nodeList: this.graph.getNodes()
       })
     },
@@ -433,11 +431,11 @@ export default {
       this.graph.on('node:added', ({ node, index, options }) => {
         // console.debug('node:added: ', node, index, options)
         store.commit('flow/setGraphList', {
-          serviceId: this.$props.serviceId,
+          serviceId: this.serviceId,
           graphInfo: this.graph.toJSON()
         })
         store.commit('flow/setNodeList', {
-          serviceId: this.$props.serviceId,
+          serviceId: this.serviceId,
           nodeList: this.graph.getNodes()
         })
       })
@@ -479,7 +477,7 @@ export default {
       // eg: nodeData { id: 48 label: "兜底方案也不满足的情况" type: "skill" } nodeType 'start'
       const { serviceId, nodeType, targetNodeInfo, type } = payload
       // console.debug('updateNodeInfo: ', id, label, type)
-      if (serviceId !== this.$props.serviceId) return
+      if (serviceId !== this.serviceId) return
       if (type === 'skill' && nodeType === 'start') {
         const { id, label } = targetNodeInfo
         const node = {
@@ -583,7 +581,7 @@ export default {
   },
   computed: {
     containerId () {
-      return `graphContainer_${this.$props.serviceId}`
+      return `graphContainer_${this.serviceId}`
     }
   },
   mounted () {

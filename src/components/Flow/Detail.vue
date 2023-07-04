@@ -1,6 +1,5 @@
 <template>
   <div class="graph-info-detail-component">
-    <!-- :wrapperClosable="false" -->
     <el-drawer
       custom-class="detail-drawer"
       :title="title"
@@ -57,27 +56,31 @@
         </el-form>
       </template>
       <template v-else-if="nodeType === 'judge'">
-        judge
+        <JudgeDetail></JudgeDetail>
       </template>
       <template v-else-if="nodeType === 'dialogue'">
-        dialogue
+        <DialogueDetail :skillList="skillList" :childNodeList="childNodeList"></DialogueDetail>
       </template>
     </el-drawer>
   </div>
 </template>
 <script>
 import store from 'cseed-frame/store/_index'
+import DialogueDetail from '@/components/Flow/DialogueDetail.vue'
+import JudgeDetail from '@/components/Flow/JudgeDetail.vue'
 import { getSkillListAPI } from '@/services/skill'
 export default {
+  components: {
+    DialogueDetail,
+    JudgeDetail
+  },
   props: {
     showNodeDetail: {
       type: Boolean,
       default: false
-    },
-    serviceId: {
-      type: Number
     }
   },
+  inject: ['serviceId'],
   data () {
     return {
       direction: 'rtl',
@@ -113,7 +116,7 @@ export default {
     updateSkillPicked () { // 更新选择的技能
       // 提交到父组件 （1） 生成节点 生成连线 （2） 删除旧线旧节点(不用删除，直接覆盖)
       store.commit('flow/updateGraphNodeInfo', {
-        serviceId: this.$props.serviceId,
+        serviceId: this.serviceId,
         nodeType: this.nodeType, // judge start dialogue
         type: 'skill',
         targetNodeInfo: {
@@ -126,7 +129,7 @@ export default {
       // 提交到父组件 （1） 生成节点 生成连线 （2） 删除旧线旧节点(不用删除，直接覆盖)
       const pickNode = this.childNodeList.find(item => item.id === this.startForm.NodeOrSkillVal)
       store.commit('flow/updateGraphNodeInfo', {
-        serviceId: this.$props.serviceId,
+        serviceId: this.serviceId,
         nodeType: this.nodeType, // judge start dialogue
         type: 'node', // skill node
         targetNodeInfo: pickNode
@@ -156,7 +159,7 @@ export default {
       }
     },
     childNodeList () { // 除了开始节点以外的所有节点
-      const currentGraph = store.getters.graphList.find(item => item.serviceId === this.$props.serviceId)
+      const currentGraph = store.getters.graphList.find(item => item.serviceId === this.serviceId)
       return currentGraph?.nodeList.filter(item => item.id !== 'start')
     }
   },

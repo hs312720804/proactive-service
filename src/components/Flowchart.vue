@@ -1,10 +1,9 @@
 <template>
   <div class="flowchart-component-wrapper">
-    <Graph :serviceId="serviceId" :showNodeDetail="showNodeDetail" @updateDetail="updateDetail"></Graph>
+    <Graph :showNodeDetail="showNodeDetail" @updateDetail="updateDetail"></Graph>
     <Detail
       v-if="showDetail"
       class="detail-wrapper"
-      :serviceId="serviceId"
       :showNodeDetail.sync="showNodeDetail"
       @update:showNodeDetail="showNodeDetail = $event"
     ></Detail>
@@ -25,6 +24,11 @@ export default {
     },
     serviceId: {
       type: Number
+    }
+  },
+  provide () {
+    return {
+      serviceId: this.serviceId
     }
   },
   data () {
