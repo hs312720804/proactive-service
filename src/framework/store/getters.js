@@ -4,6 +4,7 @@ export default {
   tabsArr: state => state.services.tabsArr,
   activeTab: state => state.services.activeTab,
   nodeType: state => state.flow.nodeType,
-  nodeDetailInfo: state => state.flow.nodeDetailInfo,
+  nodeId: state => state.flow.nodeId,
+  cellRenderData: state => state.flow.cellRenderData,
   graphList: state => state.flow.graphList
 }

@@ -3,12 +3,11 @@
     <el-form class="dialogue-form-wrapper" ref="dialogueForm" :rules="rules" :model="detailForm"
              label-width="80px"
     >
+      <el-form-item label="节点ID：">{{ detailForm.nodeId }}</el-form-item>
       <el-form-item label="命名：">
         <el-col :span="11">
           <el-input v-model="detailForm.title"></el-input>
         </el-col>
-        <el-col :span="2">&nbsp;&nbsp;</el-col>
-        <el-col :span="11" :title="detailForm.nodeId">节点ID：{{ detailForm.nodeId }}</el-col>
       </el-form-item>
       <el-form-item label="显示时机：">
         <el-col class="flex-box">
@@ -21,7 +20,7 @@
         </el-col>
       </el-form-item>
       <el-form-item label="显示时长：">
-        <el-input-number v-model="detailForm.displayDuration" controls-position="right" @change="handleDisplayDuration" :min="0"
+        <el-input-number v-model="detailForm.displayDuration" controls-position="right" @change="handleDisplayDuration" :min="1"
                          :max="600"
         ></el-input-number> s
       </el-form-item>
@@ -34,7 +33,7 @@
         <el-button type="text" @click="addButton">添加按钮</el-button>
         <div class="buttons-layout">
           <el-col :span="20">
-            <ul class="buttons-wrapper">
+            <ul class="buttons-wrapper" v-if="detailForm.interActifyButtonsList.length > 0">
               <li
                 v-for="(item, index) in detailForm.interActifyButtonsList"
                 :key="item.id"
@@ -63,7 +62,7 @@
                     @click="updateEditInput(index)"
                   ></i>
                 </el-button>
-                <el-button type="text" @click="deleteButton" class="el-icon-close delete"></el-button>
+                <el-button type="text" @click="deleteButton(index)" class="el-icon-close delete"></el-button>
               </li>
             </ul>
           </el-col>
@@ -74,22 +73,22 @@
             </ul>
           </el-col>
         </div>
-        <div class="button-detail">
+        <div class="button-detail" v-if="buttonDetail">
           <span class="button-id">按钮ID：{{ buttonDetail.buttonId }}</span>
           <ul class="operate-list-wrapper">
             <li
               class="operate-list-item"
-              v-for="operateItem in buttonDetail.nextNodeList"
+              v-for="(operateItem, operateItemIndex) in buttonDetail.nextNodeList"
               :key="operateItem.buttonId"
             >
               <span class="head-text">操作：</span>
-              <el-select class="short-select-width" v-model="operateItem.NodeOrSkill" placeholder="调用" style="margin-right: 5px;">
-                <el-option label="调用技能" value="1"></el-option>
-                <el-option label="调用节点" value="2"></el-option>
+              <el-select class="short-select-width" v-model="operateItem.callType" placeholder="调用" style="margin-right: 5px;">
+                <el-option label="调用技能" :value="1"></el-option>
+                <el-option label="调用节点" :value="2"></el-option>
               </el-select>
               <el-select
                 class="short-select-width"
-                v-if="operateItem.NodeOrSkill === '1'"
+                v-if="operateItem.callType === 1"
                 v-model="operateItem.nextSkillId"
                 placeholder="请选择技能"
                 filterable
@@ -99,7 +98,7 @@
                   v-for="skillItem in skillList"
                   :key="skillItem.skillId"
                   :label="skillItem.skillName"
-                  :value="skillItem.skillId"
+                  :value="Number(skillItem.skillId)"
                 ></el-option>
               </el-select>
               <el-select
@@ -117,11 +116,28 @@
                   :value="nodeItem.id"
                 ></el-option>
               </el-select>
-              <el-button type="text" @click="deleteOperate(buttonDetail)" class="el-icon-close delete"></el-button>
+              <template v-if="operateItem.callType === 1 && operateItem.nextSkillId && getCurrentSkillItem(operateItemIndex).paramList.length > 0">
+                <el-form-item
+                  v-for="(paramItem) in getCurrentSkillItem(operateItemIndex).paramList"
+                  :key="paramItem.paramKey"
+                  :label="paramItem.paramName"
+                >
+                  <el-input
+                    style="margin-top: 5px;height: 30px;"
+                    :type="paramItem.dataType === 1 ? 'number': 'text'"
+                    v-model="operateItem[paramItem.paramKey]"
+                  >
+                  </el-input>
+                </el-form-item>
+              </template>
+              <el-button type="text" @click="deleteOperate(operateItemIndex)" class="el-icon-close delete"></el-button>
             </li>
             <el-button type="text" @click="addOperate(buttonDetail)">添加操作</el-button>
           </ul>
         </div>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="submitForm('dialogueForm')">保存</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -136,18 +152,23 @@ export default {
     childNodeList: {
       type: Array,
       default: () => []
+    },
+    renderData: {
+      type: Object,
+      default: () => ({})
     }
   },
   data () {
     return {
       detailForm: {
         title: '', // 命名
-        nodeId: '123', // 节点id
-        interActifyButtonsList: [{}], // 交互按钮列表
+        nodeId: '', // 节点id
+        interActifyButtonsList: [], // 交互按钮列表
+        staticButtonsList: [], // 静态按钮列表
         delayHours: null,
         delayMinutes: null,
         delaySeconds: null,
-        displayDuration: null,
+        displayDuration: '',
         content: '' // 文案
       },
       rules: {
@@ -160,13 +181,16 @@ export default {
       buttonActiveIndex: 0
     }
   },
-  computed: {
-  },
-  watch: {
-  },
+  computed: {},
   methods: {
     handleDisplayDuration () {
       console.debug('handleDisplayDuration', this.detailForm.displayDuration)
+    },
+    getCurrentSkillItem (operateItemIndex) {
+      // console.debug('buttonDetail: ', operateItemIndex)
+      const res = this.skillList.find(item => item.skillId.toString() === this.buttonDetail.nextNodeList[operateItemIndex].nextSkillId.toString()) || []
+      // console.debug('getCurrentSkillItem res: ', res)
+      return res
     },
     addButton () {
       console.debug('addButton')
@@ -175,7 +199,8 @@ export default {
         return
       }
       this.detailForm.interActifyButtonsList.push({
-        name: '按钮'
+        name: '按钮',
+        type: 1
       })
     },
     updateSkillPicked (data) {
@@ -184,19 +209,20 @@ export default {
     updateNodePicked (data) {
       console.debug('updateNodePicked', data)
     },
-    deleteButton () {
-      console.debug('deleteButton')
+    deleteButton (index) {
+      // console.debug('deleteButton', index)
+      this.detailForm.interActifyButtonsList.splice(index, 1)
     },
-    deleteOperate (data) {
-      console.debug('deleteOperate', data)
+    deleteOperate (index) {
+      this.buttonDetail.nextNodeList.splice(index, 1)
     },
     addOperate (item) {
       console.debug('addOperate', item)
       const buttonItem = this.detailForm.interActifyButtonsList[this.buttonActiveIndex]
       if (!buttonItem?.nextNodeList) {
-        this.$set(buttonItem, 'nextNodeList', [{ abc: 1 }])
+        this.$set(buttonItem, 'nextNodeList', [{ }])
       } else {
-        buttonItem.nextNodeList.push({ abc: 1 })
+        buttonItem.nextNodeList.push({ })
       }
     },
     updateEditInput (index) {
@@ -212,13 +238,133 @@ export default {
       console.debug('clickOperateButton', index)
       this.buttonActiveIndex = index
       this.buttonDetail = this.detailForm.interActifyButtonsList[index]
+    },
+    initTransformData (data) {
+      data.interActifyButtonsList.forEach((buttonItem, buttonIndex) => {
+        if (buttonItem.type === 2 || buttonItem.type === 3) {
+          this.detailForm.staticButtonsList.push(buttonItem)
+        } else {
+          buttonItem.nextNodeList.forEach((operateItem, operateIndex) => {
+            if (operateItem.callType === 1 && operateItem.skillParam) {
+              operateItem.skillParam = JSON.parse(operateItem.skillParam)
+              operateItem.skillParam.forEach(paramItem => {
+                operateItem[paramItem.key] = paramItem.value
+              })
+            }
+          })
+        }
+      })
+      data.interActifyButtonsList = data.interActifyButtonsList.filter(item => item.type !== 2 && item.type !== 3)
+      return data
+    },
+    initData () {
+      // console.debug('renderData: ', this.$props.renderData)
+      let renderData = JSON.parse(JSON.stringify(this.$props.renderData))
+      renderData = this.initTransformData(renderData)
+      this.detailForm = {
+        ...this.detailForm,
+        ...renderData
+      }
+      this.clickOperateButton(0)
+      // console.debug('detailForm: ', this.detailForm)
+    },
+    transformSubmitData (data) {
+      const info = JSON.parse(JSON.stringify(data))
+      let {
+        nodeId,
+        title,
+        interActifyButtonsList,
+        staticButtonsList,
+        delayHours,
+        delayMinutes,
+        delaySeconds,
+        displayDuration,
+        content
+      } = info
+      interActifyButtonsList.forEach((buttonItem, buttonIndex) => {
+        if (buttonItem?.nextNodeList?.length > 0) {
+          buttonItem.nextNodeList.forEach((operateItem, operateIndex) => {
+            if (operateItem?.callType === 1 && operateItem?.nextSkillId) {
+              // console.debug('keys：', Object.keys(operateItem))
+              const keys = Object.keys(operateItem)
+              this.skillList.forEach((skillItem, skillIndex) => {
+                if (skillItem.skillId === operateItem.nextSkillId) {
+                  console.debug('skillItem: ', skillItem)
+                  const paramList = skillItem.paramList
+                  paramList.forEach((paramItem, paramIndex) => {
+                    const key = paramItem.paramKey
+                    if (!operateItem.skillParam) {
+                      operateItem.skillParam = []
+                    }
+                    if (keys.includes(key)) {
+                      if (paramItem.dataType === 1) { // 1数值 2字符串
+                        operateItem.skillParam.push({
+                          key: paramItem.paramKey,
+                          value: Number(operateItem[paramItem.paramKey])
+                        })
+                      } else if (paramItem.dataType === 2) {
+                        operateItem.skillParam.push({
+                          key: paramItem.paramKey,
+                          value: (operateItem[paramItem.paramKey]).toString()
+                        })
+                      }
+                    }
+                  })
+                }
+              })
+              operateItem.skillParam = JSON.stringify(operateItem.skillParam)
+            }
+          })
+        }
+      })
+      if (staticButtonsList.length === 0) {
+        staticButtonsList = [{
+          type: 2,
+          name: '用户返回'
+        },
+        {
+          type: 3,
+          name: '自动消失'
+        }]
+      }
+      return {
+        nodeId,
+        title,
+        displayDuration,
+        delayHours: Number(delayHours) || 0,
+        delayMinutes: Number(delayMinutes) || 0,
+        delaySeconds: Number(delaySeconds) || 0,
+        content,
+        interActifyButtonsList: [
+          ...interActifyButtonsList,
+          ...staticButtonsList
+        ]
+      }
+    },
+    submitForm () {
+      this.$refs.dialogueForm.validate(valid => {
+        if (valid) {
+          const info = this.transformSubmitData(this.detailForm)
+          // console.debug('after transform : ', info)
+          this.$emit('submit', info)
+        } else {
+          // console.debug('submitForm invalid')
+          return false
+        }
+      })
     }
   },
   mounted () {
-    //
+  //
   },
   created () {
     this.clickOperateButton(0)
+  },
+  watch: {
+    renderData: function (newval, oldval) {
+      // console.debug('renderData: ', newval)
+      this.initData()
+    }
   }
 }
 </script>
@@ -302,7 +448,7 @@ export default {
     .operate-list-item {
         display flex
         align-items center
-        flex-wrap nowrap
+        flex-wrap wrap
         .delete {
             color #666
             font-size 14px

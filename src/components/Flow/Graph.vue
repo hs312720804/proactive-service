@@ -20,7 +20,7 @@ import { Transform } from '@antv/x6-plugin-transform' // 拉动节点 显示图�
 import { DagreLayout } from '@antv/layout' // 层次布局
 import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
-import { addJudgeNodeAPI } from '@/services/flow'
+import { addJudgeNodeAPI, addDialogueNodeAPI, deleteNodeAPI } from '@/services/flow'
 export default {
   components: {
     FlowComposition,
@@ -115,7 +115,7 @@ export default {
         })
       )
       const graphInfo = store.getters.graphList.find(item => item.serviceId === this.serviceId)?.graphInfo
-      console.debug('graphInfo: ', graphInfo)
+      // console.debug('graphInfo: ', graphInfo)
       if (graphInfo) {
         this.renderGraph(graphInfo)
       } else {
@@ -149,21 +149,44 @@ export default {
         },
         validateNode: async (node, options) => {
           const { type } = node.getData()
-          try {
-            const res = await addJudgeNodeAPI({
-              title: type,
-              versionId: 1
-            })
-            // console.debug('addJudgeNodeAPI res: ', res)
-            if (res.code === 1000) {
-              const { nodeId } = res.data
-              node.setData({
-                id: nodeId.toString()
+          // console.debug('validateNode type: ', type)
+          // console.debug('validateNode: ', node.getData())
+          // console.debug('validateNode: ', node.getAttrByPath('text/text'))
+          if (type === 'judge') {
+            try {
+              const res = await addJudgeNodeAPI({
+                title: node.getAttrByPath('text/text'),
+                versionId: 1
               })
-              return true
+              // console.debug('addJudgeNodeAPI res: ', res)
+              if (res.code === 1000) {
+                const { nodeId } = res.data
+                node.setData({
+                  id: nodeId.toString()
+                })
+                return true
+              }
+            } catch (error) {
+              return false
             }
-          } catch (error) {
-            return false
+          } else if (type === 'dialogue') {
+            try {
+              const res = await addDialogueNodeAPI({
+                title: node.getAttrByPath('text/text'),
+                versionId: 1
+              })
+              if (res.code === 1000) {
+                // console.debug('addDialogueNodeAPI res: ', res)
+                const { nodeId } = res.data
+                node.setData({
+                  id: nodeId.toString()
+                })
+                return true
+              }
+            } catch (error) {
+              console.error('add dialogue api error: ', error)
+              return false
+            }
           }
         }
       })
@@ -447,7 +470,27 @@ export default {
               args: {
                 x: '100%',
                 y: '50%',
-                offset: { x: -10, y: 0 }
+                offset: { x: -10, y: 0 },
+                onClick: async (payload) => {
+                  const { cell, e } = payload
+                  // console.debug('button-remove: ', e, cell)
+                  try {
+                    const res = await deleteNodeAPI({
+                      nodeId: cell.getData().id
+                    })
+                    // @todo 确认删除成功
+                    // console.debug('deleteNodeAPI res: ', res)
+                    if (res.code === 1000) {
+                      cell.remove()
+                      // console.debug('graph: ', this.graph.toJSON())
+                      this.renderGraph(this.graph.toJSON())
+                      return true
+                    }
+                  } catch (error) {
+                    console.error('delete node error: ', error)
+                    return false
+                  }
+                }
               }
             }
           ])
@@ -459,12 +502,16 @@ export default {
         cell.removeTools()
       })
       this.graph.on('node:click', ({ e, x, y, node, view }) => { // 节点点击事件
-        // console.debug('node:click: ', e, x, y, node, view)
         // console.debug('node:click: ', this.graph.getConnectedEdges('start')[0]?.getTarget())
-        this.$emit('updateDetail', true)
-        // save to vuex
-        store.commit('flow/setNodeDetailInfo', node)
-        store.commit('flow/setNodeType', node.data.type)
+        // console.debug('node: ', node)
+        const { type, id } = node.getData()
+        if (type !== 'skill') {
+          this.$emit('updateDetail', true)
+          // save to vuex
+          store.commit('flow/setCellRenderData', node)
+          store.commit('flow/setNodeType', type)
+          store.commit('flow/setNodeId', id)
+        }
       })
       this.graph.on('resize', ({ width, height }) => {
         this.graph.centerContent()

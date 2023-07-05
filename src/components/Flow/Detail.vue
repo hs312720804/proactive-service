@@ -1,6 +1,7 @@
 <template>
   <div class="graph-info-detail-component">
     <el-drawer
+      ref="drawer"
       custom-class="detail-drawer"
       :title="title"
       :visible.sync="showBool"
@@ -32,9 +33,9 @@
               >
                 <el-option
                   v-for="item in skillList"
-                  :key="item.id"
+                  :key="item.skillId"
                   :label="item.skillName"
-                  :value="item.id"
+                  :value="item.skillId"
                 ></el-option>
               </el-select>
               <el-select
@@ -59,7 +60,12 @@
         <JudgeDetail></JudgeDetail>
       </template>
       <template v-else-if="nodeType === 'dialogue'">
-        <DialogueDetail :skillList="skillList" :childNodeList="childNodeList"></DialogueDetail>
+        <DialogueDetail
+          :skillList="skillList"
+          :childNodeList="childNodeList"
+          :renderData="dialogueDetailData"
+          @submit="handleSubmitDialogue"
+        ></DialogueDetail>
       </template>
     </el-drawer>
   </div>
@@ -69,6 +75,7 @@ import store from 'cseed-frame/store/_index'
 import DialogueDetail from '@/components/Flow/DialogueDetail.vue'
 import JudgeDetail from '@/components/Flow/JudgeDetail.vue'
 import { getSkillListAPI } from '@/services/skill'
+import { getDialogueNodeDetailAPI, updateDialogueDetailAPI } from '@/services/flow'
 export default {
   components: {
     DialogueDetail,
@@ -90,17 +97,28 @@ export default {
         NodeOrSkill: '',
         NodeOrSkillVal: null
       },
-      skillList: []
+      skillList: [],
+      dialogueDetailData: {},
+      judgeDetailData: {},
+      startDetailData: {}
     }
   },
   methods: {
     handleClose (done) {
-      // if (true) { // 业务判断
-      //   done()
-      //   this.$emit('updateDetail', true)
-      // }
       done()
       this.$emit('update:showNodeDetail', this.showBool)
+    },
+    async handleSubmitDialogue (payload) {
+      // console.debug('handleSubmitDialogue payload: ', payload)
+      try {
+        const res = await updateDialogueDetailAPI(payload)
+        // console.debug('updateDialogueDetailAPI res: ', res)
+        if (res.code === 1000) {
+          this.$refs.drawer.closeDrawer()
+        }
+      } catch (error) {
+        console.error('handleSubmitDialogue error: ', error)
+      }
     },
     async getSkillList () {
       try {
@@ -121,7 +139,7 @@ export default {
         type: 'skill',
         targetNodeInfo: {
           id: this.startForm.NodeOrSkillVal,
-          label: this.skillList.find(item => item.id === this.startForm.NodeOrSkillVal).skillName
+          label: this.skillList.find(item => item.skillId === this.startForm.NodeOrSkillVal).skillName
         }
       })
     },
@@ -138,14 +156,27 @@ export default {
         // }
       })
     },
-    reFill () {
+    async reFill () {
       // 回填（重新打开drawer的时候）
-      console.debug('getters: ', store.getters.nodeDetailInfo)
-      const nodeDetailInfo = store.getters.nodeDetailInfo
-      if (nodeDetailInfo.id === 'start') {
-        if (Object.keys(nodeDetailInfo.model.incomings).length > 0) {
-          // id
-          // this.startForm.NodeOrSkillVal = Object.keys(nodeDetailInfo.model.incomings)[0].toString()
+      console.debug('getters: ', store.getters.cellRenderData)
+      const nodeId = store.getters.nodeId
+      const nodeType = store.getters.nodeType
+      const cellRenderData = store.getters.cellRenderData
+      if (nodeType === 'start') {
+        if (Object.keys(cellRenderData.model.incomings).length > 0) {
+          //
+        }
+      } else if (nodeType === 'judge') {
+        //
+      } else if (nodeType === 'dialogue') {
+        //
+        // console.debug('cellRenderData 1: ', cellRenderData)
+        const res = await getDialogueNodeDetailAPI({
+          nodeId
+        })
+        // console.debug('getDialogueNodeDetailAPI res:', res)
+        if (res.code === 1000) {
+          this.dialogueDetailData = res.data
         }
       }
     }
@@ -155,7 +186,8 @@ export default {
       if (store.getters.nodeType === 'start') {
         return '开始'
       } else {
-        return store.getters.nodeDetailInfo.getAttrs('label/text').text.text
+        // return store.getters.cellRenderData.getAttrs('label/text').text.text
+        return store.getters.cellRenderData.getData().ctype
       }
     },
     childNodeList () { // 除了开始节点以外的所有节点

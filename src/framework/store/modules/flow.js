@@ -1,18 +1,22 @@
 export default {
   namespaced: true,
   state: {
-    nodeDetailInfo: null,
+    cellRenderData: null, // 节点的cell格式渲染数据
     nodeType: '', // 'start' || 'judge' || 'dialogue' || 'skill'
     graphList: [], // 画布所有信息 [id + 画布x6对象]
-    nodeList: [] // 画布节点数据
+    nodeList: [], // 画布节点数据
+    nodeId: '' // 节点id 是用来请求后台的id 不是节点渲染的id
   },
   mutations: {
-    setNodeDetailInfo (state, payload) {
-      state.nodeDetailInfo = payload
-      console.debug('nodeDetailInfo', state.nodeDetailInfo)
+    setCellRenderData (state, payload) {
+      state.cellRenderData = payload
+      console.debug('cellRenderData', state.cellRenderData)
     },
     setNodeType (state, payload) {
       state.nodeType = payload
+    },
+    setNodeId (state, payload) {
+      state.nodeId = payload
     },
     // 画布每次渲染 fromJSON 时，都会触发该方法
     setGraphList (state, payload) { // 存储画布信息
@@ -22,7 +26,7 @@ export default {
       } else {
         state.graphList.push(payload)
       }
-      console.debug('mutations setGraphList', state.graphList)
+      // console.debug('mutations setGraphList', state.graphList)
     },
     updateGraphNodeInfo (state, payload) { // 更新画布节点信息
       // const findGraph = state.graphList.find(item => item.serviceId === payload.serviceId)
@@ -40,7 +44,7 @@ export default {
       if (findGraph) {
         findGraph.nodeList = nodeList
       }
-      console.debug('mutations setNodeList', state.graphList)
+      // console.debug('mutations setNodeList', state.graphList)
     }
   }
 }
