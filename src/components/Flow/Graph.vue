@@ -14,12 +14,14 @@
 <script>
 import store from 'cseed-frame/store/_index'
 import { Graph, Shape, ObjectExt } from '@antv/x6'
+// import { register } from '@antv/x6-vue-shape'
 import { Dnd } from '@antv/x6-plugin-dnd' // 拖拽
 import { Snapline } from '@antv/x6-plugin-snapline' // 对齐线
 import { Transform } from '@antv/x6-plugin-transform' // 拉动节点 显示图形转换
 import { DagreLayout } from '@antv/layout' // 层次布局
 import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
+// import Dialogue from '@/components/Node/Dialogue'
 import { addJudgeNodeAPI, addDialogueNodeAPI, deleteNodeAPI } from '@/services/flow'
 export default {
   components: {
@@ -37,6 +39,30 @@ export default {
     return {
       graph: null, // 画布
       dnd: null, // 拖拽
+      mockTreeData: [ // 后台给的树形结构
+        {
+          nodeType: 1,
+          title: '开始'
+        },
+        {
+          nodeType: 2,
+          title: '对话框222',
+          buttonList: [
+            {
+              id: 'abc',
+              title: '按钮1'
+            },
+            {
+              id: 'efg',
+              title: '按钮2'
+            },
+            {
+              id: 'hjk',
+              title: '按钮3'
+            }
+          ]
+        }
+      ],
       resizingOptions: {
         enabled: true,
         minWidth: 80,
@@ -81,13 +107,83 @@ export default {
     }
   },
   methods: {
+    generateRenderTree (treeData) {
+      console.debug('generateRenderTree: ', treeData)
+      const cells = treeData.map((treeItem, treeIndex) => {
+        switch (treeItem.nodeType) {
+          case 1: // 'start'
+            treeItem = {
+              ...treeItem,
+              ...this.startNode
+            }
+            this.graph.addNode(treeItem)
+            break
+          case 2: // 'dialogue'
+            treeItem = {
+              shape: 'rect',
+              width: 200,
+              height: 80,
+              label: '对话框',
+              text: {
+                textAnchor: 'left', // 左对齐
+                refX: -5, // x 轴偏移量
+                refY: -5,
+                text: '对话框'
+              },
+              data: {
+                type: 'dialogue',
+                ctype: '对话框',
+                ...treeItem
+              }
+            }
+            // eslint-disable-next-line no-case-declarations
+            const parentNode = this.graph.addNode(treeItem)
+            if (treeItem.data.buttonList) {
+              treeItem.data.buttonList.forEach((buttonItem, buttonIndex) => {
+                const buttonNode = this.graph.createNode({
+                  shape: 'rect',
+                  width: 50,
+                  height: 20,
+                  attrs: {
+                    body: {
+                      fill: '#eff4ff',
+                      stroke: '#5f95ff',
+                      strokeWidth: 1,
+                      rx: 6,
+                      ry: 6
+                    },
+                    text: {
+                      text: buttonItem.title
+                    }
+                  },
+                  data: {
+                    type: 'dialogue-button',
+                    ...buttonItem
+                  }
+                })
+                parentNode.addChild(buttonNode)
+              })
+            }
+            break
+          default:
+            break
+        }
+        return treeItem
+      })
+      return {
+        cells
+      }
+    },
     initGraph () {
       // console.debug('initGraph: ')
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const scope = this
       this.graph = new Graph({
         container: document.getElementById(this.containerId),
-        interacting: true, // 交互 是否允许
+        interacting: function (cellView) {
+          // return { nodeMovable: false } // @todo 如果是对话框内的节点,则不允许移动
+          return true
+        }, // 交互 是否允许
         width: '100%',
         height: '100%',
         autoResize: true,
@@ -115,17 +211,22 @@ export default {
         })
       )
       const graphInfo = store.getters.graphList.find(item => item.serviceId === this.serviceId)?.graphInfo
-      // console.debug('graphInfo: ', graphInfo)
-      if (graphInfo) {
-        this.renderGraph(graphInfo)
+      console.debug('graphInfo renderdata: ', graphInfo)
+      // console.debug(this.generateRenderTree(this.mockTreeData))
+      if (this.mockTreeData) {
+        this.generateRenderTree(this.mockTreeData)
       } else {
-        this.renderGraph({
-          nodes: [this.startNode]
-        })
+        if (graphInfo) {
+          this.renderGraph(graphInfo)
+        } else {
+          this.renderGraph({ cells: [this.startNode] })
+        }
       }
-      // this.renderGraph({
-      //   nodes: [this.startNode]
-      // })
+      // if (graphInfo) {
+      //   this.renderGraph(graphInfo)
+      // } else {
+      //   this.renderGraph({ cells: [this.startNode] })
+      // }
       this.graph.centerContent() // 居中显示画布
       this.graph.use(
         new Snapline({
@@ -192,6 +293,7 @@ export default {
       })
     },
     renderGraph (data) { // 渲染画布
+      console.debug('renderGraph data :', data)
       this.graph.fromJSON(data)
       store.commit('flow/setGraphList', {
         serviceId: this.serviceId,
@@ -274,6 +376,20 @@ export default {
     initConfig () {
       this.initShapeConfig()
       this.initRhombicNode()
+      // this.initCustomNode()
+    },
+    initCustomNode () {
+      // Graph.registerVueComponent('dialogue', Dialogue, ['testArr']) // 注册dialogue的自定义vue组件
+      // register({
+      //   shape: 'dialogue',
+      //   width: 350,
+      //   height: 150,
+      //   component: Dialogue,
+      //   data: {
+      //     type: 'dialogue',
+      //     ctype: '对话框'
+      //   }
+      // })
     },
     initShapeConfig () { // 初始化矩形图形配置
       // https://x6.antv.antgroup.com/tutorial/basic/node#:~:text=%7D-,%E5%AE%9A%E5%88%B6%E8%8A%82%E7%82%B9,-%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87
@@ -463,8 +579,9 @@ export default {
         })
       })
       this.graph.on('cell:mouseenter', ({ cell }) => {
+        console.debug('mouseenter cell: ', cell)
         if (cell.isNode()) {
-          cell.id !== 'start' && cell.addTools([
+          cell.id !== 'start' && !cell.hasParent() && cell.addTools([
             {
               name: 'button-remove',
               args: {
@@ -505,7 +622,7 @@ export default {
         // console.debug('node:click: ', this.graph.getConnectedEdges('start')[0]?.getTarget())
         // console.debug('node: ', node)
         const { type, id } = node.getData()
-        if (type !== 'skill') {
+        if (type !== 'skill' && !node.hasParent()) {
           this.$emit('updateDetail', true)
           // save to vuex
           store.commit('flow/setCellRenderData', node)
