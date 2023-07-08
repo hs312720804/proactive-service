@@ -39,3 +39,19 @@ export function updateDialogueDetailAPI (data) { // 更新对话框节点详情
     data
   })
 }
+
+export function getTreeDataAPI (params) { // 获取树形结构数据
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/interactify/node/tree/get',
+    params
+  })
+}
+
+export function getVersionIdAPI (params) { // 根据serverId获取versionId
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/interactify/node/versionId',
+    params
+  })
+}

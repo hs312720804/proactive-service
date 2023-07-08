@@ -13,6 +13,7 @@
         :label="item.serviceName"
         :name="item.id.toString()"
         :closable="true"
+        :lazy="true"
       >
         <Verion :serviceId="item.id"></Verion>
         <Flowchart :serviceId="item.id" :statu="'edit'"></Flowchart>

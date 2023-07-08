@@ -34,6 +34,11 @@ export default {
       // findNode
       // }
     },
+    updateDialogueDetail (state, payload) {
+      // // 更新对话框节点详情 目前仅用于跨组件事件传递
+      // console.debug('updateDialogueDetail payload:', payload)
+    },
+
     // 存储时机:
     // 1. 画布初始化时
     // 2. 新添加节点到画布

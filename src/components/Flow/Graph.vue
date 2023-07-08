@@ -22,7 +22,7 @@ import { DagreLayout } from '@antv/layout' // 层次布局
 import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
 // import Dialogue from '@/components/Node/Dialogue'
-import { addJudgeNodeAPI, addDialogueNodeAPI, deleteNodeAPI } from '@/services/flow'
+import { addJudgeNodeAPI, addDialogueNodeAPI, deleteNodeAPI, getVersionIdAPI, getTreeDataAPI } from '@/services/flow'
 export default {
   components: {
     FlowComposition,
@@ -37,9 +37,11 @@ export default {
   inject: ['serviceId'],
   data () {
     return {
+      versionId: '',
       graph: null, // 画布
       dnd: null, // 拖拽
-      mockTreeData: [ // 后台给的树形结构
+      tree: [], // 后台给的树形结构
+      mockTreeData: [ // mock 后台给的树形结构
         {
           nodeType: 1,
           title: '开始'
@@ -50,15 +52,31 @@ export default {
           buttonList: [
             {
               id: 'abc',
-              title: '按钮1'
+              title: '按钮1',
+              type: 1
             },
             {
               id: 'efg',
-              title: '按钮2'
+              title: '按钮2',
+              type: 1
             },
             {
               id: 'hjk',
-              title: '按钮3'
+              title: '按钮3',
+              type: 1
+            },
+            {
+              id: 'lmn',
+              title: '按钮4',
+              type: 1
+            },
+            {
+              title: '用户返回',
+              type: 2
+            },
+            {
+              title: '自动消失',
+              type: 3
             }
           ]
         }
@@ -74,10 +92,10 @@ export default {
         preserveAspectRatio: true
       },
       startNode: { // 开始节点
-        id: 'start', // String，节点的唯一标识
+        id: '', // String，节点的唯一标识
         shape: 'ellipse', // 使用 ellipse 渲染
-        // x: 160, // Number，必选，节点位置的 x 值
-        // y: 180, // Number，必选，节点位置的 y 值
+        x: 50, // Number，必选，节点位置的 x 值
+        y: 50, // Number，必选，节点位置的 y 值
         width: 100, // Number，可选，节点大小的 width 值
         height: 50, // Number，可选，节点大小的 height 值
         // size: {
@@ -107,28 +125,64 @@ export default {
     }
   },
   methods: {
-    generateRenderTree (treeData) {
+    generateRenderTree (treeData) { // 生成渲染树 x6 cell 格式树
       console.debug('generateRenderTree: ', treeData)
-      const cells = treeData.map((treeItem, treeIndex) => {
+      treeData.forEach((treeItem, treeIndex) => {
         switch (treeItem.nodeType) {
           case 1: // 'start'
-            treeItem = {
-              ...treeItem,
-              ...this.startNode
+            // treeItem = {
+            //   id: treeItem.id.toString(),
+            //   ...treeItem,
+            //   ...this.startNode
+            // }
+            // eslint-disable-next-line no-case-declarations
+            const node = { // 开始节点
+              id: treeItem.nodeId.toString(), // String，节点的唯一标识
+              shape: 'ellipse', // 使用 ellipse 渲染
+              // x: 50, // Number，必选，节点位置的 x 值
+              // y: 50, // Number，必选，节点位置的 y 值
+              width: 100, // Number，可选，节点大小的 width 值
+              height: 50, // Number，可选，节点大小的 height 值
+              attrs: {
+                body: {
+                  fill: '#eff4ff',
+                  stroke: '#5f95ff',
+                  strokeWidth: 1,
+                  rx: 16,
+                  ry: 16
+                },
+                label: {
+                  text: treeItem.title,
+                  fill: '#333',
+                  fontSize: 16,
+                  fontWeight: 'normal',
+                  fontVariant: 'small-caps'
+                }
+              },
+              data: {
+                type: 'start',
+                ...treeItem
+              }
             }
-            this.graph.addNode(treeItem)
+            this.graph.addNode(node)
             break
           case 2: // 'dialogue'
-            treeItem = {
+            // eslint-disable-next-line no-case-declarations
+            const dialogNode = {
               shape: 'rect',
-              width: 200,
+              width: 320,
               height: 80,
-              label: '对话框',
-              text: {
-                textAnchor: 'left', // 左对齐
-                refX: -5, // x 轴偏移量
-                refY: -5,
-                text: '对话框'
+              x: 200,
+              y: 200,
+              label: '',
+              attrs: {
+                text: {
+                  // textAnchor: 'left', // 左对齐
+                  // refX: -10, // x 轴偏移量
+                  // refY: -10,
+                  textAnchor: 'center',
+                  text: treeItem?.content || ''
+                }
               },
               data: {
                 type: 'dialogue',
@@ -137,42 +191,109 @@ export default {
               }
             }
             // eslint-disable-next-line no-case-declarations
-            const parentNode = this.graph.addNode(treeItem)
-            if (treeItem.data.buttonList) {
-              treeItem.data.buttonList.forEach((buttonItem, buttonIndex) => {
-                const buttonNode = this.graph.createNode({
-                  shape: 'rect',
-                  width: 50,
-                  height: 20,
+            const parentNode = this.graph.addNode(dialogNode)
+            // eslint-disable-next-line no-case-declarations
+            const titleNode = this.graph.addNode({
+              shape: 'title-node',
+              x: parentNode.getBBox().x - 30,
+              y: parentNode.getBBox().y - 30,
+              attrs: {
+                text: {
+                  text: treeItem?.title
+                }
+              }
+            })
+            parentNode.addChild(titleNode)
+            if (treeItem?.buttonDataList) { // 渲染底部按钮 包括动态按钮 和 静态按钮
+              const staticButtons = treeItem.buttonDataList.filter((item, index) => {
+                return item.type === 2 || item.type === 3
+              })
+              const dynamicButtons = treeItem.buttonDataList.filter((item, index) => {
+                return item.type === 1
+              })
+              const dynamicNodes = dynamicButtons.map((buttonItem, buttonIndex) => {
+                return this.graph.addNode({
+                  shape: 'dynamic-button',
+                  x: parentNode.getBBox().x + 10 + 60 * buttonIndex,
+                  y: parentNode.getBBox().y + parentNode.size().height - 30,
                   attrs: {
-                    body: {
-                      fill: '#eff4ff',
-                      stroke: '#5f95ff',
-                      strokeWidth: 1,
-                      rx: 6,
-                      ry: 6
-                    },
                     text: {
                       text: buttonItem.title
                     }
+                  },
+                  ports: {
+                    items: [
+                      {
+                        id: `${parentNode.id}_${buttonIndex}`,
+                        group: 'bottom',
+                        zIndex: 20
+                      }
+                    ]
                   },
                   data: {
                     type: 'dialogue-button',
                     ...buttonItem
                   }
                 })
-                parentNode.addChild(buttonNode)
               })
+              const staticNodes = staticButtons.map((buttonItem, buttonIndex) => {
+                return this.graph.addNode({
+                  shape: 'dotted-button',
+                  x: parentNode.getBBox().x + parentNode.size().width - 60 - 10,
+                  y: parentNode.getBBox().y + parentNode.size().height / 2 - 20 + 30 * buttonIndex,
+                  attrs: {
+                    text: {
+                      text: buttonItem.title
+                    }
+                  },
+                  data: {
+                    type: 'dialogue-static-button',
+                    ...buttonItem
+                  }
+                })
+              })
+              const oldChilds = parentNode.getChildren()
+              console.debug('oldChilds: ', oldChilds)
+              parentNode.setChildren([...dynamicNodes, ...staticNodes, ...oldChilds])
             }
             break
           default:
             break
         }
-        return treeItem
       })
-      return {
-        cells
-      }
+    },
+    logGraph () {
+      console.debug('logGraph: ', this.graph.toJSON())
+    },
+    testLinkPort () { // 测试连接桩 连接对话框底部按钮能力
+      // 获取页面节点
+      const nodeList = this.graph.getNodes()
+      const dialogNode = nodeList.find((node, index) => {
+        return node.getData().nodeType === 2
+      })
+      // 获取连接桩id
+      const childrenId = dialogNode.getChildren()[0].id
+      const firstPortId = dialogNode.getChildren()[0].getPorts()[0].id
+      // 获取开始节点
+      const startNode = nodeList.find((node, index) => {
+        return node.id === 'start'
+      })
+      // 建立连接线
+      this.graph.addEdge({
+        source: {
+          cell: childrenId,
+          port: firstPortId
+        },
+        target: { cell: startNode },
+        router: {
+          name: 'manhattan',
+          args: {
+            startDirections: ['top'],
+            endDirections: ['bottom']
+          }
+        }
+      })
+      console.debug('graph: ', this.graph.toJSON())
     },
     initGraph () {
       // console.debug('initGraph: ')
@@ -181,7 +302,9 @@ export default {
       this.graph = new Graph({
         container: document.getElementById(this.containerId),
         interacting: function (cellView) {
-          // return { nodeMovable: false } // @todo 如果是对话框内的节点,则不允许移动
+          if (cellView.cell.hasParent()) { // 子节点 不允许移动 （比如对话框内的节点）
+            return { nodeMovable: false }
+          }
           return true
         }, // 交互 是否允许
         width: '100%',
@@ -211,22 +334,9 @@ export default {
         })
       )
       const graphInfo = store.getters.graphList.find(item => item.serviceId === this.serviceId)?.graphInfo
-      console.debug('graphInfo renderdata: ', graphInfo)
-      // console.debug(this.generateRenderTree(this.mockTreeData))
-      if (this.mockTreeData) {
-        this.generateRenderTree(this.mockTreeData)
-      } else {
-        if (graphInfo) {
-          this.renderGraph(graphInfo)
-        } else {
-          this.renderGraph({ cells: [this.startNode] })
-        }
-      }
-      // if (graphInfo) {
-      //   this.renderGraph(graphInfo)
-      // } else {
-      //   this.renderGraph({ cells: [this.startNode] })
-      // }
+      // console.debug('graphInfo renderdata: ', graphInfo)
+      console.debug('graphInfo renderdata: ', this.tree)
+
       this.graph.centerContent() // 居中显示画布
       this.graph.use(
         new Snapline({
@@ -246,24 +356,35 @@ export default {
           const targetType = afterNode.getData().type
           const targetCtype = afterNode.getData().ctype
           const nodeList = this.graph.getNodes().filter((item) => item.getData().type === targetType)
-          return afterNode.clone().setAttrByPath('text/text', `${targetCtype}${nodeList.length + 1}`)
+          return afterNode.clone()
+          // return afterNode.clone().setAttrByPath('text/text', `${targetCtype}${nodeList.length + 1}`)
         },
         validateNode: async (node, options) => {
-          const { type } = node.getData()
-          // console.debug('validateNode type: ', type)
-          // console.debug('validateNode: ', node.getData())
-          // console.debug('validateNode: ', node.getAttrByPath('text/text'))
+          const { type, ctype } = node.getData()
+          const nodeList = this.graph.getNodes().filter((item) => item.getData().type === type)
+          const nodeTitle = `${ctype}${nodeList.length + 1}`
+          const titleNode = this.graph.addNode({
+            shape: 'title-node',
+            x: node.getBBox().x - 30,
+            y: node.getBBox().y - 30,
+            attrs: {
+              text: {
+                text: nodeTitle
+              }
+            }
+          })
+          node.addChild(titleNode)
           if (type === 'judge') {
             try {
               const res = await addJudgeNodeAPI({
-                title: node.getAttrByPath('text/text'),
-                versionId: 1
+                title: nodeTitle,
+                versionId: this.versionId
               })
               // console.debug('addJudgeNodeAPI res: ', res)
               if (res.code === 1000) {
                 const { nodeId } = res.data
                 node.setData({
-                  id: nodeId.toString()
+                  nodeId: nodeId.toString()
                 })
                 return true
               }
@@ -273,27 +394,50 @@ export default {
           } else if (type === 'dialogue') {
             try {
               const res = await addDialogueNodeAPI({
-                title: node.getAttrByPath('text/text'),
-                versionId: 1
+                title: nodeTitle,
+                versionId: this.versionId
               })
               if (res.code === 1000) {
                 // console.debug('addDialogueNodeAPI res: ', res)
                 const { nodeId } = res.data
                 node.setData({
-                  id: nodeId.toString()
+                  nodeId: nodeId.toString()
                 })
                 return true
               }
             } catch (error) {
               console.error('add dialogue api error: ', error)
               return false
+            } finally {
+              this.logGraph()
             }
           }
         }
       })
+
+      // setTimeout(() => { // render graph
+      //   if (this.tree.length > 0) {
+      //     this.generateRenderTree(this.tree)
+      //   // this.testLinkPort()
+      //   } else {
+      //     if (graphInfo) {
+      //       this.jsonToGraph(graphInfo)
+      //     } else {
+      //       this.jsonToGraph({ cells: [this.startNode] })
+      //     }
+      //   }
+      //   this.logGraph()
+      // }, 2000)
     },
-    renderGraph (data) { // 渲染画布
-      console.debug('renderGraph data :', data)
+    treeToGraph () {
+      // console.debug('renderGraph: ', this.tree)
+      if (this.tree.length > 0) {
+        this.generateRenderTree(this.tree)
+      }
+      this.logGraph()
+    },
+    jsonToGraph (data) { // 渲染画布
+      console.debug('jsonToGraph data :', data)
       this.graph.fromJSON(data)
       store.commit('flow/setGraphList', {
         serviceId: this.serviceId,
@@ -321,22 +465,18 @@ export default {
             width: 100,
             height: 50
           },
-          label: ctype,
+          label: '',
           data: {
             type,
             ctype
           }
-          // size: {
-          //   width: 100,
-          //   height: 80
-          // }
         })
       } else if (type === 'dialogue') {
         node = this.graph.createNode({
           shape: 'rect',
-          width: 200,
+          width: 300,
           height: 80,
-          label: ctype,
+          label: '',
           text: {
             textAnchor: 'left', // 左对齐
             refX: -5, // x 轴偏移量
@@ -416,9 +556,10 @@ export default {
             fontSize: 14,
             fill: '#000',
             fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
-            textAnchor: 'left', // 左对齐
-            refX: -10, // x 轴偏移量
-            refY: -10
+            textAnchor: 'middle', // 左对齐
+            textVerticalAnchor: 'middle'
+            // refX: -10, // x 轴偏移量
+            // refY: -10
           }
         },
         propHooks: { // 自定义选项
@@ -445,6 +586,91 @@ export default {
           }
         }
       })
+      Graph.registerNode( // 对话框内的动态按钮 底部需要有连接桩
+        'dynamic-button',
+        {
+          inherit: 'rect',
+          width: 50,
+          height: 20,
+          attrs: {
+            body: {
+              fill: '#eff4ff',
+              stroke: '#5f95ff',
+              strokeWidth: 1,
+              rx: 6,
+              ry: 6
+            },
+            text: {
+              fontSize: 12,
+              fill: '#000',
+              fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
+              textAnchor: 'middle', // 左对齐
+              textVerticalAnchor: 'middle'
+            }
+          },
+          ports: { // 连接桩
+            groups: {
+              bottom: {
+                position: 'bottom',
+                attrs: {
+                  circle: {
+                  // magnet: true,
+                    stroke: '#5f95ff',
+                    r: 3
+                  }
+                }
+              }
+            }
+          }
+        },
+        true
+      )
+      Graph.registerNode( // 对话框内的虚线边框静态按钮
+        'dotted-button',
+        {
+          inherit: 'rect', // 继承于 rect 节点
+          width: 60,
+          height: 25,
+          attrs: {
+            body: {
+            // rx: 6,
+            // ry: 6,
+              fill: '#eff4ff',
+              stroke: '#b8b0b0',
+              strokeWidth: 1,
+              strokeDasharray: 8
+            },
+            text: {
+              fontSize: 12,
+              fill: '#b8b0b0',
+              fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
+              textAnchor: 'middle', // 左对齐
+              textVerticalAnchor: 'middle'
+            }
+          }
+        },
+        true
+      )
+      Graph.registerNode( // 节点左上方的标题节点
+        'title-node',
+        {
+          inherit: 'rect',
+          attrs: {
+            body: {
+              fill: 'transparent',
+              stroke: ''
+            },
+            label: {
+              fill: '#000',
+              fontSize: 12
+            }
+          },
+          data: {
+            type: 'title-node'
+          }
+        },
+        true
+      )
     },
     initRhombicNode () { // 初始化菱形节点
       // #region 初始化图形
@@ -537,15 +763,15 @@ export default {
               strokeWidth: 1,
               stroke: '#5F95FF',
               fill: '#EFF4FF'
-            },
-            text: {
-              fontSize: 12,
-              fill: '#262626',
-              textAnchor: 'left', // 左对齐
-              refX: -5, // x 轴偏移量
-              refY: -5,
-              text: '判定'
             }
+            // text: {
+            //   fontSize: 12,
+            //   fill: '#262626',
+            //   textAnchor: 'left', // 左对齐
+            //   refX: -5, // x 轴偏移量
+            //   refY: -5,
+            //   text: '判定'
+            // }
           },
           ports: {
             ...ports,
@@ -579,9 +805,9 @@ export default {
         })
       })
       this.graph.on('cell:mouseenter', ({ cell }) => {
-        console.debug('mouseenter cell: ', cell)
+        // console.debug('mouseenter cell: ', cell)
         if (cell.isNode()) {
-          cell.id !== 'start' && !cell.hasParent() && cell.addTools([
+          cell.getData().nodeType !== 1 && cell.id !== 'start' && !cell.hasParent() && cell.addTools([
             {
               name: 'button-remove',
               args: {
@@ -593,14 +819,14 @@ export default {
                   // console.debug('button-remove: ', e, cell)
                   try {
                     const res = await deleteNodeAPI({
-                      nodeId: cell.getData().id
+                      nodeId: cell.getData().nodeId
                     })
                     // @todo 确认删除成功
                     // console.debug('deleteNodeAPI res: ', res)
                     if (res.code === 1000) {
                       cell.remove()
                       // console.debug('graph: ', this.graph.toJSON())
-                      this.renderGraph(this.graph.toJSON())
+                      this.jsonToGraph(this.graph.toJSON())
                       return true
                     }
                   } catch (error) {
@@ -619,15 +845,14 @@ export default {
         cell.removeTools()
       })
       this.graph.on('node:click', ({ e, x, y, node, view }) => { // 节点点击事件
-        // console.debug('node:click: ', this.graph.getConnectedEdges('start')[0]?.getTarget())
-        // console.debug('node: ', node)
-        const { type, id } = node.getData()
+        const { type, nodeId } = node.getData()
+        console.debug('click: node.getData(): ', node.getData())
         if (type !== 'skill' && !node.hasParent()) {
           this.$emit('updateDetail', true)
           // save to vuex
           store.commit('flow/setCellRenderData', node)
           store.commit('flow/setNodeType', type)
-          store.commit('flow/setNodeId', id)
+          store.commit('flow/setNodeId', nodeId)
         }
       })
       this.graph.on('resize', ({ width, height }) => {
@@ -670,7 +895,7 @@ export default {
           edges: [edge]
         }
         const model = dagreLayout.layout(data)
-        this.renderGraph(model)
+        this.jsonToGraph(model)
         console.debug('render ok: graph: ', this.graph.toJSON())
         console.debug('渲染ok')
       } else if (type === 'node' && nodeType === 'start') {
@@ -710,7 +935,7 @@ export default {
             edges: [edge]
           }
           const model = dagreLayout.layout(data)
-          this.renderGraph(model)
+          this.jsonToGraph(model)
         } else if (targetNodeType === 'dialogue') {
           const data = {
             // this.startNode,
@@ -728,25 +953,124 @@ export default {
             edges: [edge]
           }
           const model = dagreLayout.layout(data)
-          this.renderGraph(model)
+          this.jsonToGraph(model)
         }
       }
     },
+    updateDialogueNodeRender (formInfo) { // 更新画布中 刚更新过的对话框节点 渲染
+      console.debug('updateDialogueNodeRender: ', formInfo)
+      // payload 是节点详情 form 数据 里面已经有节点id了
+      const { nodeId, interActifyButtonsList, content } = formInfo
+      // 匹配对应节点 并更新里面的 title content buttonList 试试看吧
+      const nodeList = this.graph.getNodes()
+      const target = nodeList.find((node) => {
+        return node.getData().nodeId === nodeId
+      })
+      target.setAttrByPath('text/text', content) // 更新对话框文案
+      const childNodes = target.getChildren() || []
+      if (childNodes && childNodes?.length > 0) {
+        const titleNode = childNodes.find(item => item.getData().type === 'title-node')
+        titleNode.setAttrByPath('text/text', formInfo.title) // 获取并更新对话框标题
+      }
+      // 先清空所有 动态和静态的按钮
+      // console.debug('updateDialogueNodeRender childNodes: ', childNodes)
+      childNodes.forEach((node) => {
+        if (node.getData().type === 1) {
+          target.removeChild(node) // this.graph.removeNode(node) 也可以实现画布删除节点
+        }
+      })
+      // 把按钮加回来
+      if (interActifyButtonsList && interActifyButtonsList.length > 0) {
+        interActifyButtonsList.forEach((buttonItem, buttonIndex) => {
+          const buttonNode = childNodes.find(item => item.getData().type === 'dialogue-button' && item.getData().buttonId === buttonItem.buttonId)
+          const hasStaticButton = childNodes.find(item => item.getData().type === 'dialogue-static-button')
+          if (buttonItem.type === 1) { // 动态按钮
+            // console.debug('target.getBBox(): ', target.getBBox()
+            const newButtonNode = this.graph.addNode({
+              shape: 'dynamic-button',
+              x: target.getBBox().x + 10 + 60 * buttonIndex,
+              y: target.getBBox().y + target.size().height - 30,
+              attrs: {
+                text: {
+                  text: buttonItem.name
+                }
+              },
+              ports: { // @todo 连接桩 这里要看后台树形结构是怎么返回
+                items: [
+                  {
+                    id: `${target.id}_${buttonIndex}`,
+                    group: 'bottom',
+                    zIndex: 20
+                  }
+                ]
+              },
+              data: {
+                type: 'dialogue-button',
+                ...buttonItem
+              }
+            })
+            target.addChild(newButtonNode)
+          }
+        })
+      }
+      this.$nextTick(() => {
+        this.logGraph()
+      })
+    },
     initVuexListen () {
       store.subscribe((mutation, state) => {
-        // if(mutation === 'someMutation'){
-        //     doSomething()
-        // }
         if (mutation.type === 'flow/updateGraphNodeInfo') {
           this.updateNodeInfo(mutation.payload)
         }
+        if (mutation.type === 'flow/updateDialogueDetail') {
+          this.updateDialogueNodeRender(mutation.payload)
+        }
       })
+    },
+    async getVersionId () {
+      try {
+        const res = await getVersionIdAPI({
+          serviceId: this.serviceId
+        })
+        if (res.code === 1000) {
+          this.versionId = res.data
+        }
+      } catch (error) {
+        console.error('getVersionId error: ', error)
+      }
+    },
+    async getTreeData () {
+      try {
+        const res = await getTreeDataAPI({
+          serviceId: Number(this.serviceId)
+        })
+        console.debug('getTreeData res: ', res)
+        if (res.code === 1000) {
+          this.tree = res.data
+        }
+      } catch (error) {
+        console.error('getTreeData error: ', error)
+      }
     }
   },
   computed: {
     containerId () {
       return `graphContainer_${this.serviceId}`
     }
+  },
+  watch: {
+    tree: {
+      handler (newVal, oldVal) {
+        console.debug('tree watch: ', newVal, oldVal)
+        this.treeToGraph()
+      },
+      deep: true
+    }
+  },
+  created () {
+    console.debug('graph created: ', this.serviceId)
+    this.getVersionId()
+    this.getTreeData()
   },
   mounted () {
     this.initConfig()

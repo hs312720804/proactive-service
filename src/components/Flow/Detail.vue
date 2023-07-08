@@ -109,12 +109,12 @@ export default {
       this.$emit('update:showNodeDetail', this.showBool)
     },
     async handleSubmitDialogue (payload) {
-      // console.debug('handleSubmitDialogue payload: ', payload)
+      console.debug('handleSubmitDialogue payload: ', payload)
       try {
         const res = await updateDialogueDetailAPI(payload)
-        // console.debug('updateDialogueDetailAPI res: ', res)
         if (res.code === 1000) {
           this.$refs.drawer.closeDrawer()
+          store.commit('flow/updateDialogueDetail', payload)
         }
       } catch (error) {
         console.error('handleSubmitDialogue error: ', error)
