@@ -932,6 +932,20 @@ export default {
         }
       }
     },
+    updateJudgeNodeRender (formInfo) {
+      // console.debug('updateJudgeNodeRender: ', formInfo)
+      const { nodeId, interActifyAssertsList, content, title } = formInfo
+      const nodeList = this.graph.getNodes()
+      const target = nodeList.find((node) => {
+        return node.getData().nodeId === nodeId
+      })
+      target.setAttrByPath('text/text', content) // 更新文案
+      const childNodes = target.getChildren() || []
+      if (childNodes && childNodes?.length > 0) {
+        const titleNode = childNodes.find(item => item.getData().type === 'title-node')
+        titleNode.setAttrByPath('text/text', formInfo.title) // 获取并更新对话框标题
+      }
+    },
     updateDialogueNodeRender (formInfo) { // 更新画布中 刚更新过的对话框节点 渲染
       console.debug('updateDialogueNodeRender: ', formInfo)
       // payload 是节点详情 form 数据 里面已经有节点id了
@@ -997,6 +1011,9 @@ export default {
         }
         if (mutation.type === 'flow/updateDialogueDetail') {
           this.updateDialogueNodeRender(mutation.payload)
+        }
+        if (mutation.type === 'flow/updateJudgeNodeDetail') {
+          this.updateJudgeNodeRender(mutation.payload)
         }
       })
     },

@@ -35,8 +35,11 @@ export default {
       // }
     },
     updateDialogueDetail (state, payload) {
-      // // 更新对话框节点详情 目前仅用于跨组件事件传递
+      // 更新对话框节点详情 目前仅用于跨组件事件传递
       // console.debug('updateDialogueDetail payload:', payload)
+    },
+    updateJudgeNodeDetail (state, payload) {
+      // 更新判定节点详情 目前仅用于跨组件事件传递
     },
 
     // 存储时机:

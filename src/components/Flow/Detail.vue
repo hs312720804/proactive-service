@@ -117,6 +117,10 @@ export default {
       console.debug('handleSubmitJudge :', payload)
       try {
         const res = await updateJudgeNodeDetailAPI(payload)
+        if (res.code === 1000) {
+          this.$refs.drawer.closeDrawer()
+          store.commit('flow/updateJudgeNodeDetail', payload)
+        }
         console.debug('updateJudgeNodeDetailAPI res: ', res)
       } catch (error) {
         console.error('handleSubmitJudge error: ', error)
@@ -211,7 +215,10 @@ export default {
     },
     childNodeList () { // 除了开始节点以外的所有节点
       const currentGraph = store.getters.graphList.find(item => item.serviceId === this.serviceId)
-      return currentGraph?.nodeList.filter(item => item.id !== 'start')
+      return currentGraph?.nodeList.filter(item => item.getData().nodeType === 2 ||
+               item.getData().nodeType === 3 ||
+               (item.getData().type === 1 && item.getData()['button-type'] === 'dialogue-button')) ||
+                []
     }
   },
   mounted () {
