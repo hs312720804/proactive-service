@@ -57,7 +57,12 @@
         </el-form>
       </template>
       <template v-else-if="nodeType === 'judge'">
-        <JudgeDetail></JudgeDetail>
+        <JudgeDetail
+          :skillList="skillList"
+          :childNodeList="childNodeList"
+          :renderData="judgeDetailData"
+          @submit="handleSubmitJudge"
+        ></JudgeDetail>
       </template>
       <template v-else-if="nodeType === 'dialogue'">
         <DialogueDetail
@@ -75,7 +80,7 @@ import store from 'cseed-frame/store/_index'
 import DialogueDetail from '@/components/Flow/DialogueDetail.vue'
 import JudgeDetail from '@/components/Flow/JudgeDetail.vue'
 import { getSkillListAPI } from '@/services/skill'
-import { getDialogueNodeDetailAPI, updateDialogueDetailAPI } from '@/services/flow'
+import { getDialogueNodeDetailAPI, updateDialogueDetailAPI, getJudgeNodeDetailAPI, updateJudgeNodeDetailAPI } from '@/services/flow'
 export default {
   components: {
     DialogueDetail,
@@ -107,6 +112,15 @@ export default {
     handleClose (done) {
       done()
       this.$emit('update:showNodeDetail', this.showBool)
+    },
+    async handleSubmitJudge (payload) {
+      console.debug('handleSubmitJudge :', payload)
+      try {
+        const res = await updateJudgeNodeDetailAPI(payload)
+        console.debug('updateJudgeNodeDetailAPI res: ', res)
+      } catch (error) {
+        console.error('handleSubmitJudge error: ', error)
+      }
     },
     async handleSubmitDialogue (payload) {
       console.debug('handleSubmitDialogue payload: ', payload)
@@ -167,9 +181,14 @@ export default {
           //
         }
       } else if (nodeType === 'judge') {
-        //
+        const res = await getJudgeNodeDetailAPI({
+          nodeId
+        })
+        if (res.code === 1000) {
+          console.debug('getJudgeNodeDetailAPI res:', res)
+          this.judgeDetailData = res.data
+        }
       } else if (nodeType === 'dialogue') {
-        //
         // console.debug('cellRenderData 1: ', cellRenderData)
         const res = await getDialogueNodeDetailAPI({
           nodeId

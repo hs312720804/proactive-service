@@ -21,7 +21,6 @@ import { Transform } from '@antv/x6-plugin-transform' // 拉动节点 显示图�
 import { DagreLayout } from '@antv/layout' // 层次布局
 import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
-// import Dialogue from '@/components/Node/Dialogue'
 import { addJudgeNodeAPI, addDialogueNodeAPI, deleteNodeAPI, getVersionIdAPI, getTreeDataAPI } from '@/services/flow'
 export default {
   components: {
@@ -41,46 +40,6 @@ export default {
       graph: null, // 画布
       dnd: null, // 拖拽
       tree: [], // 后台给的树形结构
-      mockTreeData: [ // mock 后台给的树形结构
-        {
-          nodeType: 1,
-          title: '开始'
-        },
-        {
-          nodeType: 2,
-          title: '对话框222',
-          buttonList: [
-            {
-              id: 'abc',
-              title: '按钮1',
-              type: 1
-            },
-            {
-              id: 'efg',
-              title: '按钮2',
-              type: 1
-            },
-            {
-              id: 'hjk',
-              title: '按钮3',
-              type: 1
-            },
-            {
-              id: 'lmn',
-              title: '按钮4',
-              type: 1
-            },
-            {
-              title: '用户返回',
-              type: 2
-            },
-            {
-              title: '自动消失',
-              type: 3
-            }
-          ]
-        }
-      ],
       resizingOptions: {
         enabled: true,
         minWidth: 80,
@@ -98,10 +57,6 @@ export default {
         y: 50, // Number，必选，节点位置的 y 值
         width: 100, // Number，可选，节点大小的 width 值
         height: 50, // Number，可选，节点大小的 height 值
-        // size: {
-        //   width: 100,
-        //   height: 50
-        // },
         attrs: {
           body: {
             fill: '#eff4ff',
@@ -211,8 +166,8 @@ export default {
               const dynamicButtons = treeItem.buttonDataList.filter((item, index) => {
                 return item.type === 1
               })
-              const dynamicNodes = dynamicButtons.map((buttonItem, buttonIndex) => {
-                return this.graph.addNode({
+              dynamicButtons.forEach((buttonItem, buttonIndex) => {
+                const node = this.graph.addNode({
                   shape: 'dynamic-button',
                   x: parentNode.getBBox().x + 10 + 60 * buttonIndex,
                   y: parentNode.getBBox().y + parentNode.size().height - 30,
@@ -231,13 +186,14 @@ export default {
                     ]
                   },
                   data: {
-                    type: 'dialogue-button',
+                    'button-type': 'dialogue-button',
                     ...buttonItem
                   }
                 })
+                parentNode.addChild(node)
               })
-              const staticNodes = staticButtons.map((buttonItem, buttonIndex) => {
-                return this.graph.addNode({
+              staticButtons.forEach((buttonItem, buttonIndex) => {
+                const node = this.graph.addNode({
                   shape: 'dotted-button',
                   x: parentNode.getBBox().x + parentNode.size().width - 60 - 10,
                   y: parentNode.getBBox().y + parentNode.size().height / 2 - 20 + 30 * buttonIndex,
@@ -247,15 +203,39 @@ export default {
                     }
                   },
                   data: {
-                    type: 'dialogue-static-button',
+                    'button-type': 'dialogue-static-button',
                     ...buttonItem
                   }
                 })
+                parentNode.addChild(node)
               })
-              const oldChilds = parentNode.getChildren()
-              console.debug('oldChilds: ', oldChilds)
-              parentNode.setChildren([...dynamicNodes, ...staticNodes, ...oldChilds])
             }
+            break
+          case 3: // judge
+            // eslint-disable-next-line no-case-declarations
+            const judgeParentNode = this.graph.addNode({
+              shape: 'custom-polygon',
+              data: {
+                ...treeItem
+              },
+              attrs: {
+                text: {
+                  text: treeItem?.content || ''
+                }
+              }
+            })
+            // eslint-disable-next-line no-case-declarations
+            const juidgeTitleNode = this.graph.addNode({
+              shape: 'title-node',
+              x: judgeParentNode.getBBox().x - 30,
+              y: judgeParentNode.getBBox().y - 30,
+              attrs: {
+                text: {
+                  text: treeItem?.title
+                }
+              }
+            })
+            judgeParentNode.addChild(juidgeTitleNode)
             break
           default:
             break
@@ -456,15 +436,6 @@ export default {
       if (type === 'judge') {
         node = this.graph.createNode({
           shape: 'custom-polygon',
-          attrs: {
-            body: {
-              refPoints: '0,10 10,0 20,10 10,20'
-            }
-          },
-          size: {
-            width: 100,
-            height: 50
-          },
           label: '',
           data: {
             type,
@@ -756,13 +727,14 @@ export default {
         'custom-polygon',
         {
           inherit: 'polygon',
-          width: 66,
-          height: 36,
+          width: 100,
+          height: 50,
           attrs: {
             body: {
               strokeWidth: 1,
               stroke: '#5F95FF',
-              fill: '#EFF4FF'
+              fill: '#EFF4FF',
+              refPoints: '0,10 10,0 20,10 10,20'
             }
             // text: {
             //   fontSize: 12,
@@ -772,6 +744,10 @@ export default {
             //   refY: -5,
             //   text: '判定'
             // }
+          },
+          data: {
+            type: 'judge',
+            ctype: '判定'
           },
           ports: {
             ...ports,
@@ -822,7 +798,6 @@ export default {
                       nodeId: cell.getData().nodeId
                     })
                     // @todo 确认删除成功
-                    // console.debug('deleteNodeAPI res: ', res)
                     if (res.code === 1000) {
                       cell.remove()
                       // console.debug('graph: ', this.graph.toJSON())
@@ -982,8 +957,6 @@ export default {
       // 把按钮加回来
       if (interActifyButtonsList && interActifyButtonsList.length > 0) {
         interActifyButtonsList.forEach((buttonItem, buttonIndex) => {
-          const buttonNode = childNodes.find(item => item.getData().type === 'dialogue-button' && item.getData().buttonId === buttonItem.buttonId)
-          const hasStaticButton = childNodes.find(item => item.getData().type === 'dialogue-static-button')
           if (buttonItem.type === 1) { // 动态按钮
             // console.debug('target.getBBox(): ', target.getBBox()
             const newButtonNode = this.graph.addNode({

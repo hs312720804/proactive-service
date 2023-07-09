@@ -8,6 +8,22 @@ export function addJudgeNodeAPI (data) { // 添加判断节点
   })
 }
 
+export function getJudgeNodeDetailAPI (params) { // 获取判断节点详情
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/interactify/node/assert/get',
+    params
+  })
+}
+
+export function updateJudgeNodeDetailAPI (data) { // 更新判断节点详情
+  return fetch({
+    method: 'post',
+    url: 'proactive_admin_api/interactify/node/assert/update',
+    data
+  })
+}
+
 export function deleteNodeAPI (params) { // 删除节点
   return fetch({
     method: 'delete',
