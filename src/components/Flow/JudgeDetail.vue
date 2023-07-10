@@ -20,20 +20,23 @@
             v-for="(item,index) in unBackupList"
             :key="index"
           >
+            <TagsRule></TagsRule>
+            <span class="text">进入分支:</span>
             <Behavior
-              v-if="unBackupList.length > 0"
               :list="item.nextNodeList"
               :skillList="skillList"
               :childNodeList="childNodeList"
               :parentIndex="index"
               desc="调用"
               :isLimitOnly="false"
-              @del="deleteUnBackupItem"
-              @add="addUnBackupItem"
+              @del="deleteUnBackupItemBehavior"
+              @add="addUnBackupItemBehavior"
             ></Behavior>
           </li>
         </draggable>
-        <!-- <el-button type="text" @click="add">+添加判定</el-button> -->
+        <el-form-item>
+          <el-button type="text" style="font-size: 14px;" @click="addUnBackupItem">+添加判定</el-button>
+        </el-form-item>
       </ul>
       <div class="gurantee-box">
         <p class="title">兜底</p>
@@ -58,11 +61,14 @@
 </template>
 <script>
 import Behavior from '@/components/Behavior/Index.vue'
+import TagsRule from '@/components/TagsRule/Index.vue'
 import draggable from 'vuedraggable'
+import { getRuleTagsListAPI } from '@/services/tag'
 export default {
   components: {
     Behavior,
-    draggable
+    draggable,
+    TagsRule
   },
   props: {
     skillList: {
@@ -81,6 +87,7 @@ export default {
   data () {
     return {
       drag: false,
+      ruleTagsList: [], // 规则标签列表
       form: {
         nodeId: '',
         title: '',
@@ -88,10 +95,7 @@ export default {
         content: ''
       },
       backupList: [], // 兜底列表 唯一
-      unBackupList: [{
-        isBackup: 0,
-        nextNodeList: []
-      }], // 非兜底列表
+      unBackupList: [], // 非兜底列表
       rules: {
         title: [
           { required: true, message: '请输入', trigger: 'blur' },
@@ -115,7 +119,19 @@ export default {
     }
   },
   methods: {
-    addUnBackupItem ({ parentIndex }) {
+    addUnBackupItem () {
+      this.unBackupList.push({
+        isBackup: 0,
+        nextNodeList: []
+      })
+    },
+    getUnBackupNextNodeList (list) {
+      if (list.length > 0) {
+        return list
+      }
+      return []
+    },
+    addUnBackupItemBehavior ({ parentIndex }) {
       // console.debug('unBackupList: ', this.unBackupList)
       if (this.unBackupList.length === 0) {
         this.unBackupList.push({
@@ -126,8 +142,8 @@ export default {
       const nextNodeList = this.unBackupList[parentIndex].nextNodeList
       nextNodeList.push({})
     },
-    deleteUnBackupItem ({ levelIndex, parentIndex }) {
-      console.debug('deleteUnBackupItem', levelIndex, parentIndex)
+    deleteUnBackupItemBehavior ({ levelIndex, parentIndex }) {
+      // console.debug('deleteUnBackupItemBehavior', levelIndex, parentIndex)
       this.unBackupList[parentIndex].nextNodeList.splice(levelIndex, 1)
     },
     addBackupItem () {
@@ -211,6 +227,12 @@ export default {
       }
       this.backupList = this.form.interActifyAssertsList.filter(item => item.isBackup === 1)
       this.unBackupList = this.form.interActifyAssertsList.filter(item => item.isBackup === 0)
+      if (this.unBackupList.length === 0) {
+        this.unBackupList.push({
+          isBackup: 0,
+          nextNodeList: []
+        })
+      }
     },
     submitForm () {
       this.$refs.judgeForm.validate(valid => {
@@ -224,10 +246,20 @@ export default {
           return false
         }
       })
+    },
+    async getRuleTagsList () {
+      try {
+        const res = await getRuleTagsListAPI()
+        if (res.code === 1000) {
+          this.ruleTagsList = res.data
+        }
+      } catch (error) {
+        console.error('getRuleTagsList error: ', error)
+      }
     }
   },
   mounted () {
-    //
+    this.getRuleTagsList()
   }
 }
 </script>
@@ -237,17 +269,35 @@ export default {
       white-space nowrap
     }
     .draglist-wrapper {
-
-      margin-top 10px
+      width 92%
+      margin 10px auto 0
       .list-item {
         background-color rgb(239, 244, 255)
         padding 10px
+        margin-bottom 10px
+        .text {
+          font-size 14px
+          color #606266
+          display flex
+          // background-color #fff
+          width 70px
+          height 32px
+          box-sizing border-box
+          // padding 2px 10px
+          white-space nowrap
+          align-items center
+          justify-content center
+          margin-right 10px
+        }
       }
     }
     .gurantee-box {
       margin-top 10px
       background-color rgb(239, 244, 255)
       padding 10px
+      width 92%
+      margin 0 auto
+      box-sizing border-box
       .title {
         font-weight bold
         font-size 14px
