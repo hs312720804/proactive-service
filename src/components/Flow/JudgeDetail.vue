@@ -18,7 +18,7 @@
         <div class="flex-box">
           <span class="text">进入分支:</span>
           <Behavior
-            :list="backupList"
+            :list="nextNodeList"
             :skillList="skillList"
             :childNodeList="childNodeList"
             desc="调用"
@@ -62,7 +62,7 @@ export default {
         interActifyAssertsList: [], // 判断列表
         content: ''
       },
-      backupList: [], // 兜底列表 @todo 后续要合并进 form.interActifyAssertsList
+      backupList: [], // 兜底列表 唯一
       unBackupList: [], // 非兜底列表
       rules: {
         title: [
@@ -73,7 +73,12 @@ export default {
     }
   },
   computed: {
-    //
+    nextNodeList () {
+      if (this.backupList.length > 0) {
+        return this.backupList[0].nextNodeList
+      }
+      return []
+    }
   },
   watch: {
     renderData: function (newval, oldval) {
@@ -83,23 +88,82 @@ export default {
   },
   methods: {
     addBackupItem () {
-      this.backupList.push({
-        isBackup: 1
+      // console.debug('backupList: ', this.backupList)
+      if (this.backupList.length === 0) {
+        this.backupList.push({
+          isBackup: 1,
+          nextNodeList: []
+        })
+      }
+      const nextNodeList = this.backupList[0].nextNodeList
+      nextNodeList.push({
+        id: nextNodeList.length
       })
     },
     deleteBackupItem (index) {
       console.debug('deleteBackupItem', index)
-      this.backupList.splice(index, 1)
+      this.backupList[0].nextNodeList.splice(index, 1)
     },
     transformSubmitData (data) {
       const info = JSON.parse(JSON.stringify(data))
       info.interActifyAssertsList = [...this.backupList, ...this.unBackupList]
+      info.interActifyAssertsList.forEach(item => {
+        if (item?.nextNodeList?.length > 0) {
+          item.nextNodeList.forEach((nextNodeItem, nextNodeIndex) => {
+            const keys = Object.keys(nextNodeItem)
+            this.skillList.forEach((skillItem, skillIndex) => {
+              if (nextNodeItem?.callType === 1 && nextNodeItem?.nextSkillId) {
+                if (skillItem.skillId.toString() === nextNodeItem?.nextSkillId.toString()) {
+                  const paramList = skillItem.paramList
+                  paramList.forEach((paramItem, paramIndex) => {
+                    const key = paramItem.paramKey
+                    if (!nextNodeItem.skillParam) {
+                      nextNodeItem.skillParam = []
+                    }
+                    if (keys.includes(key)) {
+                      if (paramItem.dataType === 1) { // 1数值 2字符串
+                        nextNodeItem.skillParam.push({
+                          key: paramItem.paramKey,
+                          value: Number(nextNodeItem[paramItem.paramKey])
+                        })
+                      } else if (paramItem.dataType === 2) {
+                        nextNodeItem.skillParam.push({
+                          key: paramItem.paramKey,
+                          value: nextNodeItem[paramItem.paramKey].toString()
+                        })
+                      }
+                    }
+                  })
+                }
+              } else {
+                nextNodeItem.skillParam = []
+              }
+            })
+            nextNodeItem.skillParam = JSON.stringify(nextNodeItem.skillParam) || ''
+          })
+        }
+      })
       this.form.interActifyAssertsList = info.interActifyAssertsList
       return info
     },
+    initTransformData (data) {
+      // console.debug('initTransform: ', data)
+      data.interActifyAssertsList.forEach((item, index) => {
+        item.nextNodeList.forEach((nextNodeItem, nextNodeIndex) => {
+          if (nextNodeItem.callType === 1) { // 技能
+            nextNodeItem.skillParam = JSON.parse(nextNodeItem.skillParam)
+            nextNodeItem.skillParam.forEach(paramItem => {
+              nextNodeItem[paramItem.key] = paramItem.value
+            })
+          }
+        })
+      })
+      return data
+    },
     initData () {
-      const renderData = JSON.parse(JSON.stringify(this.$props.renderData))
+      let renderData = JSON.parse(JSON.stringify(this.$props.renderData))
       // console.debug('init renderData: ', renderData)
+      renderData = this.initTransformData(renderData)
       this.form = {
         ...this.form,
         ...renderData

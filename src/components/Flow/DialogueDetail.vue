@@ -289,7 +289,6 @@ export default {
               const keys = Object.keys(operateItem)
               this.skillList.forEach((skillItem, skillIndex) => {
                 if (skillItem.skillId === operateItem.nextSkillId) {
-                  console.debug('skillItem: ', skillItem)
                   const paramList = skillItem.paramList
                   paramList.forEach((paramItem, paramIndex) => {
                     const key = paramItem.paramKey

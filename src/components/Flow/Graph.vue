@@ -136,7 +136,7 @@ export default {
                   // refX: -10, // x 轴偏移量
                   // refY: -10,
                   textAnchor: 'center',
-                  text: treeItem?.content || ''
+                  text: treeItem?.context || ''
                 }
               },
               data: {
@@ -217,11 +217,6 @@ export default {
               shape: 'custom-polygon',
               data: {
                 ...treeItem
-              },
-              attrs: {
-                text: {
-                  text: treeItem?.content || ''
-                }
               }
             })
             // eslint-disable-next-line no-case-declarations
@@ -735,7 +730,7 @@ export default {
               stroke: '#5F95FF',
               fill: '#EFF4FF',
               refPoints: '0,10 10,0 20,10 10,20'
-            }
+            },
             // text: {
             //   fontSize: 12,
             //   fill: '#262626',
@@ -744,6 +739,9 @@ export default {
             //   refY: -5,
             //   text: '判定'
             // }
+            text: {
+              text: '判定'
+            }
           },
           data: {
             type: 'judge',
@@ -797,7 +795,6 @@ export default {
                     const res = await deleteNodeAPI({
                       nodeId: cell.getData().nodeId
                     })
-                    // @todo 确认删除成功
                     if (res.code === 1000) {
                       cell.remove()
                       // console.debug('graph: ', this.graph.toJSON())

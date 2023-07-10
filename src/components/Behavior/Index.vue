@@ -1,6 +1,6 @@
 <template>
   <div class="behavior-wrapper">
-    <ul class="all-list-wrapper">
+    <ul class="all-list-wrapper" v-if="list.length > 0">
       <li
         class="list-item"
         v-for="(item, index) in list"
@@ -58,8 +58,7 @@
         <el-button type="text" @click="del(index)" class="el-icon-close delete"></el-button>
       </li>
     </ul>
-    <el-button v-if="!isLimitOnly" type="text" @click="add">+添加{{ desc }}</el-button>
-    <el-button v-else-if="isLimitOnly && list.length < 1" type="text" @click="add">+添加{{ desc }}</el-button>
+    <el-button type="text" @click="add">+添加{{ desc }}</el-button>
   </div>
 </template>
 <script>
@@ -108,7 +107,6 @@ export default {
       console.debug('updateNodePicked')
     },
     getNodeId (node) {
-      console.debug('getNodeId', this.childNodeList)
       const data = node.getData()
       if (data.nodeType === 3 || data.nodeType === 2 || data.nodeType === 1) {
         return data.nodeId
