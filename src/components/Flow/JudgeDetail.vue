@@ -13,7 +13,29 @@
           <el-input v-model="form.title"></el-input>
         </el-col>
       </el-form-item>
-      <div class="grey-box">
+      <ul class="draglist-wrapper">
+        <draggable v-model="unBackupList" group="people" @start="drag=true" @end="drag=false">
+          <li
+            class="list-item"
+            v-for="(item,index) in unBackupList"
+            :key="index"
+          >
+            <Behavior
+              v-if="unBackupList.length > 0"
+              :list="item.nextNodeList"
+              :skillList="skillList"
+              :childNodeList="childNodeList"
+              :parentIndex="index"
+              desc="调用"
+              :isLimitOnly="false"
+              @del="deleteUnBackupItem"
+              @add="addUnBackupItem"
+            ></Behavior>
+          </li>
+        </draggable>
+        <!-- <el-button type="text" @click="add">+添加判定</el-button> -->
+      </ul>
+      <div class="gurantee-box">
         <p class="title">兜底</p>
         <div class="flex-box">
           <span class="text">进入分支:</span>
@@ -36,9 +58,11 @@
 </template>
 <script>
 import Behavior from '@/components/Behavior/Index.vue'
+import draggable from 'vuedraggable'
 export default {
   components: {
-    Behavior
+    Behavior,
+    draggable
   },
   props: {
     skillList: {
@@ -56,6 +80,7 @@ export default {
   },
   data () {
     return {
+      drag: false,
       form: {
         nodeId: '',
         title: '',
@@ -63,7 +88,10 @@ export default {
         content: ''
       },
       backupList: [], // 兜底列表 唯一
-      unBackupList: [], // 非兜底列表
+      unBackupList: [{
+        isBackup: 0,
+        nextNodeList: []
+      }], // 非兜底列表
       rules: {
         title: [
           { required: true, message: '请输入', trigger: 'blur' },
@@ -87,6 +115,21 @@ export default {
     }
   },
   methods: {
+    addUnBackupItem ({ parentIndex }) {
+      // console.debug('unBackupList: ', this.unBackupList)
+      if (this.unBackupList.length === 0) {
+        this.unBackupList.push({
+          isBackup: 0,
+          nextNodeList: []
+        })
+      }
+      const nextNodeList = this.unBackupList[parentIndex].nextNodeList
+      nextNodeList.push({})
+    },
+    deleteUnBackupItem ({ levelIndex, parentIndex }) {
+      console.debug('deleteUnBackupItem', levelIndex, parentIndex)
+      this.unBackupList[parentIndex].nextNodeList.splice(levelIndex, 1)
+    },
     addBackupItem () {
       // console.debug('backupList: ', this.backupList)
       if (this.backupList.length === 0) {
@@ -96,13 +139,11 @@ export default {
         })
       }
       const nextNodeList = this.backupList[0].nextNodeList
-      nextNodeList.push({
-        id: nextNodeList.length
-      })
+      nextNodeList.push({})
     },
-    deleteBackupItem (index) {
-      console.debug('deleteBackupItem', index)
-      this.backupList[0].nextNodeList.splice(index, 1)
+    deleteBackupItem ({ levelIndex, parentIndex }) {
+      // console.debug('deleteBackupItem', index)
+      this.backupList[0].nextNodeList.splice(levelIndex, 1)
     },
     transformSubmitData (data) {
       const info = JSON.parse(JSON.stringify(data))
@@ -195,9 +236,17 @@ export default {
     .el-form-item__label {
       white-space nowrap
     }
-    .grey-box {
+    .draglist-wrapper {
+
       margin-top 10px
-      background-color #f1f0f0
+      .list-item {
+        background-color rgb(239, 244, 255)
+        padding 10px
+      }
+    }
+    .gurantee-box {
+      margin-top 10px
+      background-color rgb(239, 244, 255)
       padding 10px
       .title {
         font-weight bold

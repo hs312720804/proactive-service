@@ -83,6 +83,10 @@ export default {
     list: { // 数据来源 - 下一节点列表
       type: Array,
       default: () => []
+    },
+    parentIndex: { // list的父级节点索引 多层结构会用到
+      type: Number,
+      default: 0
     }
   },
   data () {
@@ -117,11 +121,11 @@ export default {
     },
     add () { // 添加操作
       console.debug('add')
-      this.$emit('add')
+      this.$emit('add', { parentIndex: this.$props.parentIndex })
     },
     del (index) {
       console.debug('delete', index)
-      this.$emit('del', index)
+      this.$emit('del', { levelIndex: index, parentIndex: this.$props.parentIndex })
     }
   },
   mounted () {
