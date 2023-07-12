@@ -75,65 +75,15 @@
         </div>
         <div class="button-detail" v-if="buttonDetail">
           <span class="button-id">按钮ID：{{ buttonDetail.buttonId }}</span>
-          <ul class="operate-list-wrapper">
-            <li
-              class="operate-list-item"
-              v-for="(operateItem, operateItemIndex) in buttonDetail.nextNodeList"
-              :key="operateItem.buttonId"
-            >
-              <span class="head-text">操作：</span>
-              <el-select class="short-select-width" v-model="operateItem.callType" placeholder="调用" style="margin-right: 5px;">
-                <el-option label="调用技能" :value="1"></el-option>
-                <el-option label="调用节点" :value="2"></el-option>
-              </el-select>
-              <el-select
-                class="short-select-width"
-                v-if="operateItem.callType === 1"
-                v-model="operateItem.nextSkillId"
-                placeholder="请选择技能"
-                filterable
-                @change="updateSkillPicked(operateItem)"
-              >
-                <el-option
-                  v-for="skillItem in skillList"
-                  :key="skillItem.skillId"
-                  :label="skillItem.skillName"
-                  :value="Number(skillItem.skillId)"
-                ></el-option>
-              </el-select>
-              <el-select
-                class="short-select-width"
-                v-else
-                v-model="operateItem.nextNodeId"
-                placeholder="请选择节点"
-                @change="updateNodePicked(operateItem)"
-                filterable
-              >
-                <el-option
-                  v-for="nodeItem in childNodeList"
-                  :key="nodeItem.id"
-                  :label="nodeItem.attrs.text.text"
-                  :value="nodeItem.id"
-                ></el-option>
-              </el-select>
-              <template v-if="operateItem.callType === 1 && operateItem.nextSkillId && getCurrentSkillItem(operateItemIndex).paramList.length > 0">
-                <el-form-item
-                  v-for="(paramItem) in getCurrentSkillItem(operateItemIndex).paramList"
-                  :key="paramItem.paramKey"
-                  :label="paramItem.paramName"
-                >
-                  <el-input
-                    style="margin-top: 5px;height: 30px;"
-                    :type="paramItem.dataType === 1 ? 'number': 'text'"
-                    v-model="operateItem[paramItem.paramKey]"
-                  >
-                  </el-input>
-                </el-form-item>
-              </template>
-              <el-button type="text" @click="deleteOperate(operateItemIndex)" class="el-icon-close delete"></el-button>
-            </li>
-            <el-button type="text" @click="addOperate(buttonDetail)">添加操作</el-button>
-          </ul>
+          <Behavior
+            :list="buttonDetail.nextNodeList"
+            :skillList="skillList"
+            :childNodeList="childNodeList"
+            desc="操作"
+            :isLimitOnly="false"
+            @del="deleteOperate"
+            @add="addOperate"
+          ></Behavior>
         </div>
       </el-form-item>
       <el-form-item>
@@ -143,7 +93,11 @@
   </div>
 </template>
 <script>
+import Behavior from '@/components/Behavior/Index.vue'
 export default {
+  components: {
+    Behavior
+  },
   props: {
     skillList: {
       type: Array,
@@ -213,11 +167,11 @@ export default {
       // console.debug('deleteButton', index)
       this.detailForm.interActifyButtonsList.splice(index, 1)
     },
-    deleteOperate (index) {
-      this.buttonDetail.nextNodeList.splice(index, 1)
+    deleteOperate ({ levelIndex }) {
+      this.buttonDetail.nextNodeList.splice(levelIndex, 1)
     },
-    addOperate (item) {
-      console.debug('addOperate', item)
+    addOperate () {
+      console.debug('addOperate')
       const buttonItem = this.detailForm.interActifyButtonsList[this.buttonActiveIndex]
       if (!buttonItem?.nextNodeList) {
         this.$set(buttonItem, 'nextNodeList', [{ }])

@@ -1,5 +1,21 @@
 import fetch from 'cseed-frame/services/_fetch'
 
+export function getStartNodeAPI (params) { // 获取开始节点
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/interactify/node/start/get',
+    params
+  })
+}
+
+export function updateStartNodeAPI (data) { // 更新开始节点
+  return fetch({
+    method: 'post',
+    url: 'proactive_admin_api/interactify/node/start/update',
+    data
+  })
+}
+
 export function addJudgeNodeAPI (data) { // 添加判断节点
   return fetch({
     method: 'post',

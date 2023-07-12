@@ -24,12 +24,12 @@
             </el-col>
             <el-col :span="1">&nbsp;&nbsp;</el-col>
             <el-col :span="11">
+              <!-- @change="updateSkillPicked" -->
               <el-select
                 v-if="startForm.NodeOrSkill === '1'"
                 v-model="startForm.NodeOrSkillVal"
                 placeholder="请选择技能"
                 filterable
-                @change="updateSkillPicked"
               >
                 <el-option
                   v-for="item in skillList"
@@ -38,11 +38,11 @@
                   :value="item.skillId"
                 ></el-option>
               </el-select>
+              <!-- @change="updateNodePicked" -->
               <el-select
                 v-else
                 v-model="startForm.NodeOrSkillVal"
                 placeholder="请选择节点"
-                @change="updateNodePicked"
                 filterable
               >
                 <el-option
@@ -53,6 +53,9 @@
                 ></el-option>
               </el-select>
             </el-col>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="save"></el-button>
           </el-form-item>
         </el-form>
       </template>
@@ -80,7 +83,7 @@ import store from 'cseed-frame/store/_index'
 import DialogueDetail from '@/components/Flow/DialogueDetail.vue'
 import JudgeDetail from '@/components/Flow/JudgeDetail.vue'
 import { getSkillListAPI } from '@/services/skill'
-import { getDialogueNodeDetailAPI, updateDialogueDetailAPI, getJudgeNodeDetailAPI, updateJudgeNodeDetailAPI } from '@/services/flow'
+import { getStartNodeAPI, getDialogueNodeDetailAPI, updateStartNodeAPI, updateDialogueDetailAPI, getJudgeNodeDetailAPI, updateJudgeNodeDetailAPI } from '@/services/flow'
 export default {
   components: {
     DialogueDetail,
@@ -114,14 +117,14 @@ export default {
       this.$emit('update:showNodeDetail', this.showBool)
     },
     async handleSubmitJudge (payload) {
-      console.debug('handleSubmitJudge :', payload)
+      // console.debug('handleSubmitJudge :', payload)
       try {
         const res = await updateJudgeNodeDetailAPI(payload)
         if (res.code === 1000) {
           this.$refs.drawer.closeDrawer()
           store.commit('flow/updateJudgeNodeDetail', payload)
         }
-        console.debug('updateJudgeNodeDetailAPI res: ', res)
+        // console.debug('updateJudgeNodeDetailAPI res: ', res)
       } catch (error) {
         console.error('handleSubmitJudge error: ', error)
       }
@@ -169,9 +172,6 @@ export default {
         nodeType: this.nodeType, // judge start dialogue
         type: 'node', // skill node
         targetNodeInfo: pickNode
-        // targetNodePayload: { // 目标节点的额外数据
-        //   id: this.startForm.NodeOrSkillVal
-        // }
       })
     },
     async reFill () {
