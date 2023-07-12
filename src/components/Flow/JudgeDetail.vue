@@ -20,7 +20,13 @@
             v-for="(item,index) in unBackupList"
             :key="index"
           >
-            <TagsRule></TagsRule>
+            <TagsRule
+              ref="tagRule"
+              :tagList="ruleTagsList"
+              :ruleJson.sync="item.ruleJsonObj"
+              :tagIds.sync="item.tagIds"
+              :parentIndex="index"
+            ></TagsRule>
             <span class="text">进入分支:</span>
             <Behavior
               :list="item.nextNodeList"
@@ -122,7 +128,13 @@ export default {
     addUnBackupItem () {
       this.unBackupList.push({
         isBackup: 0,
-        nextNodeList: []
+        nextNodeList: [],
+        // ruleJson: '',
+        ruleJsonObj: {
+          rules: [],
+          condition: 'AND'
+        },
+        ruleJson: JSON.stringify({ rules: [], condition: 'AND' })
       })
     },
     getUnBackupNextNodeList (list) {
@@ -165,7 +177,7 @@ export default {
       const info = JSON.parse(JSON.stringify(data))
       info.interActifyAssertsList = [...this.backupList, ...this.unBackupList]
       info.interActifyAssertsList.forEach(item => {
-        if (item?.nextNodeList?.length > 0) {
+        if (item?.nextNodeList?.length > 0) { // 技能 / 节点 处理
           item.nextNodeList.forEach((nextNodeItem, nextNodeIndex) => {
             const keys = Object.keys(nextNodeItem)
             this.skillList.forEach((skillItem, skillIndex) => {
@@ -176,6 +188,10 @@ export default {
                     const key = paramItem.paramKey
                     if (!nextNodeItem.skillParam) {
                       nextNodeItem.skillParam = []
+                    } else {
+                      if (typeof nextNodeItem.skillParam === 'string') {
+                        nextNodeItem.skillParam = JSON.parse(nextNodeItem.skillParam)
+                      }
                     }
                     if (keys.includes(key)) {
                       if (paramItem.dataType === 1) { // 1数值 2字符串
@@ -199,21 +215,30 @@ export default {
             nextNodeItem.skillParam = JSON.stringify(nextNodeItem.skillParam) || ''
           })
         }
+        if (item?.ruleJsonObj?.rules && item?.ruleJsonObj?.rules?.length > 0) { // 非兜底的子节点规则json 字符串化
+          item.ruleJson = JSON.stringify(item.ruleJsonObj)
+        }
       })
       this.form.interActifyAssertsList = info.interActifyAssertsList
       return info
     },
     initTransformData (data) {
-      // console.debug('initTransform: ', data)
-      data.interActifyAssertsList.forEach((item, index) => {
+      data.interActifyAssertsList && data.interActifyAssertsList.forEach((item, index) => {
         item.nextNodeList.forEach((nextNodeItem, nextNodeIndex) => {
-          if (nextNodeItem.callType === 1) { // 技能
-            nextNodeItem.skillParam = JSON.parse(nextNodeItem.skillParam)
+          if (nextNodeItem.callType === 1) { // 回填技能 额外框
+            if (nextNodeItem.skillParam === '') {
+              nextNodeItem.skillParam = []
+            } else {
+              nextNodeItem.skillParam = JSON.parse(nextNodeItem.skillParam)
+            }
             nextNodeItem.skillParam.forEach(paramItem => {
               nextNodeItem[paramItem.key] = paramItem.value
             })
           }
         })
+        if (item.isBackup === 0 && (item.ruleJson !== '' || item.ruleJson !== '[]')) { // 处理非兜底节点的规则回填
+          item.ruleJsonObj = JSON.parse(item.ruleJson)
+        }
       })
       return data
     },
@@ -230,15 +255,37 @@ export default {
       if (this.unBackupList.length === 0) {
         this.unBackupList.push({
           isBackup: 0,
-          nextNodeList: []
+          nextNodeList: [],
+          ruleJsonObj: {
+            rules: [],
+            condition: 'AND'
+          },
+          ruleJson: JSON.stringify({ rules: [], condition: 'AND' }),
+          tagIds: [] // 存储标签id数组
+        })
+      } else {
+        this.unBackupList = this.unBackupList.map(item => {
+          return {
+            ...item,
+            tagIds: [],
+            ruleJsonObj: item.ruleJson
+              ? JSON.parse(item.ruleJson)
+              : {
+                  rules: [],
+                  condition: 'AND'
+                }
+          }
         })
       }
     },
     submitForm () {
       this.$refs.judgeForm.validate(valid => {
         if (valid) {
+          this.$refs.tagRule && this.$refs.tagRule.map((component) => {
+            component.transformSaveRules()
+          })
           const info = this.transformSubmitData(this.form)
-          // console.debug('after transform : ', info)
+          console.debug('after transform : ', info)
           this.$emit('submit', info)
           return true
         } else {
@@ -251,7 +298,12 @@ export default {
       try {
         const res = await getRuleTagsListAPI()
         if (res.code === 1000) {
-          this.ruleTagsList = res.data
+          this.ruleTagsList = res.data.map((item) => {
+            return {
+              ...item,
+              ruleJson: item.ruleJson ? JSON.parse(item.ruleJson) : {}
+            }
+          })
         }
       } catch (error) {
         console.error('getRuleTagsList error: ', error)

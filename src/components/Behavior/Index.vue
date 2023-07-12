@@ -135,7 +135,7 @@ export default {
 </script>
 <style lang="stylus" scoped>
     .behavior-wrapper {
-        padding-left 10px
+        // padding-left 10px
         .all-list-wrapper {
             .head-text {
                 white-space nowrap
