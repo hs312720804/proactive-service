@@ -18,15 +18,15 @@
           <el-form-item label="操作：">
             <el-col :span="11">
               <el-select v-model="startForm.NodeOrSkill" placeholder="调用">
-                <el-option label="调用技能" value="1"></el-option>
-                <el-option label="调用节点" value="2"></el-option>
+                <el-option label="调用技能" :value="1"></el-option>
+                <el-option label="调用节点" :value="2"></el-option>
               </el-select>
             </el-col>
             <el-col :span="1">&nbsp;&nbsp;</el-col>
             <el-col :span="11">
               <!-- @change="updateSkillPicked" -->
               <el-select
-                v-if="startForm.NodeOrSkill === '1'"
+                v-if="startForm.NodeOrSkill === 1"
                 v-model="startForm.NodeOrSkillVal"
                 placeholder="请选择技能"
                 filterable
@@ -35,7 +35,7 @@
                   v-for="item in skillList"
                   :key="item.skillId"
                   :label="item.skillName"
-                  :value="item.skillId"
+                  :value="Number(item.skillId)"
                 ></el-option>
               </el-select>
               <!-- @change="updateNodePicked" -->
@@ -46,31 +46,33 @@
                 filterable
               >
                 <el-option
-                  v-for="item in childNodeList"
-                  :key="item.id"
-                  :label="item.attrs.text.text"
-                  :value="item.id"
+                  v-for="item in nodeSelectList"
+                  :key="item.nodeId"
+                  :label="item.title"
+                  :value="item.nodeId"
                 ></el-option>
               </el-select>
             </el-col>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="save"></el-button>
+            <el-button type="primary" @click="saveStartNodeOperate">保存</el-button>
           </el-form-item>
         </el-form>
       </template>
       <template v-else-if="nodeType === 'judge'">
         <JudgeDetail
+          :versionId="versionId"
           :skillList="skillList"
-          :childNodeList="childNodeList"
+          :childNodeList="nodeSelectList"
           :renderData="judgeDetailData"
           @submit="handleSubmitJudge"
         ></JudgeDetail>
       </template>
       <template v-else-if="nodeType === 'dialogue'">
         <DialogueDetail
+          :versionId="versionId"
           :skillList="skillList"
-          :childNodeList="childNodeList"
+          :childNodeList="nodeSelectList"
           :renderData="dialogueDetailData"
           @submit="handleSubmitDialogue"
         ></DialogueDetail>
@@ -83,7 +85,7 @@ import store from 'cseed-frame/store/_index'
 import DialogueDetail from '@/components/Flow/DialogueDetail.vue'
 import JudgeDetail from '@/components/Flow/JudgeDetail.vue'
 import { getSkillListAPI } from '@/services/skill'
-import { getStartNodeAPI, getDialogueNodeDetailAPI, updateStartNodeAPI, updateDialogueDetailAPI, getJudgeNodeDetailAPI, updateJudgeNodeDetailAPI } from '@/services/flow'
+import { getStartNodeAPI, getDialogueNodeDetailAPI, updateStartNodeAPI, updateDialogueDetailAPI, getJudgeNodeDetailAPI, updateJudgeNodeDetailAPI, getVersionIdAPI, getNodeSelectListAPI } from '@/services/flow'
 export default {
   components: {
     DialogueDetail,
@@ -101,17 +103,84 @@ export default {
       direction: 'rtl',
       showBool: this.showNodeDetail,
       nodeType: store.getters.nodeType,
+      versionId: 0,
       startForm: {
         NodeOrSkill: '',
         NodeOrSkillVal: null
       },
       skillList: [],
+      nodeSelectList: [],
       dialogueDetailData: {},
       judgeDetailData: {},
       startDetailData: {}
     }
   },
+  watch: {
+    versionId (newval, oldval) {
+      // console.debug('versionId: ', newval)
+      this.getNodeSelectList(newval)
+    }
+  },
   methods: {
+    async getNodeSelectList (versionId) {
+      try {
+        const res = await getNodeSelectListAPI({
+          versionId
+        })
+        if (res.code === 1000) {
+          // console.debug('getNodeSelectList res: ', res)
+          this.nodeSelectList = res.data
+        }
+      } catch (error) {
+        console.error('getNodeSelectList error: ', error)
+      }
+    },
+    getNodeId (node) {
+      const data = node.getData()
+      if (data.nodeType === 3 || data.nodeType === 2 || data.nodeType === 1) {
+        return data.nodeId
+      } else if (data.type === 1 && data['button-type'] === 'dialogue-button') {
+        return data.buttonId
+      }
+      return ''
+    },
+    async saveStartNodeOperate () { // 保存开始节点的操作
+      const { NodeOrSkill, NodeOrSkillVal } = this.startForm
+      let payload = {}
+      if (NodeOrSkill === '') {
+        this.$message.error('请调用操作')
+        return false
+      }
+      if (NodeOrSkill === 1) { // skill
+        payload.nextSkillId = NodeOrSkillVal || ''
+        payload = {
+          nextSkillId: NodeOrSkillVal || '',
+          callType: NodeOrSkill,
+          nodeId: this.startDetailData.nodeId,
+          skillParam: '',
+          versionId: this.versionId
+        }
+        this.updateStartPickSkill()
+      } else if (NodeOrSkill === 2) { // node
+        payload = {
+          nextNodeId: NodeOrSkillVal || '',
+          callType: NodeOrSkill,
+          nodeId: this.startDetailData.nodeId,
+          skillParam: '',
+          versionId: this.versionId
+        }
+        this.updateStartPickNode()
+      }
+      try {
+        const res = await updateStartNodeAPI(payload)
+        if (res.code === 1000) {
+          // console.debug('updateStartNodeAPI res: ', res)
+          this.$refs.drawer.closeDrawer()
+        }
+      } catch (error) {
+        console.error('updateStartNodeAPI error: ', error)
+      }
+    },
     handleClose (done) {
       done()
       this.$emit('update:showNodeDetail', this.showBool)
@@ -152,35 +221,49 @@ export default {
         console.error('getSkillList error：', error)
       }
     },
-    updateSkillPicked () { // 更新选择的技能
-      // 提交到父组件 （1） 生成节点 生成连线 （2） 删除旧线旧节点(不用删除，直接覆盖)
-      store.commit('flow/updateGraphNodeInfo', {
+    updateStartPickSkill () { // 更新开始节点 选择的技能
+      // vuex监听事件 graph响应更新连线 （1） 生成节点 生成连线 （2） 删除旧线旧节点(不用删除，直接覆盖)
+      console.debug('updateStartPickSkill: ', this.startForm.NodeOrSkillVal)
+      store.commit('flow/updateStartNodeLink', {
         serviceId: this.serviceId,
-        nodeType: this.nodeType, // judge start dialogue
         type: 'skill',
+        sourceNodeId: this.startDetailData.nodeId,
         targetNodeInfo: {
           id: this.startForm.NodeOrSkillVal,
-          label: this.skillList.find(item => item.skillId === this.startForm.NodeOrSkillVal).skillName
+          label: this.skillList.find(item => Number(item.skillId) === this.startForm.NodeOrSkillVal).skillName
         }
       })
+      console.debug('updateStartPickSkill end: ')
     },
-    updateNodePicked () { // 更新选择的节点
-      // 提交到父组件 （1） 生成节点 生成连线 （2） 删除旧线旧节点(不用删除，直接覆盖)
-      const pickNode = this.childNodeList.find(item => item.id === this.startForm.NodeOrSkillVal)
-      store.commit('flow/updateGraphNodeInfo', {
+    updateStartPickNode () { // 更新开始节点 选择其他子节点
+      // vuex监听事件 graph响应更新连线 （1） 生成节点 生成连线 （2） 删除旧线旧节点(不用删除，直接覆盖)
+      console.debug('updateStartPickNode: ', this.startForm.NodeOrSkillVal)
+      const pickNode = this.childNodeList.find(item => this.getNodeId(item) === this.startForm.NodeOrSkillVal)
+      store.commit('flow/updateStartNodeLink', {
         serviceId: this.serviceId,
-        nodeType: this.nodeType, // judge start dialogue
         type: 'node', // skill node
+        sourceNodeId: this.startDetailData.nodeId,
         targetNodeInfo: pickNode
       })
     },
-    async reFill () {
-      // 回填（重新打开drawer的时候）
-      console.debug('getters: ', store.getters.cellRenderData)
+    async reFill () { // 回填（重新打开drawer的时候）
+      // console.debug('getters: ', store.getters.cellRenderData)
       const nodeId = store.getters.nodeId
       const nodeType = store.getters.nodeType
       const cellRenderData = store.getters.cellRenderData
       if (nodeType === 'start') {
+        const res = await getStartNodeAPI({
+          nodeId
+        })
+        if (res.code === 1000) {
+          console.debug('getStartNodeAPI res:', res)
+          this.startDetailData = res.data
+          const { callType, nextNodeId, nextSkillId } = res.data
+          this.startForm = {
+            NodeOrSkill: callType,
+            NodeOrSkillVal: callType === 1 ? nextSkillId : nextNodeId
+          }
+        }
         if (Object.keys(cellRenderData.model.incomings).length > 0) {
           //
         }
@@ -202,6 +285,18 @@ export default {
           this.dialogueDetailData = res.data
         }
       }
+    },
+    async getVersionId () {
+      try {
+        const res = await getVersionIdAPI({
+          serviceId: this.serviceId
+        })
+        if (res.code === 1000) {
+          this.versionId = res.data
+        }
+      } catch (error) {
+        console.error('getVersionId error: ', error)
+      }
     }
   },
   computed: {
@@ -213,7 +308,7 @@ export default {
         return store.getters.cellRenderData.getData().ctype
       }
     },
-    childNodeList () { // 除了开始节点以外的所有节点
+    childNodeList () { // 除了开始节点以外的所有节点 废弃 不从前端计算节点
       const currentGraph = store.getters.graphList.find(item => item.serviceId === this.serviceId)
       return currentGraph?.nodeList.filter(item => item.getData().nodeType === 2 ||
                item.getData().nodeType === 3 ||
@@ -222,8 +317,8 @@ export default {
     }
   },
   mounted () {
+    this.getVersionId()
     this.getSkillList()
-    // 回填（重新打开drawer的时候）
     this.reFill()
   }
 }

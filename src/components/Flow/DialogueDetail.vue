@@ -110,6 +110,10 @@ export default {
     renderData: {
       type: Object,
       default: () => ({})
+    },
+    versionId: {
+      type: Number,
+      default: 0
     }
   },
   data () {
@@ -291,7 +295,8 @@ export default {
         interActifyButtonsList: [
           ...interActifyButtonsList,
           ...staticButtonsList
-        ]
+        ],
+        versionId: this.$props.versionId
       }
     },
     submitForm () {

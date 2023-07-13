@@ -28,11 +28,8 @@ export default {
       }
       // console.debug('mutations setGraphList', state.graphList)
     },
-    updateGraphNodeInfo (state, payload) { // 更新画布节点信息
-      // const findGraph = state.graphList.find(item => item.serviceId === payload.serviceId)
-      // if (findGraph) {
-      // findNode
-      // }
+    updateStartNodeLink (state, payload) {
+      // 更新开始节点的连线
     },
     updateDialogueDetail (state, payload) {
       // 更新对话框节点详情 目前仅用于跨组件事件传递

@@ -82,20 +82,16 @@ export default {
   methods: {
     generateRenderTree (treeData) { // 生成渲染树 x6 cell 格式树
       console.debug('generateRenderTree: ', treeData)
+      this.graph.clearCells()
       treeData.forEach((treeItem, treeIndex) => {
         switch (treeItem.nodeType) {
           case 1: // 'start'
-            // treeItem = {
-            //   id: treeItem.id.toString(),
-            //   ...treeItem,
-            //   ...this.startNode
-            // }
             // eslint-disable-next-line no-case-declarations
             const node = { // 开始节点
               id: treeItem.nodeId.toString(), // String，节点的唯一标识
               shape: 'ellipse', // 使用 ellipse 渲染
-              // x: 50, // Number，必选，节点位置的 x 值
-              // y: 50, // Number，必选，节点位置的 y 值
+              x: 0, // Number，必选，节点位置的 x 值
+              y: 0, // Number，必选，节点位置的 y 值
               width: 100, // Number，可选，节点大小的 width 值
               height: 50, // Number，可选，节点大小的 height 值
               attrs: {
@@ -127,8 +123,8 @@ export default {
               shape: 'rect',
               width: 320,
               height: 80,
-              x: 200,
-              y: 200,
+              x: 100 + 200 * treeIndex,
+              y: 100 + 100 * treeIndex,
               label: '',
               attrs: {
                 text: {
@@ -217,7 +213,9 @@ export default {
               shape: 'custom-polygon',
               data: {
                 ...treeItem
-              }
+              },
+              x: 200 + 100 * treeIndex,
+              y: 200 + 100 * treeIndex
             })
             // eslint-disable-next-line no-case-declarations
             const juidgeTitleNode = this.graph.addNode({
@@ -232,10 +230,101 @@ export default {
             })
             judgeParentNode.addChild(juidgeTitleNode)
             break
+          case 4: // skill节点
+            // eslint-disable-next-line no-case-declarations
+            const skillNode = this.graph.addNode({
+              shape: 'rect',
+              size: {
+                width: 100,
+                height: 40
+              },
+              x: -200 + 100 * treeIndex,
+              y: 300 + 100 * treeIndex,
+              attrs: {
+                text: {
+                  text: treeItem.title
+                }
+              },
+              data: {
+                ...treeItem,
+                type: 'skill'
+              }
+            })
+            break
+          case 5:
+            // eslint-disable-next-line no-case-declarations
+            const { source, target } = treeItem
+            // eslint-disable-next-line no-case-declarations
+            let sourceData = {}
+            // eslint-disable-next-line no-case-declarations
+            let targetData = {}
+            console.debug('source: ', source, target)
+            // eslint-disable-next-line no-case-declarations
+            const sourceCell = this.graph.getNodes().find((node, index) => {
+              return this.getNodeId(node) === source
+            })
+            // eslint-disable-next-line no-case-declarations
+            const targetCell = this.graph.getNodes().find((node, index) => {
+              return this.getNodeId(node) === target
+            })
+            if (sourceCell.hasPorts()) {
+              console.debug('sourceCell ports: ', sourceCell.getPorts())
+              const bottomPort = sourceCell.getPorts().find((port, index) => {
+                return port.group === 'bottom'
+              })
+              sourceData = {
+                cell: sourceCell.id,
+                port: bottomPort.id
+              }
+            } else {
+              sourceData = {
+                cell: sourceCell.id
+              }
+            }
+            if (targetCell.hasPorts()) {
+              const bottomPort = targetCell.getPorts().find((port, index) => {
+                return port.group === 'bottom'
+              })
+              targetData = {
+                cell: targetCell.id,
+                port: bottomPort.id
+              }
+            } else {
+              targetData = {
+                cell: targetCell.id
+              }
+            }
+            console.debug('sourceCell: ', sourceCell, targetCell)
+            this.graph.addEdge({
+              source: {
+                ...sourceData
+              },
+              target: {
+                ...targetData
+              },
+              router: {
+                name: 'manhattan',
+                // name: 'er',
+                args: {
+                  startDirections: ['bottom'],
+                  endDirections: ['top']
+                }
+              }
+            })
+            break
           default:
             break
         }
       })
+    },
+    getNodeId (node) {
+      const data = node.getData()
+      if (data.nodeType === 3 || data.nodeType === 2 || data.nodeType === 1 || data.nodeType === 4) {
+        return data.nodeId
+      } else if (data.type === 1 && data['button-type'] === 'dialogue-button') {
+        return data.buttonId
+      }
+      return ''
     },
     logGraph () {
       console.debug('logGraph: ', this.graph.toJSON())
@@ -310,7 +399,7 @@ export default {
       )
       const graphInfo = store.getters.graphList.find(item => item.serviceId === this.serviceId)?.graphInfo
       // console.debug('graphInfo renderdata: ', graphInfo)
-      console.debug('graphInfo renderdata: ', this.tree)
+      // console.debug('graphInfo renderdata: ', this.tree)
 
       this.graph.centerContent() // 居中显示画布
       this.graph.use(
@@ -817,9 +906,9 @@ export default {
         cell.removeTools()
       })
       this.graph.on('node:click', ({ e, x, y, node, view }) => { // 节点点击事件
-        const { type, nodeId } = node.getData()
+        const { type, nodeId, nodeType } = node.getData()
         console.debug('click: node.getData(): ', node.getData())
-        if (type !== 'skill' && !node.hasParent()) {
+        if ((type !== 'skill' || nodeType !== 4) && !node.hasParent()) {
           this.$emit('updateDetail', true)
           // save to vuex
           store.commit('flow/setCellRenderData', node)
@@ -831,103 +920,171 @@ export default {
         this.graph.centerContent()
       })
     },
-    updateNodeInfo (payload) { // 更新节点信息 连线布局
-      // (1) update node data
-      // (2) update whole graph data
-      // (3) update vuex
-      // eg: nodeData { id: 48 label: "兜底方案也不满足的情况" type: "skill" } nodeType 'start'
-      const { serviceId, nodeType, targetNodeInfo, type } = payload
-      // console.debug('updateNodeInfo: ', id, label, type)
+    normalizeNodePosition (nodes) { // 格式化节点位置
+      nodes.forEach((node) => {
+        node.x -= node.size.width / 2
+        node.y -= node.size.height / 2
+      })
+    },
+    updateStartNodeLink (payload) { // 更新节点信息 连线布局
+      const { serviceId, targetNodeInfo, sourceNodeId, type } = payload
+      console.debug('updateStartNodeLink: ', serviceId, targetNodeInfo, sourceNodeId, type)
       if (serviceId !== this.serviceId) return
-      if (type === 'skill' && nodeType === 'start') {
-        const { id, label } = targetNodeInfo
-        const node = {
-          id: id.toString(),
-          shape: 'rect',
-          width: 100,
-          height: 40,
-          label,
-          data: {
-            type
-          }
-        }
-        const edge = {
-          source: 'start',
-          target: id.toString()
-        }
-        const dagreLayout = new DagreLayout({
-          type: 'dagre',
-          rankDir: '',
-          align: 'UL',
-          rankSep: 40,
-          nodeSep: 40
-        })
-        const data = {
-          nodes: [this.startNode, node],
-          edges: [edge]
-        }
-        const model = dagreLayout.layout(data)
-        this.jsonToGraph(model)
-        console.debug('render ok: graph: ', this.graph.toJSON())
-        console.debug('渲染ok')
-      } else if (type === 'node' && nodeType === 'start') {
-        const { id } = targetNodeInfo
-        const targetNodeType = targetNodeInfo.getData().type
-        const edge = {
-          source: 'start',
-          target: id.toString()
-        }
-        const dagreLayout = new DagreLayout({
-          type: 'dagre',
-          rankDir: '',
-          align: 'UL',
-          rankSep: 40,
-          nodeSep: 40
-        })
-        if (targetNodeType === 'judge') { // 区分是什么节点 judge dialogue
-          const data = {
-            nodes: [this.startNode, {
-              id: id.toString(),
-              shape: 'custom-polygon',
-              attrs: {
-                body: {
-                  refPoints: '0,10 10,0 20,10 10,20'
-                }
-              },
-              size: {
-                width: 100,
-                height: 50
-              },
-              label: targetNodeInfo.getAttrByPath('text/text'),
-              data: {
-                type: nodeType,
-                ctype: targetNodeInfo.getAttrByPath('text/text')
-              }
-            }],
-            edges: [edge]
-          }
-          const model = dagreLayout.layout(data)
-          this.jsonToGraph(model)
-        } else if (targetNodeType === 'dialogue') {
-          const data = {
-            // this.startNode,
-            nodes: [this.startNode, {
-              id: id.toString(),
-              shape: 'rect',
-              width: 200,
-              height: 80,
-              label: targetNodeInfo.getAttrByPath('text/text'),
-              data: {
-                type: targetNodeType,
-                ctype: targetNodeInfo.getData().ctype
-              }
-            }],
-            edges: [edge]
-          }
-          const model = dagreLayout.layout(data)
-          this.jsonToGraph(model)
-        }
-      }
+      setTimeout(() => {
+        this.getTreeData()
+      }, 500)
+      // if (type === 'skill') {
+      //   const { id, label } = targetNodeInfo
+      //   const skillNode = {
+      //     id: id.toString(),
+      //     shape: 'rect',
+      //     size: {
+      //       width: 100,
+      //       height: 40
+      //     },
+      //     position: {
+      //       x: 0,
+      //       y: 0
+      //     },
+      //     label,
+      //     data: {
+      //       type
+      //     }
+      //   }
+      //   const edge = {
+      //     source: sourceNodeId,
+      //     target: id.toString()
+      //   }
+      //   const dagreLayout = new DagreLayout({
+      //     type: 'dagre',
+      //     begin: [100, 60],
+      //     rankDir: 'TB',
+      //     rankSep: 40,
+      //     nodeSep: 40
+      //   })
+      //   // this.startNode
+      //   console.debug(this.graph.toJSON())
+      //   const cells = this.graph.toJSON().cells
+      //   const edges = cells.filter((cellItem, cellIndex) => {
+      //     return cellItem.shape === 'edge'
+      //   })
+      //   const parentNodes = cells.filter((cellItem, cellIndex) => {
+      //     return cellItem.shape !== 'edge' && !cellItem.parent
+      //   })
+      //   const childNodes = cells.filter((cellItem, cellIndex) => {
+      //     return cellItem.shape !== 'edge' && cellItem.parent
+      //   })
+      //   console.debug('childNodes: ', childNodes)
+      //   console.debug('parentNodes: ', parentNodes)
+      //   console.debug('test: ', {
+      //     nodes: [skillNode, ...parentNodes],
+      //     edges: [edge, ...edges]
+      //   })
+      //   const firstLayers = dagreLayout.layout({
+      //     nodes: [skillNode, ...parentNodes],
+      //     edges: [edge, ...edges]
+      //   })
+      //   // this.normalizeNodePosition(firstLayers.nodes)
+      //   const secondLayers = [] // 第二层布局 { nodes: [], edges: [] }
+      //   parentNodes.forEach((parentNode, parentIndex) => {
+      //     console.debug('foreach get children: ', parentNode.children)
+      //     if (parentNode.children) {
+      //       const secondLevelLayout = new DagreLayout({ // 子节点 布局
+      //         type: 'dagre',
+      //         align: '',
+      //         rankSep: 40,
+      //         nodeSep: 40,
+      //         width: parentNode.size.width,
+      //         height: parentNode.size.heigh,
+      //         begin: [parentNode.x, parentNode.y]
+      //       })
+      //       const childGroups = parentNode.children.map((childId, childIndex) => {
+      //         return childNodes.find((childItem) => {
+      //           return childItem.id === childId
+      //         })
+      //       })
+      //       console.debug('childGroups: ', childGroups)
+      //       const secondLayout = secondLevelLayout.layout({
+      //         nodes: [...childGroups],
+      //         edges: []
+      //       })
+      //       this.normalizeNodePosition(secondLayout.nodes)
+      //       secondLayers.push(secondLayout)
+      //     }
+      //   })
+      //   const allSecondNodes = secondLayers.map((item) => {
+      //     return item.nodes
+      //   })
+      //   const allSecondEdges = secondLayers.map((item) => {
+      //     return item.edges !== []
+      //   })
+      //   console.debug('allSecondNodes: ', allSecondNodes)
+      //   console.debug('allSecondEdges: ', allSecondEdges)
+      //   // this.jsonToGraph(firstLayers)
+      //   this.jsonToGraph({
+      //     nodes: [...firstLayers.nodes, ...childNodes],
+      //     edges: [...firstLayers.edges]
+      //   })
+      //   // console.debug('render ok: graph: ', this.graph.toJSON())
+      //   // console.debug('渲染ok')
+      // } else if (type === 'node') {
+      //   const { id } = targetNodeInfo
+      //   const targetNodeType = targetNodeInfo.getData().type
+      //   const edge = {
+      //     source: 'start',
+      //     target: id.toString()
+      //   }
+      //   const dagreLayout = new DagreLayout({
+      //     type: 'dagre',
+      //     rankDir: '',
+      //     align: 'UL',
+      //     rankSep: 40,
+      //     nodeSep: 40
+      //   })
+      //   if (targetNodeType === 'judge') { // 区分是什么节点 judge dialogue
+      //     const data = {
+      //       nodes: [this.startNode, {
+      //         id: id.toString(),
+      //         shape: 'custom-polygon',
+      //         attrs: {
+      //           body: {
+      //             refPoints: '0,10 10,0 20,10 10,20'
+      //           }
+      //         },
+      //         size: {
+      //           width: 100,
+      //           height: 50
+      //         },
+      //         label: targetNodeInfo.getAttrByPath('text/text'),
+      //         data: {
+      //           type: targetNodeType,
+      //           ctype: targetNodeInfo.getAttrByPath('text/text')
+      //         }
+      //       }],
+      //       edges: [edge]
+      //     }
+      //     const model = dagreLayout.layout(data)
+      //     this.jsonToGraph(model)
+      //   } else if (targetNodeType === 'dialogue') {
+      //     const data = {
+      //       // this.startNode,
+      //       nodes: [this.startNode, {
+      //         id: id.toString(),
+      //         shape: 'rect',
+      //         width: 200,
+      //         height: 80,
+      //         label: targetNodeInfo.getAttrByPath('text/text'),
+      //         data: {
+      //           type: targetNodeType,
+      //           ctype: targetNodeInfo.getData().ctype
+      //         }
+      //       }],
+      //       edges: [edge]
+      //     }
+      //     const model = dagreLayout.layout(data)
+      //     this.jsonToGraph(model)
+      //   }
+      // }
     },
     updateJudgeNodeRender (formInfo) {
       // console.debug('updateJudgeNodeRender: ', formInfo)
@@ -1003,8 +1160,9 @@ export default {
     },
     initVuexListen () {
       store.subscribe((mutation, state) => {
-        if (mutation.type === 'flow/updateGraphNodeInfo') {
-          this.updateNodeInfo(mutation.payload)
+        if (mutation.type === 'flow/updateStartNodeLink') {
+          // console.debug('mutation type triggle,', mutation.type)
+          this.updateStartNodeLink(mutation.payload)
         }
         if (mutation.type === 'flow/updateDialogueDetail') {
           this.updateDialogueNodeRender(mutation.payload)
@@ -1048,14 +1206,14 @@ export default {
   watch: {
     tree: {
       handler (newVal, oldVal) {
-        console.debug('tree watch: ', newVal, oldVal)
+        // console.debug('tree watch: ', newVal, oldVal)
         this.treeToGraph()
       },
       deep: true
     }
   },
   created () {
-    console.debug('graph created: ', this.serviceId)
+    // console.debug('graph created: ', this.serviceId)
     this.getVersionId()
     this.getTreeData()
   },

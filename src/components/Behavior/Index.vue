@@ -36,9 +36,9 @@
         >
           <el-option
             v-for="nodeItem in childNodeList"
-            :key="nodeItem.id"
-            :label="nodeItem.data.title"
-            :value="getNodeId(nodeItem)"
+            :key="nodeItem.nodeId"
+            :label="nodeItem.title"
+            :value="nodeItem.nodeId"
           ></el-option>
         </el-select>
         <template v-if="item.callType === 1 && item.nextSkillId && getCurrentSkillItem(index).paramList.length > 0">

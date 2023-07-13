@@ -87,3 +87,11 @@ export function getVersionIdAPI (params) { // 根据serverId获取versionId
     params
   })
 }
+
+export function getNodeSelectListAPI (params) { // 获取当前版本节点下拉框数据
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/interactify/node/select',
+    params
+  })
+}

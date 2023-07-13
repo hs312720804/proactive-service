@@ -88,6 +88,9 @@ export default {
     renderData: { // 后台返回的详情结构
       type: Object,
       default: () => ({})
+    },
+    versionId: {
+      type: Number
     }
   },
   data () {
@@ -220,6 +223,8 @@ export default {
         }
       })
       this.form.interActifyAssertsList = info.interActifyAssertsList
+      // console.debug('tranform info: ', info)
+      info.versionId = this.versionId
       return info
     },
     initTransformData (data) {

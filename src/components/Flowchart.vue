@@ -38,7 +38,6 @@ export default {
   },
   methods: {
     updateDetail (data) {
-      console.debug('updateDetail', data)
       this.showNodeDetail = data
     }
     // updateNodeInfo (nodeData) {
