@@ -22,6 +22,7 @@ import { DagreLayout } from '@antv/layout' // 层次布局
 import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
 import { addJudgeNodeAPI, addDialogueNodeAPI, deleteNodeAPI, getVersionIdAPI, getTreeDataAPI } from '@/services/flow'
+import { getStatuTitleAPI } from '@/services/services'
 export default {
   components: {
     FlowComposition,
@@ -933,6 +934,7 @@ export default {
       if (serviceId !== this.serviceId) return
       setTimeout(() => {
         this.getTreeData()
+        store.commit('flow/updateStatuTitle')
       }, 500)
       // if (type === 'skill') {
       //   const { id, label } = targetNodeInfo
@@ -1091,6 +1093,7 @@ export default {
       // console.debug('updateJudgeNodeRender: ', formInfo)
       setTimeout(() => {
         this.getTreeData()
+        store.commit('flow/updateStatuTitle')
       }, 500)
       // const { nodeId, interActifyAssertsList, content, title } = formInfo
       // const nodeList = this.graph.getNodes()
@@ -1108,6 +1111,7 @@ export default {
       console.debug('updateDialogueNodeRender: ', formInfo)
       setTimeout(() => {
         this.getTreeData()
+        store.commit('flow/updateStatuTitle')
       }, 500)
       // payload 是节点详情 form 数据 里面已经有节点id了
       // const { nodeId, interActifyButtonsList, content } = formInfo
@@ -1175,6 +1179,9 @@ export default {
         if (mutation.type === 'flow/updateJudgeNodeDetail') {
           this.updateJudgeNodeRender(mutation.payload)
         }
+        if (mutation.type === 'flow/updateGraphTree') {
+          this.getTreeData()
+        }
       })
     },
     async getVersionId () {
@@ -1227,6 +1234,7 @@ export default {
     this.initGraph()
     this.initGraphListen()
     this.initVuexListen()
+    store.commit('flow/updateStatuTitle')
   }
 }
 </script>

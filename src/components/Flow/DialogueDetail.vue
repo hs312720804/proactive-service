@@ -20,7 +20,7 @@
         </el-col>
       </el-form-item>
       <el-form-item label="显示时长：">
-        <el-input-number v-model="detailForm.displayDuration" controls-position="right" @change="handleDisplayDuration" :min="1"
+        <el-input-number v-model="detailForm.displayDuration" controls-position="right" @change="handleDisplayDuration" :min="15"
                          :max="600"
         ></el-input-number> s
       </el-form-item>

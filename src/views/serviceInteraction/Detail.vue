@@ -15,7 +15,7 @@
         :closable="true"
         :lazy="true"
       >
-        <Verion :serviceId="item.id"></Verion>
+        <Version :serviceId="item.id"></Version>
         <Flowchart :serviceId="item.id" :statu="'edit'"></Flowchart>
       </el-tab-pane>
     </el-tabs>
@@ -23,11 +23,11 @@
 </template>
 <script>
 import store from 'cseed-frame/store/_index'
-import Verion from '@/components/Version.vue'
+import Version from '@/components/Version.vue'
 import Flowchart from '@/components/Flowchart.vue'
 export default {
   components: {
-    Verion,
+    Version,
     Flowchart
   },
   data () {

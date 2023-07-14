@@ -39,3 +39,19 @@ export function getServiceAPI (params) {
     params
   })
 }
+
+export function getStatuTitleAPI (params) { // 根据服务id获取右上角标题
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/interactify/node/bar/title',
+    params
+  })
+}
+
+export function resetServiceAPI (params) { // 重置服务交互
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/interactify/node/reset',
+    params
+  })
+}

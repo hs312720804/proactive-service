@@ -38,7 +38,12 @@ export default {
     updateJudgeNodeDetail (state, payload) {
       // 更新判定节点详情 目前仅用于跨组件事件传递
     },
-
+    updateStatuTitle () {
+      // 更新画布右上角标题
+    },
+    updateGraphTree () {
+      // 更新画布树
+    },
     // 存储时机:
     // 1. 画布初始化时
     // 2. 新添加节点到画布
