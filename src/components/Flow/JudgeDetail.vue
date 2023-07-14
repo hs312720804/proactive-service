@@ -290,7 +290,6 @@ export default {
             component.transformSaveRules()
           })
           const info = this.transformSubmitData(this.form)
-          console.debug('after transform : ', info)
           this.$emit('submit', info)
           return true
         } else {

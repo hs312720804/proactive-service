@@ -61,7 +61,7 @@
                 </el-select>
                 <el-select
                   v-if="childItem.dialogueNodeId"
-                  style="width: 150px"
+                  style="width: 150px;margin-left: 5px;"
                   :key="n + 'button'"
                   v-model="childItem.buttonId"
                   filterable
@@ -287,7 +287,7 @@
                   </el-select>
                   <span style="color: #666">-</span>
                   <el-select
-                    style="width: 150px"
+                    style="width: 150px;margin-left: 5px;"
                     :key="n + childItem.tagKey + childItem.type"
                     v-model="childItem.inferRegionEndVal"
                     filterable
@@ -397,6 +397,9 @@ export default {
     tagIds: { // 标签id列表
       type: Array,
       default: () => []
+    },
+    serviceId: {
+      type: Number
     }
   },
   data () {
@@ -555,7 +558,7 @@ export default {
     async getVersionId () {
       try {
         const res = await getVersionIdAPI({
-          serviceId: this.serviceId
+          serviceId: this.serviceId || this.$props.serviceId
         })
         if (res.code === 1000) {
           this.versionId = res.data
@@ -696,13 +699,14 @@ export default {
       })
     }
   },
-  mounted () {
-    //
+  async mounted () {
+    // await this.getVersionId()
+    // this.initTagsSuggestions()
+    // this.initDynamicData()
   },
   async created () {
     await this.getVersionId()
     this.initTagsSuggestions()
-    console.debug('created: ', this.ruleJson)
     this.initDynamicData()
   }
 }
@@ -804,6 +808,7 @@ export default {
   }
   .i {
     cursor pointer
+    margin-left 5px
   }
 }
 
