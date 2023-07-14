@@ -15,8 +15,8 @@
         :closable="true"
         :lazy="true"
       >
-        <Version :serviceId="item.id"></Version>
-        <Flowchart :serviceId="item.id" :statu="'edit'"></Flowchart>
+        <Version v-if="mode === 'edit'" :serviceId="item.id"></Version>
+        <Flowchart :serviceId="item.id" :statu="mode"></Flowchart>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -34,13 +34,16 @@ export default {
     return {
       activeTabId: '',
       tabsArr: [],
-      tabIndex: 2
+      tabIndex: 2,
+      mode: 'edit'
     }
   },
   methods: {
     init () {
       this.tabsArr = store.getters.tabsArr
       this.activeTabId = store.getters.activeTab.id.toString()
+      // console.debug(this.$route)
+      this.mode = this.$route.query.mode
     },
     updateTabActiveIndex () {
       // store.commit('services/updateTabActiveIndex', )

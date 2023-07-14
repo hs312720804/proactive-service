@@ -16,13 +16,13 @@
           <el-dropdown
             placement="bottom-end"
             trigger="click"
-            :hide-on-click="false"
+            :hide-on-click="true"
             @command="handleCommand"
           >
             <i class="el-icon-more"></i>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item :command="'open_' + index">打开</el-dropdown-item>
-              <el-dropdown-item :command="'analyse_' + index">分析</el-dropdown-item>
+              <el-dropdown-item :command="'anylise_' + index">分析</el-dropdown-item>
               <el-dropdown-item :command="'withDraw_' + index">下架</el-dropdown-item>
               <el-dropdown-item :command="'delete_' + index">删除</el-dropdown-item>
             </el-dropdown-menu>
@@ -103,11 +103,23 @@ export default {
       const targetTabInfo = this.listArr[this.activeIndex]
       this.$store.commit('services/addTab', targetTabInfo)
       this.$router.push({
-        path: '/interaction-detail'
+        path: '/interaction-detail',
+        query: {
+          mode: 'edit'
+        }
       })
     },
-    analyse () {
-      console.log('analyse')
+    anylise () {
+      // console.log('anylise')
+      const targetTabInfo = this.listArr[this.activeIndex]
+      // console.debug('anylise targetTabInfo', targetTabInfo)
+      this.$store.commit('services/addTab', targetTabInfo)
+      this.$router.push({
+        path: '/interaction-detail',
+        query: {
+          mode: 'anylise'
+        }
+      })
     },
     async withDraw () {
       console.log('withDraw')
@@ -179,8 +191,8 @@ export default {
         case 'open':
           this.openService()
           break
-        case 'analyse':
-          this.analyse()
+        case 'anylise':
+          this.anylise()
           break
         case 'withDraw':
           this.withDraw()

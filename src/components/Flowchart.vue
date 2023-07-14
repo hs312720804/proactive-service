@@ -1,6 +1,39 @@
 <template>
   <div class="flowchart-component-wrapper">
-    <Graph :showNodeDetail="showNodeDetail" @updateDetail="updateDetail"></Graph>
+    <div class="anylise-filter-wrapper" v-if="!isEdit">
+      <el-form :inline="true">
+        <el-form-item>
+          <el-radio-group v-model="anyliseFilterForm.versionId" size="medium">
+            <el-radio-button
+              v-for="(item) in anyliseVersionList"
+              :key="item.id"
+              :label="item.id"
+            >{{ item.humanVersion }}</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="维度" style="margin-left: 20px">
+          <el-radio-group v-model="anyliseFilterForm.dataType">
+            <el-radio :label="1">PV</el-radio>
+            <el-radio :label="2">UV</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="选择日期" style="margin-left: 20px">
+          <el-date-picker
+            v-model="anyliseFilterForm.time"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="yyyy-MM-dd"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="search">查询</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <Graph :isEdit="isEdit" :showNodeDetail="showNodeDetail" @updateDetail="updateDetail"></Graph>
     <Detail
       v-if="showDetail"
       class="detail-wrapper"
@@ -10,15 +43,17 @@
   </div>
 </template>
 <script>
+import store from 'cseed-frame/store/_index'
 import Graph from '@/components/Flow/Graph'
 import Detail from '@/components/Flow/Detail'
+import { getAnyliseVersionListAPI } from '@/services/anylise'
 export default {
   components: {
     Graph,
     Detail
   },
   props: {
-    statu: { // edit, view
+    statu: { // edit, anylise
       type: String,
       default: 'edit'
     },
@@ -33,16 +68,51 @@ export default {
   },
   data () {
     return {
-      showNodeDetail: false
+      showNodeDetail: false,
+      anyliseVersionList: [], // 分析版本列表 array
+      anyliseFilterForm: {
+        versionId: '',
+        dataType: 1,
+        time: '',
+        beginTime: '',
+        endTime: ''
+      } // 分析筛选表单
     }
   },
   methods: {
     updateDetail (data) {
       this.showNodeDetail = data
+    },
+    search () {
+      // console.debug('search: ', this.anyliseFilterForm)
+      if (this.anyliseFilterForm.time) {
+        this.anyliseFilterForm.beginTime = this.anyliseFilterForm.time[0]
+        this.anyliseFilterForm.endTime = this.anyliseFilterForm.time[1]
+      }
+      store.commit('flow/setAnyliseFilterForm', this.anyliseFilterForm)
+    },
+    async getAnyliseVersionList () {
+      try {
+        const res = await getAnyliseVersionListAPI({
+          serviceId: Number(this.serviceId) // 19Number(this.serviceId)
+        })
+        if (res.code === 1000) {
+          // console.debug('getAnyliseVersionList res: ', res)
+          this.anyliseVersionList = res.data
+          // this.versionList = res.data
+        }
+      } catch (error) {
+        console.error('getAnyliseVersionList error: ', error)
+      }
+    },
+
+    async initAnylise () {
+      // （1）获取版本列表
+      await this.getAnyliseVersionList()
     }
-    // updateNodeInfo (nodeData) {
-    //   console.debug('updateNodeInfo', nodeData)
-    // }
+  },
+  mounted () {
+    this.initAnylise()
   },
   computed: {
     isEdit () {
@@ -61,6 +131,9 @@ export default {
   height 68vh
   .detail-wrapper {
 
+  }
+  .anylise-filter-wrapper {
+    margin-bottom 10px
   }
 }
 </style>

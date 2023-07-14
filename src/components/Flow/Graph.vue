@@ -1,11 +1,12 @@
 <template>
   <div :class="[showNodeDetail ? 'limit-graph' : '', 'graph-component']">
-    <FlowComposition @drag="handleCompositionDrag"></FlowComposition>
+    <FlowComposition v-if="isEdit" @drag="handleCompositionDrag"></FlowComposition>
     <!-- 解决画布resize后,节点被遮挡问题 -->
     <div style="width: 100%;height: 100%">
       <div class="graph-simply-container" :id="containerId"></div>
     </div>
     <Operate
+      v-if="isEdit"
       @add="addZoom"
       @reduce="reduceZoom"
     ></Operate>
@@ -23,6 +24,7 @@ import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
 import { addJudgeNodeAPI, addDialogueNodeAPI, deleteNodeAPI, getVersionIdAPI, getTreeDataAPI } from '@/services/flow'
 import { getStatuTitleAPI } from '@/services/services'
+import { getAnyliseTreeAPI } from '@/services/anylise'
 export default {
   components: {
     FlowComposition,
@@ -32,11 +34,16 @@ export default {
     showNodeDetail: { // 显示节点详情
       type: Boolean,
       default: false
+    },
+    isEdit: { // 是否是编辑状态 还可以是分析状态
+      type: Boolean,
+      default: true
     }
   },
   inject: ['serviceId'],
   data () {
     return {
+      showAnylise: false,
       versionId: '',
       graph: null, // 画布
       dnd: null, // 拖拽
@@ -88,7 +95,7 @@ export default {
         switch (treeItem.nodeType) {
           case 1: // 'start'
             // eslint-disable-next-line no-case-declarations
-            const node = { // 开始节点
+            let startParentNode = { // 开始节点
               id: treeItem.nodeId.toString(), // String，节点的唯一标识
               shape: 'ellipse', // 使用 ellipse 渲染
               x: 0, // Number，必选，节点位置的 x 值
@@ -116,7 +123,24 @@ export default {
                 ...treeItem
               }
             }
-            this.graph.addNode(node)
+            // eslint-disable-next-line no-case-declarations
+            const RateNode = null
+            startParentNode = this.graph.addNode(startParentNode)
+            if (this.showAnylise) {
+              treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
+                startParentNode.addChild(this.graph.addNode({
+                  shape: 'title-node',
+                  x: startParentNode.getBBox().x - startParentNode.size().width - 30,
+                  y: startParentNode.getBBox().y + 30 * index,
+                  attrs: {
+                    text: {
+                      text: item
+                    }
+                  }
+                }))
+              })
+            }
+            startParentNode.addChild(RateNode)
             break
           case 2: // 'dialogue'
             // eslint-disable-next-line no-case-declarations
@@ -207,6 +231,20 @@ export default {
                 parentNode.addChild(node)
               })
             }
+            if (this.showAnylise) {
+              treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
+                parentNode.addChild(this.graph.addNode({
+                  shape: 'title-node',
+                  x: parentNode.getBBox().x - 80,
+                  y: parentNode.getBBox().y + 30 * index,
+                  attrs: {
+                    text: {
+                      text: item
+                    }
+                  }
+                }))
+              })
+            }
             break
           case 3: // judge
             // eslint-disable-next-line no-case-declarations
@@ -230,6 +268,20 @@ export default {
               }
             })
             judgeParentNode.addChild(juidgeTitleNode)
+            if (this.showAnylise) {
+              treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
+                judgeParentNode.addChild(this.graph.addNode({
+                  shape: 'title-node',
+                  x: judgeParentNode.getBBox().x - 80,
+                  y: judgeParentNode.getBBox().y + 30 * index,
+                  attrs: {
+                    text: {
+                      text: item
+                    }
+                  }
+                }))
+              })
+            }
             break
           case 4: // skill节点
             // eslint-disable-next-line no-case-declarations
@@ -304,6 +356,7 @@ export default {
               target: {
                 ...targetData
               },
+              label: treeItem?.lineText,
               router: {
                 name: 'manhattan',
                 // name: 'er',
@@ -872,7 +925,7 @@ export default {
       this.graph.on('cell:mouseenter', ({ cell }) => {
         // console.debug('mouseenter cell: ', cell)
         if (cell.isNode()) {
-          cell.getData().nodeType !== 1 && cell.id !== 'start' && !cell.hasParent() && cell.addTools([
+          cell.getData().nodeType !== 1 && cell.id !== 'start' && !cell.hasParent() && this.isEdit && cell.addTools([
             {
               name: 'button-remove',
               args: {
@@ -1167,6 +1220,20 @@ export default {
         this.logGraph()
       })
     },
+    async getAnyliseTreeData (formData) {
+      try {
+        delete formData.time
+        const res = await getAnyliseTreeAPI(formData)
+        if (res.code === 1000) {
+          // console.debug('getAnyliseTreeData res: ', res)
+          this.tree = res.data
+          this.treeToGraph()
+          this.showAnylise = true
+        }
+      } catch (error) {
+        console.error('getAnyliseTreeData error: ', error)
+      }
+    },
     initVuexListen () {
       store.subscribe((mutation, state) => {
         if (mutation.type === 'flow/updateStartNodeLink') {
@@ -1181,6 +1248,10 @@ export default {
         }
         if (mutation.type === 'flow/updateGraphTree') {
           this.getTreeData()
+        }
+        if (mutation.type === 'flow/setAnyliseFilterForm') {
+          // console.debug('setAnyliseFilterForm: ', mutation.payload)
+          this.getAnyliseTreeData(mutation.payload)
         }
       })
     },

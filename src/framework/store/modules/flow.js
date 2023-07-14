@@ -44,6 +44,9 @@ export default {
     updateGraphTree () {
       // 更新画布树
     },
+    setAnyliseFilterForm () {
+      // 更新了分析筛选
+    },
     // 存储时机:
     // 1. 画布初始化时
     // 2. 新添加节点到画布
