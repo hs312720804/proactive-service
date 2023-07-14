@@ -123,8 +123,8 @@ export default {
               shape: 'rect',
               width: 320,
               height: 80,
-              x: 100 + 200 * treeIndex,
-              y: 100 + 100 * treeIndex,
+              x: 200 + 200 * treeIndex,
+              y: 200 + 100 * treeIndex,
               label: '',
               attrs: {
                 text: {
@@ -214,8 +214,8 @@ export default {
               data: {
                 ...treeItem
               },
-              x: 200 + 100 * treeIndex,
-              y: 200 + 100 * treeIndex
+              x: 50 + 100 * treeIndex,
+              y: 50 + 100 * treeIndex
             })
             // eslint-disable-next-line no-case-declarations
             const juidgeTitleNode = this.graph.addNode({
@@ -294,7 +294,8 @@ export default {
                 cell: targetCell.id
               }
             }
-            console.debug('sourceCell: ', sourceCell, targetCell)
+            // console.debug('sourceCell: ', sourceCell)
+            // console.debug('targetCell: ', targetCell)
             this.graph.addEdge({
               source: {
                 ...sourceData
@@ -1088,72 +1089,76 @@ export default {
     },
     updateJudgeNodeRender (formInfo) {
       // console.debug('updateJudgeNodeRender: ', formInfo)
-      const { nodeId, interActifyAssertsList, content, title } = formInfo
-      const nodeList = this.graph.getNodes()
-      const target = nodeList.find((node) => {
-        return node.getData().nodeId === nodeId
-      })
-      target.setAttrByPath('text/text', content) // 更新文案
-      const childNodes = target.getChildren() || []
-      if (childNodes && childNodes?.length > 0) {
-        const titleNode = childNodes.find(item => item.getData().type === 'title-node')
-        titleNode.setAttrByPath('text/text', formInfo.title) // 获取并更新对话框标题
-      }
+      setTimeout(() => {
+        this.getTreeData()
+      }, 500)
+      // const { nodeId, interActifyAssertsList, content, title } = formInfo
+      // const nodeList = this.graph.getNodes()
+      // const target = nodeList.find((node) => {
+      //   return node.getData().nodeId === nodeId
+      // })
+      // target.setAttrByPath('text/text', content) // 更新文案
+      // const childNodes = target.getChildren() || []
+      // if (childNodes && childNodes?.length > 0) {
+      //   const titleNode = childNodes.find(item => item.getData().type === 'title-node')
+      //   titleNode.setAttrByPath('text/text', formInfo.title) // 获取并更新对话框标题
+      // }
     },
     updateDialogueNodeRender (formInfo) { // 更新画布中 刚更新过的对话框节点 渲染
       console.debug('updateDialogueNodeRender: ', formInfo)
+      setTimeout(() => {
+        this.getTreeData()
+      }, 500)
       // payload 是节点详情 form 数据 里面已经有节点id了
-      const { nodeId, interActifyButtonsList, content } = formInfo
+      // const { nodeId, interActifyButtonsList, content } = formInfo
       // 匹配对应节点 并更新里面的 title content buttonList 试试看吧
-      const nodeList = this.graph.getNodes()
-      const target = nodeList.find((node) => {
-        return node.getData().nodeId === nodeId
-      })
-      target.setAttrByPath('text/text', content) // 更新对话框文案
-      const childNodes = target.getChildren() || []
-      if (childNodes && childNodes?.length > 0) {
-        const titleNode = childNodes.find(item => item.getData().type === 'title-node')
-        titleNode.setAttrByPath('text/text', formInfo.title) // 获取并更新对话框标题
-      }
-      // 先清空所有 动态和静态的按钮
-      // console.debug('updateDialogueNodeRender childNodes: ', childNodes)
-      childNodes.forEach((node) => {
-        if (node.getData().type === 1) {
-          target.removeChild(node) // this.graph.removeNode(node) 也可以实现画布删除节点
-        }
-      })
-      // 把按钮加回来
-      if (interActifyButtonsList && interActifyButtonsList.length > 0) {
-        interActifyButtonsList.forEach((buttonItem, buttonIndex) => {
-          if (buttonItem.type === 1) { // 动态按钮
-            // console.debug('target.getBBox(): ', target.getBBox()
-            const newButtonNode = this.graph.addNode({
-              shape: 'dynamic-button',
-              x: target.getBBox().x + 10 + 60 * buttonIndex,
-              y: target.getBBox().y + target.size().height - 30,
-              attrs: {
-                text: {
-                  text: buttonItem.name
-                }
-              },
-              ports: { // @todo 连接桩 这里要看后台树形结构是怎么返回
-                items: [
-                  {
-                    id: `${target.id}_${buttonIndex}`,
-                    group: 'bottom',
-                    zIndex: 20
-                  }
-                ]
-              },
-              data: {
-                type: 'dialogue-button',
-                ...buttonItem
-              }
-            })
-            target.addChild(newButtonNode)
-          }
-        })
-      }
+      // const nodeList = this.graph.getNodes()
+      // const target = nodeList.find((node) => {
+      //   return node.getData().nodeId === nodeId
+      // })
+      // target.setAttrByPath('text/text', content) // 更新对话框文案
+      // const childNodes = target.getChildren() || []
+      // if (childNodes && childNodes?.length > 0) {
+      //   const titleNode = childNodes.find(item => item.getData().type === 'title-node')
+      //   titleNode.setAttrByPath('text/text', formInfo.title) // 获取并更新对话框标题
+      // }
+      // // 先清空所有 动态和静态的按钮
+      // childNodes.forEach((node) => {
+      //   if (node.getData().type === 1) {
+      //     target.removeChild(node) // this.graph.removeNode(node) 也可以实现画布删除节点
+      //   }
+      // })
+      // // 把按钮加回来
+      // if (interActifyButtonsList && interActifyButtonsList.length > 0) {
+      //   interActifyButtonsList.forEach((buttonItem, buttonIndex) => {
+      //     if (buttonItem.type === 1) { // 动态按钮
+      //       const newButtonNode = this.graph.addNode({
+      //         shape: 'dynamic-button',
+      //         x: target.getBBox().x + 10 + 60 * buttonIndex,
+      //         y: target.getBBox().y + target.size().height - 30,
+      //         attrs: {
+      //           text: {
+      //             text: buttonItem.name
+      //           }
+      //         },
+      //         ports: { // @todo 连接桩 这里要看后台树形结构是怎么返回
+      //           items: [
+      //             {
+      //               id: `${target.id}_${buttonIndex}`,
+      //               group: 'bottom',
+      //               zIndex: 20
+      //             }
+      //           ]
+      //         },
+      //         data: {
+      //           type: 'dialogue-button',
+      //           ...buttonItem
+      //         }
+      //       })
+      //       target.addChild(newButtonNode)
+      //     }
+      //   })
+      // }
       this.$nextTick(() => {
         this.logGraph()
       })
