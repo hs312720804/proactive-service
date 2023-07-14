@@ -49,6 +49,11 @@ export default function createRoutes (frameRoutes = []) {
       name: 'interaction-detail',
       component: () => import(/* webpackChunkName: "service" */ '@/views/serviceInteraction/Detail.vue')
     },
+    {
+      path: '/service-timing',
+      name: 'service-timing',
+      component: () => import(/* webpackChunkName: "LowcodeEngine" */ '@/views/LowcodeEngine/Index.vue')
+    },
     // {
     //   path: '/baseListTest',
     //   name: 'baseListTest',
