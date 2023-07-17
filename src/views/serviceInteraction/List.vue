@@ -10,7 +10,7 @@
         <img class="list-img" :src="item.img" alt="" />
         <div class="content-wrapper">
           <p class="title">{{ item.serviceName }}</p>
-          <p class="desc">{{ item.serviceName }}</p>
+          <p class="desc">{{ item.remark }}</p>
         </div>
         <div class="more" @click.stop>
           <el-dropdown
@@ -45,6 +45,9 @@
         <el-form-item label="服务名" label-width="150" prop="serviceName">
           <el-input v-model="servicesForm.serviceName" placeholder="请输入" autocomplete="off"></el-input>
         </el-form-item>
+        <el-form-item label="服务标识" label-width="150" prop="serviceKey">
+          <el-input v-model="servicesForm.serviceKey" placeholder="请输入" autocomplete="off"></el-input>
+        </el-form-item>
         <el-form-item label="描述" label-width="150">
           <el-input
             autocomplete="off"
@@ -72,12 +75,17 @@ export default {
       activeIndex: -1,
       servicesForm: {
         serviceName: '',
+        serviceKey: '',
         remark: ''
       },
       rule: {
         serviceName: [
           { required: true, message: '请输入服务名', trigger: 'blur' },
-          { min: 1, max: 50, message: '长度在 1 到 50个字符', trigger: 'blur' }
+          { min: 1, max: 50, message: '不可超过50字符', trigger: 'blur' }
+        ],
+        serviceKey: [
+          { required: true, message: '请输入服务标识', trigger: 'blur' },
+          { pattern: /^[a-zA-Z][\w]{0,49}$/, message: '仅支持字母、数字、下划线,首字符必须为字母,不可超过50字符', trigger: 'blur' }
         ]
       }
     }
