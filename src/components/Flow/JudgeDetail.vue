@@ -182,6 +182,7 @@ export default {
       info.interActifyAssertsList.forEach(item => {
         if (item?.nextNodeList?.length > 0) { // 技能 / 节点 处理
           item.nextNodeList.forEach((nextNodeItem, nextNodeIndex) => {
+            nextNodeItem.skillParam = []
             const keys = Object.keys(nextNodeItem)
             this.skillList.forEach((skillItem, skillIndex) => {
               if (nextNodeItem?.callType === 1 && nextNodeItem?.nextSkillId) {
@@ -200,11 +201,13 @@ export default {
                       if (paramItem.dataType === 1) { // 1数值 2字符串
                         nextNodeItem.skillParam.push({
                           key: paramItem.paramKey,
+                          name: paramItem.paramName,
                           value: Number(nextNodeItem[paramItem.paramKey])
                         })
                       } else if (paramItem.dataType === 2) {
                         nextNodeItem.skillParam.push({
                           key: paramItem.paramKey,
+                          name: paramItem.paramName,
                           value: nextNodeItem[paramItem.paramKey].toString()
                         })
                       }
