@@ -231,6 +231,7 @@
                 </el-select>
                 <el-time-picker
                   v-if="childItem.type === 1"
+                  style="margin-left: 5px;"
                   v-model="childItem.staticTimeVal"
                   value-format="HH:mm:ss"
                   placeholder="选择时间"
@@ -238,7 +239,7 @@
                 </el-time-picker>
                 <el-select
                   v-else-if="childItem.type === 2"
-                  style="width: 150px"
+                  style="width: 150px;margin-left: 5px;"
                   :key="n + childItem.tagKey + childItem.type"
                   v-model="childItem.inferenceTimeVal"
                   filterable
@@ -257,6 +258,7 @@
                 </el-select>
                 <el-time-picker
                   v-else-if="childItem.type === 3"
+                  style="margin-left: 5px;"
                   is-range
                   v-model="childItem.intervalTimeVal"
                   value-format="HH:mm:ss"
@@ -268,7 +270,7 @@
                 </el-time-picker>
                 <template v-else-if="childItem.type === 4">
                   <el-select
-                    style="width: 150px"
+                    style="width: 150px;margin-left: 5px;"
                     :key="n + childItem.tagKey + childItem.type + 'region-type'"
                     v-model="childItem.inferRegionStartVal"
                     filterable

@@ -113,6 +113,15 @@ export default {
     saveForm () {
       this.$refs.timingForm.validate(valid => {
         if (valid) {
+          if (this.$refs.tagRule) {
+            if (Array.isArray(this.$refs.tagRule)) { // 页面存在多个标签规则组件
+              this.$refs.tagRule.map((component) => {
+                component.transformSaveRules()
+              })
+            } else {
+              this.$refs.tagRule.transformSaveRules()
+            }
+          }
           this.form.ruleJson = this.form.ruleJsonObj ? JSON.stringify(this.form.ruleJsonObj) : '{}'
           if (this.mode === 'add') {
             this.addServiceTiming()
