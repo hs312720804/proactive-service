@@ -1284,20 +1284,20 @@
     "@stateform/element" "^0.1.14"
     "gateschema-form-vue" "^0.2.4"
 
-"@cseed/locale@^1.0.4", "@cseed/locale@^1.0.8":
-  "integrity" "sha512-a1jtHrWiOdaUXzq/HrrUJlDdrLUE+QkHKy6pFOAGeft9CjunvuNMTQFxWiVpSzIlcZmP4dxm0UEKkQrTlZTsRw=="
-  "resolved" "http://172.20.155.102:4873/@cseed%2flocale/-/locale-1.0.8.tgz"
-  "version" "1.0.8"
+"@cseed/locale@^1.0.4", "@cseed/locale@^1.1.4":
+  "integrity" "sha512-zsVM8rIFBUbIBC5wUfMORtMjm27ar3gqPbzCZbx+AzXeSPKYr+Rzlz8wYL1NNsyaPfi8O29s/gRyM4bbmhFCFw=="
+  "resolved" "http://172.20.155.102:4873/@cseed%2flocale/-/locale-1.1.4.tgz"
+  "version" "1.1.4"
   dependencies:
     "element-ui" "^2.15.10"
 
-"@cseed/public-utils@^1.0.4", "@cseed/public-utils@^1.0.8":
-  "integrity" "sha512-jDMs29J38RnUs/PYQJjraW1QJt6ZmwoAy7M4kfNF8rIazI6rnnMIiO9C9kJ1iaSPIv7CtgI7BkV+W6QPzEscPQ=="
-  "resolved" "http://172.20.155.102:4873/@cseed%2fpublic-utils/-/public-utils-1.0.8.tgz"
-  "version" "1.0.8"
+"@cseed/public-utils@^1.0.4", "@cseed/public-utils@^1.1.6":
+  "integrity" "sha512-pUL0S6dgj7XtSofBx5wp2OOC6i208kp7IuM2YfRnrtlz5cy3SmSrYJlbb4QCxzY1Vko55R4GWNOIeWGcx8Cfsg=="
+  "resolved" "http://172.20.155.102:4873/@cseed%2fpublic-utils/-/public-utils-1.1.6.tgz"
+  "version" "1.1.6"
   dependencies:
     "@cbee/bee-sdk-javascript" "^0.0.3"
-    "@cseed/locale" "^1.0.8"
+    "@cseed/locale" "^1.1.4"
     "axios" "^1.1.2"
     "lodash" "^4.17.21"
     "nprogress" "^0.2.0"
@@ -1340,26 +1340,26 @@
   dependencies:
     "@cseed/admin-toolkit" "^1.0.4"
 
-"@cseed/ui-lowcode-engine@^1.0.5", "@cseed/ui-lowcode-engine@^1.0.8":
-  "integrity" "sha512-5ZMbrrG5kQy72nOJbzi1XVq7gdgtXdP28CmjFzqF/ju6yfM0RS7gbcw8yORIUKRANhA6+3lgcL8BsCFOJngtMg=="
-  "resolved" "http://172.20.155.102:4873/@cseed%2fui-lowcode-engine/-/ui-lowcode-engine-1.0.8.tgz"
-  "version" "1.0.8"
+"@cseed/ui-lowcode-engine@^1.0.5", "@cseed/ui-lowcode-engine@^1.1.6":
+  "integrity" "sha512-CCssw8M7hu1bJh5MHE8KrjGv33NsJDZql2mWIOKuRMWKFGw66YhHfqpJD7Ng8TQjR8HpTgm+yNjoGLnIYXcgaQ=="
+  "resolved" "http://172.20.155.102:4873/@cseed%2fui-lowcode-engine/-/ui-lowcode-engine-1.1.6.tgz"
+  "version" "1.1.6"
   dependencies:
     "@cseed/admin-toolkit" "^1.0.8"
-    "@cseed/public-utils" "^1.0.8"
-    "@cseed/ui-lower-components" "^1.0.8"
+    "@cseed/public-utils" "^1.1.6"
+    "@cseed/ui-lower-components" "^1.1.6"
     "dayjs" "^1.11.7"
     "lodash" "^4.17.21"
     "qs" "^6.11.0"
     "vue-ref" "^2.0.0"
 
-"@cseed/ui-lower-components@^1.0.8":
-  "integrity" "sha512-I3uxPlJ5z0q9RkT8v6LK1pOes+6z4hGjiufEoCJeI6p0Ujhl4ylvg5Dy7bxLSEtwsQYz5uO7NEmJpQOkR/wUjA=="
-  "resolved" "http://172.20.155.102:4873/@cseed%2fui-lower-components/-/ui-lower-components-1.0.8.tgz"
-  "version" "1.0.8"
+"@cseed/ui-lower-components@^1.1.6":
+  "integrity" "sha512-63eytVtjyEWRfYPmfrCm6QrjQFfSxpsmf31lGEbAiPEbE+eE9Xg4eT3yIiI3ulwGH09xvDdZU+H9+izczQADJw=="
+  "resolved" "http://172.20.155.102:4873/@cseed%2fui-lower-components/-/ui-lower-components-1.1.6.tgz"
+  "version" "1.1.6"
   dependencies:
     "@cseed/admin-toolkit" "^1.0.8"
-    "@cseed/public-utils" "^1.0.8"
+    "@cseed/public-utils" "^1.1.6"
     "dayjs" "^1.11.7"
     "lodash" "^4.17.21"
     "vue-awesome-swiper" "3.1.3"
