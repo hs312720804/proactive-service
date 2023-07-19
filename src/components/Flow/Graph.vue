@@ -15,7 +15,6 @@
 <script>
 import store from 'cseed-frame/store/_index'
 import { Graph, Shape, ObjectExt } from '@antv/x6'
-// import { register } from '@antv/x6-vue-shape'
 import { Dnd } from '@antv/x6-plugin-dnd' // 拖拽
 import { Snapline } from '@antv/x6-plugin-snapline' // 对齐线
 import { Transform } from '@antv/x6-plugin-transform' // 拉动节点 显示图形转换
@@ -320,6 +319,8 @@ export default {
             const targetCell = this.graph.getNodes().find((node, index) => {
               return this.getNodeId(node) === target
             })
+            console.debug('sourceCell: ', sourceCell)
+            console.debug('targetCell: ', targetCell)
             if (sourceCell.hasPorts()) {
               console.debug('sourceCell ports: ', sourceCell.getPorts())
               const bottomPort = sourceCell.getPorts().find((port, index) => {
@@ -335,20 +336,18 @@ export default {
               }
             }
             if (targetCell.hasPorts()) {
-              const bottomPort = targetCell.getPorts().find((port, index) => {
-                return port.group === 'bottom'
+              const topPort = targetCell.getPorts().find((port, index) => {
+                return port.group === 'top'
               })
               targetData = {
                 cell: targetCell.id,
-                port: bottomPort.id
+                port: topPort.id
               }
             } else {
               targetData = {
                 cell: targetCell.id
               }
             }
-            // console.debug('sourceCell: ', sourceCell)
-            // console.debug('targetCell: ', targetCell)
             this.graph.addEdge({
               source: {
                 ...sourceData
