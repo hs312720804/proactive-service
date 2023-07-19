@@ -244,24 +244,31 @@ export default {
           buttonItem.nextNodeList.forEach((operateItem, operateIndex) => {
             if (operateItem?.callType === 1 && operateItem?.nextSkillId) {
               // console.debug('keys：', Object.keys(operateItem))
+              operateItem.skillParam = []
               const keys = Object.keys(operateItem)
               this.skillList.forEach((skillItem, skillIndex) => {
-                if (skillItem.skillId === operateItem.nextSkillId) {
+                if (skillItem.skillId.toString() === operateItem?.nextSkillId.toString()) {
                   const paramList = skillItem.paramList
                   paramList.forEach((paramItem, paramIndex) => {
                     const key = paramItem.paramKey
                     if (!operateItem.skillParam) {
                       operateItem.skillParam = []
+                    } else {
+                      if (typeof operateItem.skillParam === 'string') {
+                        operateItem.skillParam = JSON.parse(operateItem.skillParam)
+                      }
                     }
                     if (keys.includes(key)) {
                       if (paramItem.dataType === 1) { // 1数值 2字符串
                         operateItem.skillParam.push({
                           key: paramItem.paramKey,
+                          name: paramItem.paramName,
                           value: Number(operateItem[paramItem.paramKey])
                         })
                       } else if (paramItem.dataType === 2) {
                         operateItem.skillParam.push({
                           key: paramItem.paramKey,
+                          name: paramItem.paramName,
                           value: (operateItem[paramItem.paramKey]).toString()
                         })
                       }

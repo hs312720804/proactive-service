@@ -680,6 +680,7 @@ export default {
         inputType: tag.inputType,
         tagId: tag.tagId,
         tagKey: tag.tagKey,
+        tagType: tag.tagType,
         tagName: tag.tagName,
         operator,
         value: '',
