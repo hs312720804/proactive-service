@@ -23,7 +23,7 @@
     "@cseed/admin-toolkit": "^1.0.4",
     "@cseed/ui-base-list": "^1.0.4",
     "@cseed/ui-base-list-pro": "^1.0.4",
-    "@cseed/ui-lowcode-engine": "^1.0.8",
+    "@cseed/ui-lowcode-engine": "^1.1.6",
     "axios": "^0.24.0",
     "core-js": "^3.8.3",
     "crypto-js": "^4.1.1",
