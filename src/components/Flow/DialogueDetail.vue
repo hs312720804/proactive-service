@@ -4,7 +4,7 @@
              label-width="80px"
     >
       <el-form-item label="节点ID：">{{ detailForm.nodeId }}</el-form-item>
-      <el-form-item label="命名：">
+      <el-form-item label="命名：" prop="title">
         <el-col :span="11">
           <el-input v-model="detailForm.title"></el-input>
         </el-col>
@@ -130,6 +130,10 @@ export default {
         content: '' // 文案
       },
       rules: {
+        title: [
+          { required: true, message: '请输入命名', trigger: 'blur' },
+          { min: 1, max: 50, message: '不可超过50个字符', trigger: 'blur' }
+        ],
         content: [
           { required: true, message: '请输入文案', trigger: 'blur' },
           { min: 1, max: 50, message: '不可超过50个字符', trigger: 'blur' }

@@ -7,15 +7,21 @@
         :key="index"
       >
         <span class="head-text">{{ desc }} :</span>
-        <el-select class="short-select-width" v-model="item.callType" placeholder="调用" style="margin-right: 5px;">
+        <el-select
+          class="short-select-width"
+          v-model="item.callType"
+          placeholder="调用"
+          style="margin-right: 5px;"
+          @change="updatePicked"
+        >
           <el-option label="调用技能" :value="1"></el-option>
-          <el-option label="调用节点" :value="2"></el-option>
+          <el-option label="调用节点" :value="2" :disabled="disableAdd"></el-option>
         </el-select>
         <el-select
           class="short-select-width"
           v-if="item.callType === 1"
           v-model="item.nextSkillId"
-          placeholder="请选择技能"
+          placeholder="选择技能"
           filterable
           @change="updateSkillPicked(item)"
         >
@@ -28,9 +34,9 @@
         </el-select>
         <el-select
           class="short-select-width"
-          v-else
+          v-else-if="item.callType === 2"
           v-model="item.nextNodeId"
-          placeholder="请选择节点"
+          placeholder="选择节点"
           @change="updateNodePicked(item)"
           filterable
         >
@@ -94,7 +100,11 @@ export default {
     }
   },
   computed: {
-    //
+    disableAdd () {
+      return this.list.filter((item) => {
+        return item.callType === 2
+      }).length >= 1
+    }
   },
   watch: {
     //
@@ -104,11 +114,14 @@ export default {
       const res = this.skillList.find(item => item.skillId.toString() === this.list[index].nextSkillId.toString()) || []
       return res
     },
+    updatePicked (val) {
+      // console.debug('updatePicked', val)
+    },
     updateSkillPicked (payload) {
-      console.debug('updateSkillPicked', payload)
+      // console.debug('updateSkillPicked', payload)
     },
     updateNodePicked () {
-      console.debug('updateNodePicked')
+      // console.debug('updateNodePicked')
     },
     getNodeId (node) {
       const data = node.getData()
@@ -120,11 +133,9 @@ export default {
       return ''
     },
     add () { // 添加操作
-      console.debug('add')
       this.$emit('add', { parentIndex: this.$props.parentIndex })
     },
     del (index) {
-      console.debug('delete', index)
       this.$emit('del', { levelIndex: index, parentIndex: this.$props.parentIndex })
     }
   },
@@ -147,8 +158,9 @@ export default {
                 display flex
                 align-items center
                 flex-wrap wrap
+                padding 10px
                 .short-select-width {
-                    width 120px
+                    width 110px
                     margin-bottom 5px
                     margin-left 5px
                 }

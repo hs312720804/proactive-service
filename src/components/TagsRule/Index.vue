@@ -93,7 +93,7 @@
                 <span class="txt">{{ childItem.tagName }}</span>
                 <el-select
                   style="width: 130px"
-                  :key="n + '-dialogue-show'"
+                  :key="n + '-dialogue-show' + index"
                   v-model="childItem.showDialogueNodeId"
                   filterable
                   clearable
@@ -342,7 +342,7 @@
                 <el-tag
                   class="oc-item"
                   v-for="tagItem in tagList"
-                  :key="tagItem.tagItem"
+                  :key="tagItem.tagKey"
                   @click.native="handleAddChildRule(item, tagItem)"
                   :type="dataSourceColorEnum[tagItem.dataSource]"
                 >{{ tagItem.tagName }}
@@ -421,6 +421,7 @@ export default {
   },
   methods: {
     handleRemoveRule (rule, childRule) { // 删除当前规则
+      console.debug('remove')
       const ruleJson = this.$props.ruleJson
       rule.rules.splice(rule.rules.indexOf(childRule), 1)
       if (rule.rules.length === 0) {

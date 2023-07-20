@@ -223,6 +223,8 @@ export default {
         }
         if (item?.ruleJsonObj?.rules && item?.ruleJsonObj?.rules?.length > 0) { // 非兜底的子节点规则json 字符串化
           item.ruleJson = JSON.stringify(item.ruleJsonObj)
+        } else {
+          item.ruleJson = JSON.stringify({ rules: [], condition: 'AND' })
         }
       })
       this.form.interActifyAssertsList = info.interActifyAssertsList
