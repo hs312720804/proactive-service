@@ -132,7 +132,7 @@ export default {
       rules: {
         content: [
           { required: true, message: '请输入文案', trigger: 'blur' },
-          { min: 1, max: 15, message: '不可超过15个字', trigger: 'blur' }
+          { min: 1, max: 50, message: '不可超过50个字符', trigger: 'blur' }
         ]
       },
       buttonDetail: {}, // 按钮详情

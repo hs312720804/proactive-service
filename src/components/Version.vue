@@ -50,15 +50,15 @@ export default {
       }
     },
     async uploadVersion () {
-      setTimeout(() => {
-        store.commit('flow/updateGraphTree')
-      }, 300)
       const res = await onlineVersionAPI({
         versionId: this.versionId
       })
       if (res.code === 1000) {
         this.$message.success(res.data)
         this.fetchStatuTitle()
+        setTimeout(() => {
+          store.commit('flow/updateGraphTree')
+        }, 1000)
       }
     },
     async resetVersion () {
@@ -82,6 +82,8 @@ export default {
       store.subscribe((mutation, state) => {
         if (mutation.type === 'flow/updateStatuTitle') {
           this.fetchStatuTitle()
+        } else if (mutation.type === 'flow/updateVersionId') { // 更新版本id
+          this.getVersionId()
         }
       })
     },

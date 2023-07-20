@@ -87,6 +87,93 @@ export default {
     }
   },
   methods: {
+    layout () { // 按照树级结构，重新渲染节点
+      const dagreLayout = new DagreLayout({
+        type: 'dagre',
+        begin: [100, 60],
+        rankDir: 'TB',
+        rankSep: 40,
+        nodeSep: 40
+      })
+      //   // this.startNode
+      const cells = this.graph.toJSON().cells
+      const edges = cells.filter((cellItem, cellIndex) => {
+        return cellItem.shape === 'edge'
+      })
+      const parentNodes = cells.filter((cellItem, cellIndex) => { //  && !cellItem.parent
+        return cellItem.shape !== 'edge' && !cellItem.parent
+      })
+      const parentEdges = edges.filter((edgeItem, edgeIndex) => {
+        const sourceCell = this.graph.getCellById(edgeItem?.source?.cell)
+        const targetCell = this.graph.getCellById(edgeItem?.target?.cell)
+        return !sourceCell.hasParent() && !targetCell.hasParent()
+      })
+      const childEdges = edges.filter((edgeItem, edgeIndex) => {
+        const sourceCell = this.graph.getCellById(edgeItem?.source?.cell)
+        const targetCell = this.graph.getCellById(edgeItem?.target?.cell)
+        return sourceCell.hasParent() || targetCell.hasParent()
+      })
+      const childNodes = cells.filter((cellItem, cellIndex) => {
+        return cellItem.shape !== 'edge' && cellItem.parent
+      })
+      const dialogStaticButtonNodes = childNodes.filter((cellItem, cellIndex) => { // 静态按钮
+        return cellItem.data['button-type'] === 'dialogue-static-button'
+      })
+      const dynamicButtonNodes = childNodes.filter((cellItem, cellIndex) => { // 动态按钮
+        return cellItem.data['button-type'] === 'dialogue-button'
+      })
+      const childLayoutArr = []
+      const parentLayout = dagreLayout.layout({ // 只对父级重新布局
+        nodes: [...parentNodes],
+        edges: [...parentEdges]
+      })
+      console.debug('layout data: ', parentLayout)
+      parentLayout.nodes.forEach((parentNode, parentIndex) => {
+        // 给父级节点更新位置
+        parentNode.position = {
+          x: parentNode.x && parentNode.x,
+          y: parentNode.y && parentNode.y
+        }
+        // 不同属性，子级节点的位置不同，要都有对应设置x，y的规则
+        childNodes.forEach((childNode, childIndex) => {
+          if (childNode.parent === parentNode.id) {
+            if (childNode.data.type === 'title-node') { // title-node
+              childNode.x = parentNode.position.x - 30
+              childNode.y = parentNode.position.y - 30
+              childNode.position = {
+                x: childNode.x,
+                y: childNode.y
+              }
+            }
+          }
+        })
+        dialogStaticButtonNodes.forEach((dialogStaticButtonNode, dialogStaticButtonIndex) => {
+          if (dialogStaticButtonNode.parent === parentNode.id) {
+            dialogStaticButtonNode.x = parentNode.position.x + parentNode.size.width - 60 - 10
+            dialogStaticButtonNode.y = parentNode.position.y + parentNode.size.height / 2 - 20 + 30 * dialogStaticButtonIndex
+            dialogStaticButtonNode.position = {
+              x: dialogStaticButtonNode.x,
+              y: dialogStaticButtonNode.y
+            }
+          }
+        })
+        dynamicButtonNodes.forEach((dynamicButtonNode, dynamicButtonIndex) => {
+          if (dynamicButtonNode.parent === parentNode.id) {
+            dynamicButtonNode.x = parentNode.position.x + 10 + 60 * dynamicButtonIndex
+            dynamicButtonNode.y = parentNode.position.y + parentNode.size.height - 30
+            dynamicButtonNode.position = {
+              x: dynamicButtonNode.x,
+              y: dynamicButtonNode.y
+            }
+          }
+        })
+      })
+      const newCells = {
+        nodes: [...(parentLayout.nodes), ...childNodes, ...dialogStaticButtonNodes, ...dynamicButtonNodes],
+        edges: [...(parentLayout.edges), ...childEdges]
+      }
+      // this.jsonToGraph(newCells)
+    },
     generateRenderTree (treeData) { // 生成渲染树 x6 cell 格式树
       console.debug('generateRenderTree: ', treeData)
       this.graph.clearCells()
@@ -149,6 +236,12 @@ export default {
               height: 80,
               x: 200 + 200 * treeIndex,
               y: 200 + 100 * treeIndex,
+              deep: true,
+              position: {
+                x: 200 + 200 * treeIndex,
+                y: 200 + 100 * treeIndex
+                // deep: true
+              },
               label: '',
               attrs: {
                 text: {
@@ -310,7 +403,6 @@ export default {
             let sourceData = {}
             // eslint-disable-next-line no-case-declarations
             let targetData = {}
-            console.debug('source: ', source, target)
             // eslint-disable-next-line no-case-declarations
             const sourceCell = this.graph.getNodes().find((node, index) => {
               return this.getNodeId(node) === source
@@ -319,8 +411,6 @@ export default {
             const targetCell = this.graph.getNodes().find((node, index) => {
               return this.getNodeId(node) === target
             })
-            console.debug('sourceCell: ', sourceCell)
-            console.debug('targetCell: ', targetCell)
             if (sourceCell.hasPorts()) {
               console.debug('sourceCell ports: ', sourceCell.getPorts())
               const bottomPort = sourceCell.getPorts().find((port, index) => {
@@ -335,7 +425,7 @@ export default {
                 cell: sourceCell.id
               }
             }
-            if (targetCell.hasPorts()) {
+            if (targetCell?.hasPorts() && targetCell.getData().type === 'judge') {
               const topPort = targetCell.getPorts().find((port, index) => {
                 return port.group === 'top'
               })
@@ -345,7 +435,7 @@ export default {
               }
             } else {
               targetData = {
-                cell: targetCell.id
+                cell: targetCell?.id
               }
             }
             this.graph.addEdge({
@@ -370,6 +460,7 @@ export default {
             break
         }
       })
+      // this.layout()
     },
     getNodeId (node) {
       const data = node.getData()
@@ -666,7 +757,12 @@ export default {
             fill: '#000',
             fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
             textAnchor: 'middle', // 左对齐
-            textVerticalAnchor: 'middle'
+            textVerticalAnchor: 'middle',
+            textWrap: {
+              width: 180,
+              height: 50,
+              ellipsis: true
+            }
             // refX: -10, // x 轴偏移量
             // refY: -10
           }
@@ -1246,7 +1342,14 @@ export default {
           this.updateJudgeNodeRender(mutation.payload)
         }
         if (mutation.type === 'flow/updateGraphTree') {
-          this.getTreeData()
+          this.getTreeData().then(() => {
+            setTimeout(() => {
+              this.getVersionId()
+            }, 800)
+          })
+          setTimeout(() => {
+            store.commit('flow/updateVersionId')
+          })
         }
         if (mutation.type === 'flow/setAnyliseFilterForm') {
           // console.debug('setAnyliseFilterForm: ', mutation.payload)

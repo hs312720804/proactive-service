@@ -47,6 +47,9 @@ export default {
     setAnyliseFilterForm () {
       // 更新了分析筛选
     },
+    updateVersionId () {
+      // 更新版本id
+    },
     // 存储时机:
     // 1. 画布初始化时
     // 2. 新添加节点到画布
