@@ -23,7 +23,7 @@
           v-model="item.nextSkillId"
           placeholder="选择技能"
           filterable
-          @change="updateSkillPicked(item)"
+          @change="updateSkillPicked"
         >
           <el-option
             v-for="skillItem in skillList"
@@ -37,7 +37,7 @@
           v-else-if="item.callType === 2"
           v-model="item.nextNodeId"
           placeholder="选择节点"
-          @change="updateNodePicked(item)"
+          @change="updateNodePicked"
           filterable
         >
           <el-option
@@ -114,14 +114,14 @@ export default {
       const res = this.skillList.find(item => item.skillId.toString() === this.list[index].nextSkillId.toString()) || []
       return res
     },
-    updatePicked (val) {
-      // console.debug('updatePicked', val)
+    updatePicked () {
+    //
     },
-    updateSkillPicked (payload) {
-      // console.debug('updateSkillPicked', payload)
+    updateSkillPicked () {
+      // this.list[index].nextSkillId = listItem.nextSkillId
     },
     updateNodePicked () {
-      // console.debug('updateNodePicked')
+      // console.debug('updateNodePicked', listItem)
     },
     getNodeId (node) {
       const data = node.getData()

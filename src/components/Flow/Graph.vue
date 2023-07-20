@@ -412,7 +412,6 @@ export default {
               return this.getNodeId(node) === target
             })
             if (sourceCell.hasPorts()) {
-              console.debug('sourceCell ports: ', sourceCell.getPorts())
               const bottomPort = sourceCell.getPorts().find((port, index) => {
                 return port.group === 'bottom'
               })

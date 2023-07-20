@@ -160,10 +160,14 @@ export default {
         this.$message.warning('最多添加4个按钮')
         return
       }
-      this.detailForm.interActifyButtonsList.push({
+      // this.detailForm.interActifyButtonsList.push({
+      //   name: '按钮',
+      //   type: 1
+      // })
+      this.$set(this.detailForm, 'interActifyButtonsList', [...this.detailForm.interActifyButtonsList, {
         name: '按钮',
         type: 1
-      })
+      }])
     },
     updateSkillPicked (data) {
       console.debug('updateSkillPicked', data)
@@ -197,7 +201,6 @@ export default {
       })
     },
     clickOperateButton (index) {
-      console.debug('clickOperateButton', index)
       this.buttonActiveIndex = index
       this.buttonDetail = this.detailForm.interActifyButtonsList[index]
     },
@@ -207,11 +210,15 @@ export default {
           this.detailForm.staticButtonsList.push(buttonItem)
         } else {
           buttonItem.nextNodeList.forEach((operateItem, operateIndex) => {
-            if (operateItem.callType === 1 && operateItem.skillParam) {
+            if (operateItem.callType === 1 && operateItem.skillParam) { // callType 1 技能 2 节点
               operateItem.skillParam = JSON.parse(operateItem.skillParam)
               operateItem.skillParam.forEach(paramItem => {
                 operateItem[paramItem.key] = paramItem.value
               })
+              operateItem.nextNodeId = '' // 避免回填切换节点时，出现节点id
+            }
+            if (operateItem.callType === 2) {
+              operateItem.nextSkillId = ''
             }
           })
         }
@@ -314,7 +321,6 @@ export default {
       this.$refs.dialogueForm.validate(valid => {
         if (valid) {
           const info = this.transformSubmitData(this.detailForm)
-          // console.debug('after transform : ', info)
           this.$emit('submit', info)
         } else {
           // console.debug('submitForm invalid')
