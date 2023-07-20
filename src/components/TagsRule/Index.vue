@@ -248,7 +248,7 @@
                 >
                   <el-option
                     v-for="inferenceItem in [
-                      { id: 1, name: childItem.type + '_[PRESJTXTIME]', cname: childItem.type + '_睡觉时间'},
+                      { id: 1, name: childItem.type + '_[sleep_time]', cname: childItem.type + '_睡觉时间'},
                     ]"
                     :key="inferenceItem.id"
                     :value="inferenceItem.name"
@@ -279,7 +279,7 @@
                   >
                     <el-option
                       v-for="timeItem in [
-                        { id: 1, name: 'YJYLBEGINTIME', cname: '静音开机开始时间' },
+                        { id: 1, name: 'silenceBootBeginTime', cname: '静音开机开始时间' },
                       ]"
                       :key="timeItem.id"
                       :value="timeItem.name"
@@ -298,7 +298,7 @@
                   >
                     <el-option
                       v-for="timeItem in [
-                        { id: 1, name: 'YJYLENDTIME', cname: '静音开机结束时间' },
+                        { id: 1, name: 'silenceBootEndTime', cname: '静音开机结束时间' },
                       ]"
                       :key="timeItem.id"
                       :value="timeItem.name"
