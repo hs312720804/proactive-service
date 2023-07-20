@@ -16,8 +16,6 @@
         <el-input v-model="form.name" style="width: 500px;"></el-input>
       </el-form-item>
       <el-form-item>
-        <!--  v-if="ruleTagsList.length > 0 " && form.serviceId -->
-        <!-- :serviceId="form.serviceId" -->
         <TagsRule
           v-if="ruleTagsList.length > 0"
           ref="tagRule"
@@ -171,12 +169,14 @@ export default {
           })
           if (res.code === 1000) {
             this.form = res.data
-            this.form.ruleJsonObj = res.data.ruleJson
-              ? JSON.parse(res.data.ruleJson)
-              : {
-                  rules: [],
-                  condition: 'AND'
-                }
+            if (res.data.ruleJson) { // 动态设置form中的ruleJsonObj, 解决丢失响应式，造成子组件无法更新问题
+              this.$set(this.form, 'ruleJsonObj', JSON.parse(res.data.ruleJson))
+            } else {
+              this.$set(this.form, 'ruleJsonObj', {
+                rules: [],
+                condition: 'AND'
+              })
+            }
           }
         } catch (error) {
           console.error('getServiceTimingDetail error: ', error)
@@ -185,11 +185,12 @@ export default {
     }
   },
   mounted () {
-    this.refill()
+    // this.refill()
   },
-  created () {
+  async created () {
     this.getServiceList()
-    this.getRuleTagsList()
+    await this.getRuleTagsList()
+    this.refill()
   }
 }
 </script>

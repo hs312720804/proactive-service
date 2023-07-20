@@ -5,19 +5,19 @@
       <div
         class="label-or-space"
         :key="parentIndex + 'or'"
-        v-show="ruleJson.rules.length > 1"
+        v-show="renderJson.rules.length > 1"
       >
         <el-button
           type="success"
           round
           :key="'button2' + '_' + parentIndex"
-          @click="handleRulesConditionChange(ruleJson)"
+          @click="handleRulesConditionChange(renderJson)"
         >
-          {{ ruleJson.condition === 'AND' ? '且' : '或' }}
+          {{ renderJson.condition === 'AND' ? '且' : '或' }}
         </el-button>
       </div>
       <template
-        v-for="(item, index) in ruleJson.rules"
+        v-for="(item, index) in renderJson.rules"
       >
         <div class="label-ground" :key="parentIndex + '_' + index">
           <div class="tag-condition--parent">
@@ -155,8 +155,8 @@
                 >
                   <el-option
                     v-for="boolItem in [
-                      { id: 1, name: '是' },
-                      { id: 0, name: '否' }
+                      { id: '1', name: '是' },
+                      { id: '0', name: '否' }
                     ]"
                     :key="boolItem.id"
                     :value="boolItem.id"
@@ -256,18 +256,21 @@
                   >
                   </el-option>
                 </el-select>
-                <el-time-picker
-                  v-else-if="childItem.type === 3"
-                  style="margin-left: 5px;"
-                  is-range
-                  v-model="childItem.intervalTimeVal"
-                  value-format="HH:mm:ss"
-                  range-separator="至"
-                  start-placeholder="开始时间"
-                  end-placeholder="结束时间"
-                  placeholder="选择时间范围"
-                >
-                </el-time-picker>
+                <template v-else-if="childItem.type === 3">
+                  <el-time-picker
+                    placeholder="选择开始时间"
+                    v-model="childItem.intervalStartVal"
+                    style="margin-left: 5px;"
+                    value-format="HH:mm:ss"
+                  ></el-time-picker>
+                  <span style="color: #666;margin-left: 2px;margin-right: 2px;">-</span>
+                  <el-time-picker
+                    placeholder="选择结束时间"
+                    v-model="childItem.intervalEndVal"
+                    style="margin-left: 5px;"
+                    value-format="HH:mm:ss"
+                  ></el-time-picker>
+                </template>
                 <template v-else-if="childItem.type === 4">
                   <el-select
                     style="width: 150px;margin-left: 5px;"
@@ -357,7 +360,7 @@
           class="optional-condition"
           v-if="tagList.length"
           :style="{
-            'padding-top': ruleJson.rules.length > 0 ? '10px' : 0,
+            'padding-top': renderJson.rules.length > 0 ? '10px' : 0,
           }"
         >
           <el-tag
@@ -408,7 +411,10 @@ export default {
     return {
       showHitTip: true,
       cache: {}, // { tagId：{ select: boolean, list: [] } }
-      versionId: ''
+      versionId: '',
+      renderJson: {
+        rules: []
+      }
     }
   },
   computed: {
@@ -417,12 +423,16 @@ export default {
     }
   },
   watch: {
-    //
+    ruleJson: {
+      handler (val) {
+        this.renderJson = val
+      },
+      immediate: true
+    }
   },
   methods: {
     handleRemoveRule (rule, childRule) { // 删除当前规则
-      console.debug('remove')
-      const ruleJson = this.$props.ruleJson
+      const ruleJson = this.renderJson
       rule.rules.splice(rule.rules.indexOf(childRule), 1)
       if (rule.rules.length === 0) {
         ruleJson.rules = ruleJson.rules.filter(function (item) {
@@ -431,7 +441,7 @@ export default {
       }
     },
     transformSaveRules () {
-      this.$props.ruleJson.rules.forEach(rule => {
+      this.renderJson.rules.forEach(rule => {
         rule.rules.forEach((childRule, childIndex) => {
           // 特殊的tagkey要特殊转value
           if (childRule.tagKey === 'button_click') {
@@ -451,13 +461,9 @@ export default {
               const inferenceTimeVal = childRule.inferenceTimeVal || 'null'
               childRule.value = inferenceTimeVal
             } else if (childRule.type === 3) {
-              const intervalTimeVal = childRule.intervalTimeVal || 'null'
-              if (Array.isArray(childRule.intervalTimeVal) && childRule.intervalTimeVal.length > 0) {
-                const intervalTimeVal = childRule.intervalTimeVal.join('-')
-                childRule.value = `${childRule.type}_${intervalTimeVal}`
-              } else {
-                childRule.value = `${childRule.type}_null`
-              }
+              const intervalStartVal = childRule.intervalStartVal || 'null'
+              const intervalEndVal = childRule.intervalEndVal || 'null'
+              childRule.value = `${childRule.type}_${intervalStartVal}]-[${intervalEndVal}`
             } else if (childRule.type === 4) {
               const inferRegionStartVal = childRule.inferRegionStartVal || 'null'
               const inferRegionEndVal = childRule.inferRegionEndVal || 'null'
@@ -468,7 +474,7 @@ export default {
           }
         })
       })
-      this.$emit('update:ruleJson', this.$props.ruleJson)
+      this.$emit('update:ruleJson', this.renderJson)
     },
     getTagUnit (tagKey) { // 获得标签key对应的单位
       return this.$props.tagList.find((tagItem, tagIndex) => {
@@ -593,7 +599,9 @@ export default {
             time: '', // 时间
             staticTimeVal: '', // 固定时间value
             inferenceTimeVal: '', // 推理时间value
-            intervalTimeVal: ['08:00:00', '09:00:00'], // 区间时间value [start, end]
+            // intervalTimeVal: ['08:00:00', '09:00:00'], // 区间时间value [start, end]
+            intervalStartVal: '', // 区间时间 start
+            intervalEndVal: '', // 区间时间 end
             inferRegionStartVal: '', // 区间推理时间 start
             inferRegionEndVal: '' // 区间推理时间 end
           }
@@ -612,7 +620,7 @@ export default {
     handleAddRule (tag) {
       console.debug('addRule: ', tag)
       this.showHitTip = false // 关闭新手指引 - 点击提示
-      if (this.ruleJson.rules.length > 50) { // 控制最多50个标签
+      if (this.renderJson.rules.length > 50) { // 控制最多50个标签
         this.$message({
           message: '已达最大数量',
           type: 'error'
@@ -634,7 +642,7 @@ export default {
       } else {
         operator = '='
       }
-      this.ruleJson.rules.push({
+      this.renderJson.rules.push({
         condition: 'AND',
         rules: [
           {
@@ -690,7 +698,7 @@ export default {
       console.debug('handleAddChildRule cache: ', this.cache)
     },
     initDynamicData () {
-      this.ruleJson.rules.forEach(ruleItem => {
+      this.renderJson.rules.forEach(ruleItem => {
         ruleItem.rules.forEach((childRule, childIndex) => {
           switch (childRule.tagKey) {
             case 'button_click':
@@ -705,8 +713,6 @@ export default {
   },
   async mounted () {
     // await this.getVersionId()
-    // this.initTagsSuggestions()
-    // this.initDynamicData()
   },
   async created () {
     await this.getVersionId()
