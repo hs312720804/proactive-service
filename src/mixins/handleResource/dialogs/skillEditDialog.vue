@@ -79,6 +79,25 @@
             + 添加参数
           </div>
         </el-form-item>
+        <el-form-item label="入参" prop="extendParamThird">
+          <div v-for="(item,index) in ruleForm.extendParamThird" :key="index+'item'" style="margin:5px 0">
+            <el-input v-model="item.key"
+                      maxlength="50"
+                      show-word-limit placeholder="请填写参数别名" style="width:calc(50% - 50px);margin-right:10px"
+            ></el-input>
+            <el-input v-model="item.name"
+                      maxlength="50"
+                      show-word-limit placeholder="请填写code" style="width:calc(50% - 50px);margin-right:10px"
+            ></el-input>
+            <el-select v-model="item.dataType" placeholder="请选择类型" style="width: 80px;">
+              <el-option label="数值" :value="1"></el-option>
+              <el-option label="字符" :value="2"></el-option>
+            </el-select>
+          </div>
+          <div class="addextendParamMapping" @click="addextendParamThird(ruleForm.extendParamThird)">
+            + 添加参数
+          </div>
+        </el-form-item>
         <el-form-item label="技能描述" prop="skillDesc">
           <el-input type="textarea" v-model="ruleForm.skillDesc"
                     maxlength="200"
@@ -205,6 +224,11 @@ export default {
           eventKey: '',
           skillKey: ''
         }],
+        extendParamThird: [{
+          key: '',
+          name: '',
+          dataType: 1
+        }],
         errorActionFlag: 0,
         startAction: '',
         appPkg: '',
@@ -299,6 +323,13 @@ export default {
         skillKey: ''
       })
     },
+    addextendParamThird (data) {
+      data.push({
+        key: '',
+        name: '',
+        dataType: 1
+      })
+    },
     submitForm () {
       this.$refs.ruleForm.validate((valid) => {
         if (this.ruleForm.errorActionFlag) {
@@ -332,7 +363,6 @@ export default {
     }
   },
   created () {
-    debugger
     if (this.mode === 'edit') {
       ApiRequest('getSkill', { id: this.row.id }).then(data => {
         this.ruleForm = data
