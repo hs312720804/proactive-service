@@ -16,7 +16,7 @@
         :lazy="true"
       >
         <Version v-if="mode === 'edit'" :serviceId="item.id"></Version>
-        <Flowchart :serviceId="item.id" :statu="mode"></Flowchart>
+        <Flowchart :serviceId="item.id"></Flowchart>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -51,25 +51,7 @@ export default {
     goBack () {
       this.$router.go(-1)
     },
-    // removeTab (targetName) {
-    //   const tabs = this.tabsArr
-    //   let activeName = this.editableTabsValue
-    //   if (activeName === targetName) {
-    //     tabs.forEach((tab, index) => {
-    //       if (tab.name === targetName) {
-    //         const nextTab = tabs[index + 1] || tabs[index - 1]
-    //         if (nextTab) {
-    //           activeName = nextTab.name
-    //         }
-    //       }
-    //     })
-    //   }
-
-    //   this.editableTabsValue = activeName // update active tab
-    //   this.editableTabs = tabs.filter(tab => tab.name !== targetName)
-    // },
     removeTab (tabId) {
-      console.debug('removeTab: ', tabId)
       const tabs = this.tabsArr
       let activeTabId = this.activeTabId
       if (activeTabId === tabId) {

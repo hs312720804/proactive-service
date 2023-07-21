@@ -45,7 +45,9 @@ export default {
       if (payload === 'reset') {
         this.resetVersion()
         setTimeout(() => {
-          store.commit('flow/updateGraphTree')
+          store.commit('flow/updateGraphTree', {
+            serviceId: this.serviceId
+          })
         }, 300)
       }
     },
@@ -57,7 +59,9 @@ export default {
         this.$message.success(res.data)
         this.fetchStatuTitle()
         setTimeout(() => {
-          store.commit('flow/updateGraphTree')
+          store.commit('flow/updateGraphTree', {
+            serviceId: this.serviceId
+          })
         }, 1000)
       }
     },

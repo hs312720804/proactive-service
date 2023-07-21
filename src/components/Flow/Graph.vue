@@ -33,10 +33,6 @@ export default {
     showNodeDetail: { // 显示节点详情
       type: Boolean,
       default: false
-    },
-    isEdit: { // 是否是编辑状态 还可以是分析状态
-      type: Boolean,
-      default: true
     }
   },
   inject: ['serviceId'],
@@ -176,7 +172,9 @@ export default {
     },
     generateRenderTree (treeData) { // 生成渲染树 x6 cell 格式树
       console.debug('generateRenderTree: ', treeData)
-      this.graph.clearCells()
+      if (this.graph && this.graph.getCellCount() > 0) {
+        this.graph.clearCells()
+      }
       treeData.forEach((treeItem, treeIndex) => {
         switch (treeItem.nodeType) {
           case 1: // 'start'
@@ -212,7 +210,7 @@ export default {
             // eslint-disable-next-line no-case-declarations
             const RateNode = null
             startParentNode = this.graph.addNode(startParentNode)
-            if (this.showAnylise) {
+            if (!this.isEdit && this.showAnylise) {
               treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
                 startParentNode.addChild(this.graph.addNode({
                   shape: 'title-node',
@@ -323,7 +321,7 @@ export default {
                 parentNode.addChild(node)
               })
             }
-            if (this.showAnylise) {
+            if (!this.isEdit && this.showAnylise) {
               treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
                 parentNode.addChild(this.graph.addNode({
                   shape: 'title-node',
@@ -360,7 +358,7 @@ export default {
               }
             })
             judgeParentNode.addChild(juidgeTitleNode)
-            if (this.showAnylise) {
+            if (!this.isEdit && this.showAnylise) {
               treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
                 judgeParentNode.addChild(this.graph.addNode({
                   shape: 'title-node',
@@ -504,7 +502,6 @@ export default {
       console.debug('graph: ', this.graph.toJSON())
     },
     initGraph () {
-      // console.debug('initGraph: ')
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const scope = this
       this.graph = new Graph({
@@ -622,20 +619,6 @@ export default {
           }
         }
       })
-
-      // setTimeout(() => { // render graph
-      //   if (this.tree.length > 0) {
-      //     this.generateRenderTree(this.tree)
-      //   // this.testLinkPort()
-      //   } else {
-      //     if (graphInfo) {
-      //       this.jsonToGraph(graphInfo)
-      //     } else {
-      //       this.jsonToGraph({ cells: [this.startNode] })
-      //     }
-      //   }
-      //   this.logGraph()
-      // }, 2000)
     },
     treeToGraph () {
       // console.debug('renderGraph: ', this.tree)
@@ -1081,7 +1064,9 @@ export default {
       if (serviceId !== this.serviceId) return
       setTimeout(() => {
         this.getTreeData()
-        store.commit('flow/updateStatuTitle')
+        store.commit('flow/updateStatuTitle', {
+          serviceId: this.serviceId
+        })
       }, 500)
       // if (type === 'skill') {
       //   const { id, label } = targetNodeInfo
@@ -1240,7 +1225,9 @@ export default {
       // console.debug('updateJudgeNodeRender: ', formInfo)
       setTimeout(() => {
         this.getTreeData()
-        store.commit('flow/updateStatuTitle')
+        store.commit('flow/updateStatuTitle', {
+          serviceId: this.serviceId
+        })
       }, 500)
       // const { nodeId, interActifyAssertsList, content, title } = formInfo
       // const nodeList = this.graph.getNodes()
@@ -1258,7 +1245,9 @@ export default {
       console.debug('updateDialogueNodeRender: ', formInfo)
       setTimeout(() => {
         this.getTreeData()
-        store.commit('flow/updateStatuTitle')
+        store.commit('flow/updateStatuTitle', {
+          serviceId: this.serviceId
+        })
       }, 500)
       // payload 是节点详情 form 数据 里面已经有节点id了
       // const { nodeId, interActifyButtonsList, content } = formInfo
@@ -1332,6 +1321,7 @@ export default {
       store.subscribe((mutation, state) => {
         if (mutation.type === 'flow/updateStartNodeLink') {
           // console.debug('mutation type triggle,', mutation.type)
+          if (mutation.payload.serviceId !== this.serviceId) return
           this.updateStartNodeLink(mutation.payload)
         }
         if (mutation.type === 'flow/updateDialogueDetail') {
@@ -1341,17 +1331,21 @@ export default {
           this.updateJudgeNodeRender(mutation.payload)
         }
         if (mutation.type === 'flow/updateGraphTree') {
+          if (mutation.payload.serviceId !== this.serviceId) return
           this.getTreeData().then(() => {
             setTimeout(() => {
               this.getVersionId()
             }, 800)
           })
           setTimeout(() => {
-            store.commit('flow/updateVersionId')
+            store.commit('flow/updateVersionId', {
+              serviceId: this.serviceId
+            })
           })
         }
         if (mutation.type === 'flow/setAnyliseFilterForm') {
           // console.debug('setAnyliseFilterForm: ', mutation.payload)
+          if (mutation.payload.serviceId !== this.serviceId) return
           this.getAnyliseTreeData(mutation.payload)
         }
       })
@@ -1385,6 +1379,9 @@ export default {
   computed: {
     containerId () {
       return `graphContainer_${this.serviceId}`
+    },
+    isEdit () {
+      return this.$route.query.mode === 'edit'
     }
   },
   watch: {
@@ -1397,16 +1394,32 @@ export default {
     }
   },
   created () {
-    // console.debug('graph created: ', this.serviceId)
-    this.getVersionId()
-    this.getTreeData()
+    if (this.isEdit) {
+      this.getVersionId()
+      this.getTreeData()
+    }
   },
   mounted () {
     this.initConfig()
     this.initGraph()
     this.initGraphListen()
     this.initVuexListen()
-    store.commit('flow/updateStatuTitle')
+    store.commit('flow/updateStatuTitle', {
+      serviceId: this.serviceId
+    })
+  },
+  activated () {
+    if (this.graph && this.graph.getCellCount() > 0) {
+      this.graph.clearCells()
+    }
+    if (!this.isEdit) {
+      store.commit('flow/initAnyliseData', {
+        serviceId: this.serviceId
+      })
+    } else {
+      this.getVersionId()
+      this.getTreeData()
+    }
   }
 }
 </script>

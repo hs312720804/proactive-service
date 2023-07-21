@@ -38,17 +38,20 @@ export default {
     updateJudgeNodeDetail (state, payload) {
       // 更新判定节点详情 目前仅用于跨组件事件传递
     },
-    updateStatuTitle () {
+    updateStatuTitle (state, payload) {
       // 更新画布右上角标题
     },
-    updateGraphTree () {
+    updateGraphTree (state, payload) {
       // 更新画布树
     },
-    setAnyliseFilterForm () {
+    setAnyliseFilterForm (state, payload) {
       // 更新了分析筛选
     },
-    updateVersionId () {
+    updateVersionId (state, payload) {
       // 更新版本id
+    },
+    initAnyliseData (state, payload) {
+      // 初始化分析数据
     },
     // 存储时机:
     // 1. 画布初始化时

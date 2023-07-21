@@ -33,7 +33,10 @@
         </el-form-item>
       </el-form>
     </div>
-    <Graph :isEdit="isEdit" :showNodeDetail="showNodeDetail" @updateDetail="updateDetail"></Graph>
+    <Graph
+      :showNodeDetail="showNodeDetail"
+      @updateDetail="updateDetail"
+    ></Graph>
     <Detail
       v-if="showDetail"
       class="detail-wrapper"
@@ -84,11 +87,11 @@ export default {
       this.showNodeDetail = data
     },
     search () {
-      // console.debug('search: ', this.anyliseFilterForm)
       if (this.anyliseFilterForm.time) {
         this.anyliseFilterForm.beginTime = this.anyliseFilterForm.time[0]
         this.anyliseFilterForm.endTime = this.anyliseFilterForm.time[1]
       }
+      this.anyliseFilterForm.serviceId = this.serviceId
       store.commit('flow/setAnyliseFilterForm', this.anyliseFilterForm)
     },
     async getAnyliseVersionList () {
@@ -105,18 +108,44 @@ export default {
         console.error('getAnyliseVersionList error: ', error)
       }
     },
-
+    initVuexListen () {
+      store.subscribe((mutation, state) => {
+        if (mutation.type === 'flow/initAnyliseData') { // 初始化分析数据
+          if (mutation.payload.serviceId !== this.serviceId) return
+          this.initSelectedVersion()
+          this.search()
+        }
+      })
+    },
     async initAnylise () {
       // （1）获取版本列表
       await this.getAnyliseVersionList()
+    },
+    initSelectedVersion () {
+      // （2）初始化选中版本
+      if (this.anyliseVersionList.length > 0) {
+        this.anyliseFilterForm.versionId = this.anyliseVersionList[this.anyliseVersionList.length - 1].id
+      }
+    }
+  },
+  watch: {
+    anyliseVersionList (newVal, oldVal) {
+      if (newVal.length > 0) {
+        this.anyliseFilterForm.versionId = newVal[newVal.length - 1].id
+        this.initSelectedVersion()
+        this.search()
+      }
     }
   },
   mounted () {
-    this.initAnylise()
+    this.initVuexListen()
+  },
+  async created () {
+    await this.initAnylise()
   },
   computed: {
     isEdit () {
-      return this.statu === 'edit'
+      return this.$route.query.mode === 'edit'
     },
     showDetail () {
       return this.showNodeDetail && this.isEdit
