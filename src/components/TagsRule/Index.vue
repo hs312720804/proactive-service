@@ -49,7 +49,7 @@
                   filterable
                   clearable
                   placeholder="请选择对话框"
-                  @change="getDialogueButtonList(childItem.dialogueNodeId, childItem.tagKey)"
+                  @change="getDialogueButtonList(childItem, { needClear: true })"
                 >
                   <el-option
                     v-for="dialogueItem in cache[childItem.tagKey].list"
@@ -119,29 +119,6 @@
                 >{{ getTagUnit(childItem.tagKey) }}
                 </span>
               </template>
-              <!-- 睡觉提醒是否冻结 -->
-              <!-- <template v-else-if="childItem.tagKey === 'is_lock'">
-                <span class="txt">{{ childItem.tagName }}</span>
-                <el-select
-                  style="width: 80px"
-                  :key="n + childItem.tagKey"
-                  v-model="childItem.value"
-                  filterable
-                  clearable
-                  placeholder="请选择"
-                >
-                  <el-option
-                    v-for="boolItem in [
-                      { id: 1, name: '是' },
-                      { id: 0, name: '否' }
-                    ]"
-                    :key="boolItem.id"
-                    :value="boolItem.id"
-                    :label="boolItem.name"
-                  >
-                  </el-option>
-                </el-select>
-              </template> -->
               <!-- 是否有睡觉提醒经验值 -->
               <template v-else-if="childItem.tagKey === 'sleep_time'">
                 <span class="txt">{{ childItem.tagName }}</span>
@@ -513,7 +490,12 @@ export default {
         console.error('getDialogueList error: ', error)
       }
     },
-    async getDialogueButtonList (nodeId, tagKey) { // 获取对话框按钮列表
+    async getDialogueButtonList (item, payload) { // 获取对话框按钮列表
+      const { dialogueNodeId: nodeId, tagKey } = item
+      if (payload && payload?.needClear) { // 编辑时，如果修改父级，子级的值也随之修改
+        item.buttonId = ''
+        item.count = ''
+      }
       console.debug('getButtonList: ', nodeId, tagKey)
       try {
         const res = await getButtonListAPI({
@@ -702,7 +684,7 @@ export default {
         ruleItem.rules.forEach((childRule, childIndex) => {
           switch (childRule.tagKey) {
             case 'button_click':
-              this.getDialogueButtonList(childRule.dialogueNodeId, childRule.tagKey)
+              this.getDialogueButtonList(childRule, { needClear: false })
               break
             default:
               break

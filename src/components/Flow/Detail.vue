@@ -130,7 +130,7 @@ export default {
   },
   methods: {
     updateNodeOrSkillPick (val) { // 开始详情 改变选择 节点/技能
-      console.debug('updateNodeOrSkillPick: ', val)
+      this.startForm.NodeOrSkillVal = null
     },
     async getNodeSelectList (versionId) {
       try {
