@@ -87,7 +87,7 @@
         </div>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="submitForm('dialogueForm')">保存</el-button>
+        <el-button type="primary" @click="submitForm">保存</el-button>
       </el-form-item>
     </el-form>
   </div>

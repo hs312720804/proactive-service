@@ -61,6 +61,7 @@
       </template>
       <template v-else-if="nodeType === 'judge'">
         <JudgeDetail
+          ref="judgeDetailComponent"
           :versionId="versionId"
           :skillList="skillList"
           :childNodeList="nodeSelectList"
@@ -70,6 +71,7 @@
       </template>
       <template v-else-if="nodeType === 'dialogue'">
         <DialogueDetail
+          ref="dialogueDetailComponent"
           :versionId="versionId"
           :skillList="skillList"
           :childNodeList="nodeSelectList"
@@ -112,7 +114,8 @@ export default {
       nodeSelectList: [],
       dialogueDetailData: {},
       judgeDetailData: {},
-      startDetailData: {}
+      startDetailData: {},
+      drawerRef: null
     }
   },
   watch: {
@@ -175,13 +178,25 @@ export default {
         const res = await updateStartNodeAPI(payload)
         if (res.code === 1000) {
           // console.debug('updateStartNodeAPI res: ', res)
-          this.$refs.drawer.closeDrawer()
+          this.drawerRef.closeDrawer()
         }
       } catch (error) {
         console.error('updateStartNodeAPI error: ', error)
       }
     },
     handleClose (done) {
+      const nodeType = store.getters.nodeType
+      if (nodeType === 'start') {
+        this.saveStartNodeOperate()
+      } else if (nodeType === 'judge') {
+        if (this.$refs.judgeDetailComponent) {
+          this.$refs.judgeDetailComponent.submitForm()
+        }
+      } else if (nodeType === 'dialogue') {
+        if (this.$refs.dialogueDetailComponent) {
+          this.$refs.dialogueDetailComponent.submitForm()
+        }
+      }
       done()
       this.$emit('update:showNodeDetail', this.showBool)
     },
@@ -190,7 +205,7 @@ export default {
       try {
         const res = await updateJudgeNodeDetailAPI(payload)
         if (res.code === 1000) {
-          this.$refs.drawer.closeDrawer()
+          this.drawerRef.closeDrawer()
           store.commit('flow/updateJudgeNodeDetail', payload)
         }
         // console.debug('updateJudgeNodeDetailAPI res: ', res)
@@ -203,7 +218,7 @@ export default {
       try {
         const res = await updateDialogueDetailAPI(payload)
         if (res.code === 1000) {
-          this.$refs.drawer.closeDrawer()
+          this.drawerRef.closeDrawer()
           store.commit('flow/updateDialogueDetail', payload)
         }
       } catch (error) {
@@ -297,6 +312,9 @@ export default {
       } catch (error) {
         console.error('getVersionId error: ', error)
       }
+    },
+    initDrawerRef () {
+      this.drawerRef = this.$refs.drawer
     }
   },
   computed: {
@@ -320,6 +338,7 @@ export default {
     this.getVersionId()
     this.getSkillList()
     this.reFill()
+    this.initDrawerRef()
   }
 }
 </script>
