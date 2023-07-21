@@ -23,7 +23,9 @@
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item :command="'open_' + index">打开</el-dropdown-item>
               <el-dropdown-item :command="'anylise_' + index">分析</el-dropdown-item>
-              <el-dropdown-item :command="'withDraw_' + index">下架</el-dropdown-item>
+              <!-- status 1上架 0下架 -->
+              <el-dropdown-item v-if="item.status === 1" :command="'withDraw_' + index">下架</el-dropdown-item>
+              <el-dropdown-item v-else-if="item.status === 0" :command="'onShelve_' + index">上架</el-dropdown-item>
               <el-dropdown-item :command="'delete_' + index">删除</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
@@ -66,7 +68,7 @@
   </div>
 </template>
 <script>
-import { getServicesListAPI, addServicesAPI, deleteServicesAPI, offlineServiceAPI, getServiceAPI } from '@/services/services'
+import { getServicesListAPI, addServicesAPI, deleteServicesAPI, onlineServiceAPI, offlineServiceAPI, getServiceAPI } from '@/services/services'
 export default {
   data () {
     return {
@@ -129,8 +131,23 @@ export default {
         }
       })
     },
-    async withDraw () {
-      console.log('withDraw')
+    async onShelve () { // 上架
+      try {
+        const res = await onlineServiceAPI({
+          id: Number(this.listArr[this.activeIndex].id)
+        })
+        if (res.code === 1000) {
+          this.initList()
+          this.$message({
+            type: 'success',
+            message: res.msg
+          })
+        }
+      } catch (error) {
+        console.error('onShelve error', error)
+      }
+    },
+    async withDraw () { // 下架
       try {
         const res = await offlineServiceAPI({
           id: Number(this.listArr[this.activeIndex].id)
@@ -204,6 +221,9 @@ export default {
           break
         case 'withDraw':
           this.withDraw()
+          break
+        case 'onShelve':
+          this.onShelve()
           break
         case 'delete':
           this.deleteService()

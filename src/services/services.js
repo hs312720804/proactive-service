@@ -24,6 +24,14 @@ export function deleteServicesAPI (params) {
   })
 }
 
+export function onlineServiceAPI (params) {
+  return fetch({
+    method: 'post',
+    url: 'proactive_admin_api/interactify/service/online',
+    params
+  })
+}
+
 export function offlineServiceAPI (params) {
   return fetch({
     method: 'post',
