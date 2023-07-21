@@ -140,6 +140,7 @@ export default {
             type: 'success',
             message: '添加成功'
           })
+          this.$emit('go-back', true)
         }
       } catch (error) {
         console.error('addServiceTiming error: ', error)
@@ -152,6 +153,7 @@ export default {
           id: this.row.id
         })
         if (res.code === 1000) {
+          this.$emit('go-back', true)
           this.$message({
             type: 'success',
             message: '修改成功'
