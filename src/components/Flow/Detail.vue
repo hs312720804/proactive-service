@@ -17,7 +17,11 @@
         <el-form :model="startForm" label-width="70px">
           <el-form-item label="操作：">
             <el-col :span="11">
-              <el-select v-model="startForm.NodeOrSkill" placeholder="调用">
+              <el-select
+                v-model="startForm.NodeOrSkill"
+                placeholder="调用"
+                @change="updateNodeOrSkillPick"
+              >
                 <el-option label="调用技能" :value="1"></el-option>
                 <el-option label="调用节点" :value="2"></el-option>
               </el-select>
@@ -125,6 +129,9 @@ export default {
     }
   },
   methods: {
+    updateNodeOrSkillPick (val) { // 开始详情 改变选择 节点/技能
+      console.debug('updateNodeOrSkillPick: ', val)
+    },
     async getNodeSelectList (versionId) {
       try {
         const res = await getNodeSelectListAPI({
@@ -148,6 +155,7 @@ export default {
       return ''
     },
     async saveStartNodeOperate () { // 保存开始节点的操作
+      console.debug('saveStartNodeOperate')
       const { NodeOrSkill, NodeOrSkillVal } = this.startForm
       let payload = {}
       if (NodeOrSkill === '') {
@@ -178,7 +186,6 @@ export default {
         const res = await updateStartNodeAPI(payload)
         if (res.code === 1000) {
           // console.debug('updateStartNodeAPI res: ', res)
-          this.drawerRef.closeDrawer()
         }
       } catch (error) {
         console.error('updateStartNodeAPI error: ', error)

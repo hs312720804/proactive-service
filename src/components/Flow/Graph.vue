@@ -1059,167 +1059,13 @@ export default {
       })
     },
     updateStartNodeLink (payload) { // 更新节点信息 连线布局
-      const { serviceId, targetNodeInfo, sourceNodeId, type } = payload
-      console.debug('updateStartNodeLink: ', serviceId, targetNodeInfo, sourceNodeId, type)
-      if (serviceId !== this.serviceId) return
+      if (payload.serviceId !== this.serviceId) return
       setTimeout(() => {
         this.getTreeData()
         store.commit('flow/updateStatuTitle', {
           serviceId: this.serviceId
         })
       }, 500)
-      // if (type === 'skill') {
-      //   const { id, label } = targetNodeInfo
-      //   const skillNode = {
-      //     id: id.toString(),
-      //     shape: 'rect',
-      //     size: {
-      //       width: 100,
-      //       height: 40
-      //     },
-      //     position: {
-      //       x: 0,
-      //       y: 0
-      //     },
-      //     label,
-      //     data: {
-      //       type
-      //     }
-      //   }
-      //   const edge = {
-      //     source: sourceNodeId,
-      //     target: id.toString()
-      //   }
-      //   const dagreLayout = new DagreLayout({
-      //     type: 'dagre',
-      //     begin: [100, 60],
-      //     rankDir: 'TB',
-      //     rankSep: 40,
-      //     nodeSep: 40
-      //   })
-      //   // this.startNode
-      //   console.debug(this.graph.toJSON())
-      //   const cells = this.graph.toJSON().cells
-      //   const edges = cells.filter((cellItem, cellIndex) => {
-      //     return cellItem.shape === 'edge'
-      //   })
-      //   const parentNodes = cells.filter((cellItem, cellIndex) => {
-      //     return cellItem.shape !== 'edge' && !cellItem.parent
-      //   })
-      //   const childNodes = cells.filter((cellItem, cellIndex) => {
-      //     return cellItem.shape !== 'edge' && cellItem.parent
-      //   })
-      //   console.debug('childNodes: ', childNodes)
-      //   console.debug('parentNodes: ', parentNodes)
-      //   console.debug('test: ', {
-      //     nodes: [skillNode, ...parentNodes],
-      //     edges: [edge, ...edges]
-      //   })
-      //   const firstLayers = dagreLayout.layout({
-      //     nodes: [skillNode, ...parentNodes],
-      //     edges: [edge, ...edges]
-      //   })
-      //   // this.normalizeNodePosition(firstLayers.nodes)
-      //   const secondLayers = [] // 第二层布局 { nodes: [], edges: [] }
-      //   parentNodes.forEach((parentNode, parentIndex) => {
-      //     console.debug('foreach get children: ', parentNode.children)
-      //     if (parentNode.children) {
-      //       const secondLevelLayout = new DagreLayout({ // 子节点 布局
-      //         type: 'dagre',
-      //         align: '',
-      //         rankSep: 40,
-      //         nodeSep: 40,
-      //         width: parentNode.size.width,
-      //         height: parentNode.size.heigh,
-      //         begin: [parentNode.x, parentNode.y]
-      //       })
-      //       const childGroups = parentNode.children.map((childId, childIndex) => {
-      //         return childNodes.find((childItem) => {
-      //           return childItem.id === childId
-      //         })
-      //       })
-      //       console.debug('childGroups: ', childGroups)
-      //       const secondLayout = secondLevelLayout.layout({
-      //         nodes: [...childGroups],
-      //         edges: []
-      //       })
-      //       this.normalizeNodePosition(secondLayout.nodes)
-      //       secondLayers.push(secondLayout)
-      //     }
-      //   })
-      //   const allSecondNodes = secondLayers.map((item) => {
-      //     return item.nodes
-      //   })
-      //   const allSecondEdges = secondLayers.map((item) => {
-      //     return item.edges !== []
-      //   })
-      //   console.debug('allSecondNodes: ', allSecondNodes)
-      //   console.debug('allSecondEdges: ', allSecondEdges)
-      //   // this.jsonToGraph(firstLayers)
-      //   this.jsonToGraph({
-      //     nodes: [...firstLayers.nodes, ...childNodes],
-      //     edges: [...firstLayers.edges]
-      //   })
-      //   // console.debug('render ok: graph: ', this.graph.toJSON())
-      //   // console.debug('渲染ok')
-      // } else if (type === 'node') {
-      //   const { id } = targetNodeInfo
-      //   const targetNodeType = targetNodeInfo.getData().type
-      //   const edge = {
-      //     source: 'start',
-      //     target: id.toString()
-      //   }
-      //   const dagreLayout = new DagreLayout({
-      //     type: 'dagre',
-      //     rankDir: '',
-      //     align: 'UL',
-      //     rankSep: 40,
-      //     nodeSep: 40
-      //   })
-      //   if (targetNodeType === 'judge') { // 区分是什么节点 judge dialogue
-      //     const data = {
-      //       nodes: [this.startNode, {
-      //         id: id.toString(),
-      //         shape: 'custom-polygon',
-      //         attrs: {
-      //           body: {
-      //             refPoints: '0,10 10,0 20,10 10,20'
-      //           }
-      //         },
-      //         size: {
-      //           width: 100,
-      //           height: 50
-      //         },
-      //         label: targetNodeInfo.getAttrByPath('text/text'),
-      //         data: {
-      //           type: targetNodeType,
-      //           ctype: targetNodeInfo.getAttrByPath('text/text')
-      //         }
-      //       }],
-      //       edges: [edge]
-      //     }
-      //     const model = dagreLayout.layout(data)
-      //     this.jsonToGraph(model)
-      //   } else if (targetNodeType === 'dialogue') {
-      //     const data = {
-      //       // this.startNode,
-      //       nodes: [this.startNode, {
-      //         id: id.toString(),
-      //         shape: 'rect',
-      //         width: 200,
-      //         height: 80,
-      //         label: targetNodeInfo.getAttrByPath('text/text'),
-      //         data: {
-      //           type: targetNodeType,
-      //           ctype: targetNodeInfo.getData().ctype
-      //         }
-      //       }],
-      //       edges: [edge]
-      //     }
-      //     const model = dagreLayout.layout(data)
-      //     this.jsonToGraph(model)
-      //   }
-      // }
     },
     updateJudgeNodeRender (formInfo) {
       // console.debug('updateJudgeNodeRender: ', formInfo)
@@ -1229,17 +1075,6 @@ export default {
           serviceId: this.serviceId
         })
       }, 500)
-      // const { nodeId, interActifyAssertsList, content, title } = formInfo
-      // const nodeList = this.graph.getNodes()
-      // const target = nodeList.find((node) => {
-      //   return node.getData().nodeId === nodeId
-      // })
-      // target.setAttrByPath('text/text', content) // 更新文案
-      // const childNodes = target.getChildren() || []
-      // if (childNodes && childNodes?.length > 0) {
-      //   const titleNode = childNodes.find(item => item.getData().type === 'title-node')
-      //   titleNode.setAttrByPath('text/text', formInfo.title) // 获取并更新对话框标题
-      // }
     },
     updateDialogueNodeRender (formInfo) { // 更新画布中 刚更新过的对话框节点 渲染
       console.debug('updateDialogueNodeRender: ', formInfo)
@@ -1249,56 +1084,6 @@ export default {
           serviceId: this.serviceId
         })
       }, 500)
-      // payload 是节点详情 form 数据 里面已经有节点id了
-      // const { nodeId, interActifyButtonsList, content } = formInfo
-      // 匹配对应节点 并更新里面的 title content buttonList 试试看吧
-      // const nodeList = this.graph.getNodes()
-      // const target = nodeList.find((node) => {
-      //   return node.getData().nodeId === nodeId
-      // })
-      // target.setAttrByPath('text/text', content) // 更新对话框文案
-      // const childNodes = target.getChildren() || []
-      // if (childNodes && childNodes?.length > 0) {
-      //   const titleNode = childNodes.find(item => item.getData().type === 'title-node')
-      //   titleNode.setAttrByPath('text/text', formInfo.title) // 获取并更新对话框标题
-      // }
-      // // 先清空所有 动态和静态的按钮
-      // childNodes.forEach((node) => {
-      //   if (node.getData().type === 1) {
-      //     target.removeChild(node) // this.graph.removeNode(node) 也可以实现画布删除节点
-      //   }
-      // })
-      // // 把按钮加回来
-      // if (interActifyButtonsList && interActifyButtonsList.length > 0) {
-      //   interActifyButtonsList.forEach((buttonItem, buttonIndex) => {
-      //     if (buttonItem.type === 1) { // 动态按钮
-      //       const newButtonNode = this.graph.addNode({
-      //         shape: 'dynamic-button',
-      //         x: target.getBBox().x + 10 + 60 * buttonIndex,
-      //         y: target.getBBox().y + target.size().height - 30,
-      //         attrs: {
-      //           text: {
-      //             text: buttonItem.name
-      //           }
-      //         },
-      //         ports: { // @todo 连接桩 这里要看后台树形结构是怎么返回
-      //           items: [
-      //             {
-      //               id: `${target.id}_${buttonIndex}`,
-      //               group: 'bottom',
-      //               zIndex: 20
-      //             }
-      //           ]
-      //         },
-      //         data: {
-      //           type: 'dialogue-button',
-      //           ...buttonItem
-      //         }
-      //       })
-      //       target.addChild(newButtonNode)
-      //     }
-      //   })
-      // }
       this.$nextTick(() => {
         this.logGraph()
       })
