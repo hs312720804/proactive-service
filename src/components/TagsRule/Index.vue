@@ -210,8 +210,7 @@
                   v-if="childItem.type === 1"
                   style="margin-left: 5px;"
                   v-model="childItem.staticTimeVal"
-                  format="HH:mm"
-                  value-format="HH:mm"
+                  value-format="HH:mm:ss"
                   placeholder="选择时间"
                 >
                 </el-time-picker>
@@ -239,16 +238,14 @@
                     placeholder="选择开始时间"
                     v-model="childItem.intervalStartVal"
                     style="margin-left: 5px;"
-                    format="HH:mm"
-                    value-format="HH:mm"
+                    value-format="HH:mm:ss"
                   ></el-time-picker>
                   <span style="color: #666;margin-left: 2px;margin-right: 2px;">-</span>
                   <el-time-picker
                     placeholder="选择结束时间"
                     v-model="childItem.intervalEndVal"
                     style="margin-left: 5px;"
-                    format="HH:mm"
-                    value-format="HH:mm"
+                    value-format="HH:mm:ss"
                   ></el-time-picker>
                 </template>
                 <template v-else-if="childItem.type === 4">
@@ -421,6 +418,9 @@ export default {
       }
     },
     transformSaveRules () {
+      function formatZeroSeconds (str) {
+        return str.substring(0, str.lastIndexOf(':') + 1) + '00'
+      }
       this.renderJson.rules.forEach(rule => {
         rule.rules.forEach((childRule, childIndex) => {
           // 特殊的tagkey要特殊转value
@@ -436,14 +436,14 @@ export default {
           } else if (childRule.tagKey === 'time_hit') {
             if (childRule.type === 1) {
               const staticTimeVal = childRule.staticTimeVal || 'null'
-              childRule.value = `${childRule.type}_${childRule.staticTimeVal}`
+              childRule.value = `${childRule.type}_${formatZeroSeconds(childRule.staticTimeVal)}`
             } else if (childRule.type === 2) {
               const inferenceTimeVal = childRule.inferenceTimeVal || 'null'
               childRule.value = inferenceTimeVal
             } else if (childRule.type === 3) {
               const intervalStartVal = childRule.intervalStartVal || 'null'
               const intervalEndVal = childRule.intervalEndVal || 'null'
-              childRule.value = `${childRule.type}_${intervalStartVal}-${intervalEndVal}`
+              childRule.value = `${childRule.type}_${formatZeroSeconds(intervalStartVal)}-${formatZeroSeconds(intervalEndVal)}`
             } else if (childRule.type === 4) {
               const inferRegionStartVal = childRule.inferRegionStartVal || 'null'
               const inferRegionEndVal = childRule.inferRegionEndVal || 'null'
