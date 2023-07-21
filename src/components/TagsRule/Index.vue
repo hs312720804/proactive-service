@@ -1,7 +1,7 @@
 <template>
   <div class="tags-rule-wrapper">
     <!-- v-if="tagList && tagList.length > 0" -->
-    <template>
+    <template v-if="tagList && tagList.length > 0">
       <div
         class="label-or-space"
         :key="parentIndex + 'or'"
@@ -210,7 +210,8 @@
                   v-if="childItem.type === 1"
                   style="margin-left: 5px;"
                   v-model="childItem.staticTimeVal"
-                  value-format="HH:mm:ss"
+                  format="HH:mm"
+                  value-format="HH:mm"
                   placeholder="选择时间"
                 >
                 </el-time-picker>
@@ -238,14 +239,16 @@
                     placeholder="选择开始时间"
                     v-model="childItem.intervalStartVal"
                     style="margin-left: 5px;"
-                    value-format="HH:mm:ss"
+                    format="HH:mm"
+                    value-format="HH:mm"
                   ></el-time-picker>
                   <span style="color: #666;margin-left: 2px;margin-right: 2px;">-</span>
                   <el-time-picker
                     placeholder="选择结束时间"
                     v-model="childItem.intervalEndVal"
                     style="margin-left: 5px;"
-                    value-format="HH:mm:ss"
+                    format="HH:mm"
+                    value-format="HH:mm"
                   ></el-time-picker>
                 </template>
                 <template v-else-if="childItem.type === 4">
@@ -440,7 +443,7 @@ export default {
             } else if (childRule.type === 3) {
               const intervalStartVal = childRule.intervalStartVal || 'null'
               const intervalEndVal = childRule.intervalEndVal || 'null'
-              childRule.value = `${childRule.type}_${intervalStartVal}]-[${intervalEndVal}`
+              childRule.value = `${childRule.type}_${intervalStartVal}-${intervalEndVal}`
             } else if (childRule.type === 4) {
               const inferRegionStartVal = childRule.inferRegionStartVal || 'null'
               const inferRegionEndVal = childRule.inferRegionEndVal || 'null'

@@ -34,36 +34,38 @@
         <div class="buttons-layout">
           <el-col :span="20">
             <ul class="buttons-wrapper" v-if="detailForm.interActifyButtonsList.length > 0">
-              <li
-                v-for="(item, index) in detailForm.interActifyButtonsList"
-                :key="item.id"
-                class="button-item"
-              >
-                <i v-if="buttonActiveIndex === index" class="el-icon-caret-right" style="margin-right: 5px;color: #409EFF; "></i>
-                <i v-else style="width: 14px;height: 14px;margin-right: 5px;">&nbsp;</i>
-                <el-input
-                  v-model="item.name"
-                  size="mini"
-                  style="width: 200px;"
-                  :maxlength="10"
-                  :ref="'editInput_' + index"
-                  v-if="item.showEditInput"
-                  @blur="item.showEditInput = false"
+              <draggable v-model="detailForm.interActifyButtonsList" group="buttonList">
+                <li
+                  v-for="(item, index) in detailForm.interActifyButtonsList"
+                  :key="item.id"
+                  class="button-item"
                 >
-                </el-input>
-                <el-button
-                  v-else
-                  style="width: 200px;"
-                  @click="clickOperateButton(index)"
-                >
-                  {{ item.name }}
-                  <i
-                    class="el-icon-edit el-icon--right"
-                    @click="updateEditInput(index)"
-                  ></i>
-                </el-button>
-                <el-button type="text" @click="deleteButton(index)" class="el-icon-close delete"></el-button>
-              </li>
+                  <i v-if="buttonActiveIndex === index" class="el-icon-caret-right" style="margin-right: 5px;color: #409EFF; "></i>
+                  <i v-else style="width: 14px;height: 14px;margin-right: 5px;">&nbsp;</i>
+                  <el-input
+                    v-model="item.name"
+                    size="mini"
+                    style="width: 200px;"
+                    :maxlength="10"
+                    :ref="'editInput_' + index"
+                    v-if="item.showEditInput"
+                    @blur="item.showEditInput = false"
+                  >
+                  </el-input>
+                  <el-button
+                    v-else
+                    style="width: 200px;"
+                    @click="clickOperateButton(index)"
+                  >
+                    {{ item.name }}
+                    <i
+                      class="el-icon-edit el-icon--right"
+                      @click="updateEditInput(index)"
+                    ></i>
+                  </el-button>
+                  <el-button type="text" @click="deleteButton(index)" class="el-icon-close delete"></el-button>
+                </li>
+              </draggable>
             </ul>
           </el-col>
           <el-col :span="5">
@@ -93,10 +95,12 @@
   </div>
 </template>
 <script>
+import draggable from 'vuedraggable'
 import Behavior from '@/components/Behavior/Index.vue'
 export default {
   components: {
-    Behavior
+    Behavior,
+    draggable
   },
   props: {
     skillList: {
