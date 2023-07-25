@@ -193,17 +193,18 @@ export default {
     },
     handleClose (done) {
       const nodeType = store.getters.nodeType
-      if (nodeType === 'start') {
-        this.saveStartNodeOperate()
-      } else if (nodeType === 'judge') {
-        if (this.$refs.judgeDetailComponent) {
-          this.$refs.judgeDetailComponent.submitForm()
-        }
-      } else if (nodeType === 'dialogue') {
-        if (this.$refs.dialogueDetailComponent) {
-          this.$refs.dialogueDetailComponent.submitForm()
-        }
-      }
+      // 服务交互，节点多时，每次保存都需要较长时间影响体验。建议优化。Bug: CLOUDARCH-904 先隐藏自动保存功能
+      // if (nodeType === 'start') {
+      //   this.saveStartNodeOperate()
+      // } else if (nodeType === 'judge') {
+      //   if (this.$refs.judgeDetailComponent) {
+      //     this.$refs.judgeDetailComponent.submitForm()
+      //   }
+      // } else if (nodeType === 'dialogue') {
+      //   if (this.$refs.dialogueDetailComponent) {
+      //     this.$refs.dialogueDetailComponent.submitForm()
+      //   }
+      // }
       done()
       this.$emit('update:showNodeDetail', this.showBool)
     },
