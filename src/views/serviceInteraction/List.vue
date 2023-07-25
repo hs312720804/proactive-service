@@ -24,6 +24,7 @@
               <el-dropdown-item :command="'open_' + index">打开</el-dropdown-item>
               <el-dropdown-item :command="'anylise_' + index">分析</el-dropdown-item>
               <!-- status 1上架 0下架 -->
+              <!-- v-permission="accessMap.offShell" -->
               <el-dropdown-item v-if="item.status === 1" :command="'withDraw_' + index">下架</el-dropdown-item>
               <el-dropdown-item v-else-if="item.status === 0" :command="'onShelve_' + index">上架</el-dropdown-item>
               <el-dropdown-item :command="'delete_' + index">删除</el-dropdown-item>
@@ -90,6 +91,11 @@ export default {
           { pattern: /^[a-zA-Z][\w]{0,49}$/, message: '仅支持字母、数字、下划线,首字符必须为字母,不可超过50字符', trigger: 'blur' }
         ]
       }
+    }
+  },
+  computed: {
+    accessMap () { // 所有权限
+      return this.$store.getters.getAccessMap()
     }
   },
   methods: {
