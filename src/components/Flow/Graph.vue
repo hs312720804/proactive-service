@@ -1059,6 +1059,7 @@ export default {
       })
     },
     updateStartNodeLink (payload) { // 更新节点信息 连线布局
+      // console.debug('updateStartNodeLink: ')
       if (payload.serviceId !== this.serviceId) return
       setTimeout(() => {
         this.getTreeData()
@@ -1068,7 +1069,7 @@ export default {
       }, 500)
     },
     updateJudgeNodeRender (formInfo) {
-      // console.debug('updateJudgeNodeRender: ', formInfo)
+      // console.debug('updateJudgeNodeRender: ')
       setTimeout(() => {
         this.getTreeData()
         store.commit('flow/updateStatuTitle', {
@@ -1077,7 +1078,7 @@ export default {
       }, 500)
     },
     updateDialogueNodeRender (formInfo) { // 更新画布中 刚更新过的对话框节点 渲染
-      console.debug('updateDialogueNodeRender: ', formInfo)
+      // console.debug('updateDialogueNodeRender: ')
       setTimeout(() => {
         this.getTreeData()
         store.commit('flow/updateStatuTitle', {
@@ -1093,7 +1094,7 @@ export default {
         delete formData.time
         const res = await getAnyliseTreeAPI(formData)
         if (res.code === 1000) {
-          // console.debug('getAnyliseTreeData res: ', res)
+          // console.debug('getAnyliseTreeData')
           this.tree = res.data
           this.treeToGraph()
           this.showAnylise = true
@@ -1117,6 +1118,7 @@ export default {
         }
         if (mutation.type === 'flow/updateGraphTree') {
           if (mutation.payload.serviceId !== this.serviceId) return
+          console.debug('mutation updateGraphTree getTreeData')
           this.getTreeData().then(() => {
             setTimeout(() => {
               this.getVersionId()
@@ -1181,6 +1183,7 @@ export default {
   created () {
     if (this.isEdit) {
       this.getVersionId()
+      // console.debug('created getTreeData')
       this.getTreeData()
     }
   },
@@ -1202,8 +1205,12 @@ export default {
         serviceId: this.serviceId
       })
     } else {
+      // console.debug('activated isEdit getTreeData')
       this.getVersionId()
       this.getTreeData()
+      store.commit('flow/updateStatuTitle', {
+        serviceId: this.serviceId
+      })
     }
   }
 }

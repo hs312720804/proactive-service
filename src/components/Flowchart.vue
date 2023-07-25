@@ -113,7 +113,10 @@ export default {
         if (mutation.type === 'flow/initAnyliseData') { // 初始化分析数据
           if (mutation.payload.serviceId !== this.serviceId) return
           this.initSelectedVersion()
-          this.search()
+          if (this.$route.query.mode === 'anylise') {
+            // console.debug('initAnyliseData mutation search')
+            this.search()
+          }
         }
       })
     },
@@ -133,15 +136,27 @@ export default {
       if (newVal.length > 0) {
         this.anyliseFilterForm.versionId = newVal[newVal.length - 1].id
         this.initSelectedVersion()
-        this.search()
+        if (this.$route.query.mode === 'anylise') {
+          // console.debug('watch versionList change search')
+          this.search()
+        }
       }
     }
   },
   mounted () {
     this.initVuexListen()
   },
-  async created () {
-    await this.initAnylise()
+  created () {
+    if (this.$route.query.mode === 'anylise') {
+      this.initAnylise()
+    }
+  },
+  activated () {
+    // console.debug('flowchart activated')
+    if (this.$route.query.mode === 'anylise') {
+      // console.debug('flowchart activated getversionList')
+      this.getAnyliseVersionList()
+    }
   },
   computed: {
     isEdit () {

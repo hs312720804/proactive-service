@@ -15,7 +15,7 @@
         :closable="true"
         :lazy="true"
       >
-        <Version v-if="mode === 'edit'" :serviceId="item.id"></Version>
+        <Version v-show="mode === 'edit'" :serviceId="item.id"></Version>
         <Flowchart :serviceId="item.id"></Flowchart>
       </el-tab-pane>
     </el-tabs>

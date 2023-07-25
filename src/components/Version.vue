@@ -74,17 +74,22 @@ export default {
         this.fetchStatuTitle()
       }
     },
-    async fetchStatuTitle () { // 获取编辑状态
-      const statuRes = await getStatuTitleAPI({
-        serviceId: Number(this.serviceId)
-      })
-      if (statuRes.code === 1000) {
-        this.editStatuStr = statuRes.data
+    async fetchStatuTitle () { // 获取编辑状态 （目前会触发的场景：上线 重置 mutation:updateStatuTitle）
+      try {
+        const statuRes = await getStatuTitleAPI({
+          serviceId: Number(this.serviceId)
+        })
+        if (statuRes.code === 1000) {
+          this.editStatuStr = statuRes.data
+        }
+      } catch (error) {
+        console.error('fetchStatuTitle error: ', error)
       }
     },
     initVuexListen () {
       store.subscribe((mutation, state) => {
         if (mutation.type === 'flow/updateStatuTitle') {
+          // console.debug('updateStatuTitle mutation: ')
           this.fetchStatuTitle()
         } else if (mutation.type === 'flow/updateVersionId') { // 更新版本id
           this.getVersionId()
