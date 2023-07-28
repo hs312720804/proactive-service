@@ -393,6 +393,20 @@ export default {
                 type: 'skill'
               }
             })
+            if (!this.isEdit && this.showAnylise) {
+              treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
+                skillNode.addChild(this.graph.addNode({
+                  shape: 'title-node',
+                  x: skillNode.getBBox().x - 100,
+                  y: skillNode.getBBox().y + 30 * index,
+                  attrs: {
+                    text: {
+                      text: item
+                    }
+                  }
+                }))
+              })
+            }
             break
           case 5:
             // eslint-disable-next-line no-case-declarations
