@@ -1,6 +1,6 @@
 # demo-project
 
-1
+1 基于 antv的x6 和 element-ui vue2.7
 
 ## Project setup
 ```

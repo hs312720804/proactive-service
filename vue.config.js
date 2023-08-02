@@ -1,13 +1,14 @@
 const path = require('path')
 const { defineConfig } = require('@vue/cli-service')
 
-const BACKEND = process.env.BACKEND || '172.20.151.197:9080'
+// const BACKEND = process.env.BACKEND || '172.20.151.197:9080'
+const BACKEND = process.env.BACKEND || '172.20.151.211:80'
 const HOST = process.env.HOST || '0.0.0.0'
 const PORT = process.env.PORT || '8686'
 const isPord = process.env.NODE_ENV === 'production'
 
 const apiPrefix = process.env.VUE_APP_API_PREFIX
-const baseUrl = isPord ? `/${apiPrefix}/proactive_service` : '/' // `/${packageName}/`
+const baseUrl = isPord ? `/${apiPrefix}/proactive_service-web` : '/' // `/${packageName}/`
 
 console.log(`project “${process.env.VUE_APP_PROJECT_NAME}” now start`)
 console.log('project id:', process.env.VUE_APP_PROJECT_ID)
