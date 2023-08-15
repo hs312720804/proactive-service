@@ -89,10 +89,28 @@ export default {
     layout () { // 按照树级结构，重新渲染节点
       const dagreLayout = new DagreLayout({
         type: 'dagre',
-        rankdir: 'TB',
+        rankdir: 'LR',
         // align: 'UR',
-        ranksep: 55,
-        nodesep: 25
+        // ranksep: 55,
+        // nodesep: 25,
+        nodesepFunc: (d) => { // 纵向间距
+          if (d.data.nodeType === 2) { // 对话框
+            return 105
+          } else if (d.data.nodeType === 4) { // 普通方框
+            return 1
+          } else {
+            return 1
+          }
+        },
+        ranksepFunc: (d) => { // 横向间距
+          if (d.data.nodeType === 2) { // 对话框
+            return 55
+          } else if (d.data.nodeType === 4) { // 普通方框
+            return 1
+          } else {
+            return 1
+          }
+        }
       })
       //   // this.startNode
       const cells = this.graph.toJSON().cells
