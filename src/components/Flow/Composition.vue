@@ -2,7 +2,7 @@
   <div class="flow-composition-wrapper">
     <div class="composition-header">组件</div>
     <div class="composition-content">
-      <svg
+      <!-- <svg
         class="rhombic judge"
         preserveAspectRatio="xMidYMid"
         viewBox="0 0 246 82"
@@ -23,9 +23,14 @@
         <text x="90" y="40" dominant-baseline="middle"
               font-size="40" stroke="#000" fill="#0000ff"
         >判定</text>
-      </svg>
+      </svg> -->
+      <div data-type="judge" data-ctype="判定" class="rhombic judge" @mousedown="startDrag">
+        <span>判定</span>
+      </div>
+
       <div data-type="dialogue" data-ctype="对话框" class="dnd-rect" @mousedown="startDrag">
         对话框
+        <div class="dnd-rect-btn"></div>
       </div>
     </div>
   </div>
@@ -45,58 +50,76 @@ export default {
 }
 </script>
 <style lang="stylus" scoped>
- .flow-composition-wrapper {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100px;
-    height: 200px;
-    border 1px solid #ddd
-    box-sizing border-box
-    z-index 100
-    background-color #fff
- }
+.flow-composition-wrapper {
+  position: absolute;
+  top: 10%;
+  left: 0;
+  width: 91px;
+  height: 218px;
+
+  box-sizing: border-box;
+  z-index: 100;
+  background-color: #ffffff;
+}
  .composition-header {
-  border-bottom 1px solid #ddd
+  border-bottom 1px solid #000
+  background #000
   height 30px
   font-size 14px
   line-height 30px
-  color #ccc
+  color #fff
   padding-left 10px
   user-select none
  }
   .composition-content {
+    border: 1px dashed #000000;
     display flex
     flex-direction column
     justify-content center
     align-items center
-    padding 20px
+    // padding 20px
     box-sizing border-box
     width 100%
-    height calc(100% - 30px)
+    height 180px
     .rhombic {
-      width 80px
-      display flex
-      flex-direction column
-      justify-content center
-      align-items center
-      cursor move
-      user-select none
+      width: 45px;
+      height: 45px;
+      text-align: center;
+      border: 1px solid rgb(196, 196, 196);
+      background-color: rgb(228, 228, 228);
+      color: rgb(125, 118, 113);
+      transform rotate(45deg)
+      display: inline-block;
+      font-size: 12px
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #303133;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      span {
+        transform: rotate(-45deg);
+      }
     }
     .dnd-rect {
       width 80px
-      height 30px
+      height 24px
       // margin 16px
-      margin-top 20px
-      line-height 30px
+      margin-top 28px
+      line-height 24px
       text-align center
-      border 1px solid #5F95FF
-      border-radius 6px
       cursor move
       font-size 14px
       user-select none
       color #000
-      background-color #EFF4FF
+      border 1px solid #5F95FF
+      background-color #5F95FF
+      .dnd-rect-btn {
+        border 1px solid #5F95FF
+        background-color #EFF4FF
+        height 24px
+      }
     }
   }
 </style>

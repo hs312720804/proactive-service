@@ -1,15 +1,20 @@
 <template>
   <div class="dialogue-detail-wrapper">
-    <el-form class="dialogue-form-wrapper" ref="dialogueForm" :rules="rules" :model="detailForm"
-             label-width="80px"
+    <el-form
+      class="dialogue-form-wrapper"
+      ref="dialogueForm"
+      :rules="rules"
+      :model="detailForm"
+      label-width="80px"
+      label-position="left"
     >
-      <el-form-item label="节点ID：">{{ detailForm.nodeId }}</el-form-item>
-      <el-form-item label="命名：" prop="title">
+      <el-form-item label="节点ID">{{ detailForm.nodeId }}</el-form-item>
+      <el-form-item label="命名" prop="title">
         <el-col :span="11">
           <el-input v-model="detailForm.title"></el-input>
         </el-col>
       </el-form-item>
-      <el-form-item label="显示时机：">
+      <el-form-item label="显示时机">
         <el-col class="flex-box">
           <span class="text" style="margin-left: 0;">延后</span>
           <div class="delay-text-box">
@@ -19,78 +24,93 @@
           </div>
         </el-col>
       </el-form-item>
-      <el-form-item label="显示时长：">
-        <el-input-number v-model="detailForm.displayDuration" controls-position="right" @change="handleDisplayDuration" :min="15"
-                         :max="600"
-        ></el-input-number> s
+      <el-form-item label="显示时长">
+        <el-input-number
+          v-model="detailForm.displayDuration"
+          controls-position="right"
+          @change="handleDisplayDuration"
+          :min="15"
+          :max="600"
+        ></el-input-number><span class="text">秒</span>
       </el-form-item>
       <el-form-item label="文案" prop="content">
         <el-col :span="11">
           <el-input v-model="detailForm.content" placeholder="请编辑"></el-input>
         </el-col>
       </el-form-item>
-      <el-form-item label="按钮">
-        <el-button type="text" @click="addButton">添加按钮</el-button>
+      <!-- <el-form-item label="按钮">
+      </el-form-item> -->
+      <div>
+        <div class="add-button-wrap">
+          <div>按钮</div>
+          <el-button type="text" @click="addButton">添加</el-button>
+        </div>
         <div class="buttons-layout">
-          <el-col :span="20">
-            <ul class="buttons-wrapper" v-if="detailForm.interActifyButtonsList.length > 0">
-              <draggable v-model="detailForm.interActifyButtonsList" group="buttonList">
-                <li
-                  v-for="(item, index) in detailForm.interActifyButtonsList"
-                  :key="item.id"
-                  class="button-item"
+          <div class="default-btn">
+            <span class="item">用户返回</span>
+            <span class="item">自动消失</span>
+          </div>
+
+          <div class="buttons-wrapper" v-if="detailForm.interActifyButtonsList.length > 0">
+            <draggable v-model="detailForm.interActifyButtonsList" group="buttonList">
+              <div
+                v-for="(item, index) in detailForm.interActifyButtonsList"
+                :key="item.id"
+                class="button-item"
+                :class="{'button-active': buttonActiveIndex === index}"
+                @click="clickOperateButton(index)"
+              >
+                <i class="el-icon-caret-right" :class="{'caret-active': buttonActiveIndex === index}" style="margin-right: 5px;color: #409EFF; "></i>
+                <span class="button-id">{{ item.buttonId }}</span>
+                <el-input
+                  v-model="item.name"
+                  size="mini"
+                  style="width: 200px;"
+                  :maxlength="10"
+                  :ref="'editInput_' + index"
+                  v-if="item.showEditInput"
+                  @blur="item.showEditInput = false"
                 >
-                  <i v-if="buttonActiveIndex === index" class="el-icon-caret-right" style="margin-right: 5px;color: #409EFF; "></i>
-                  <i v-else style="width: 14px;height: 14px;margin-right: 5px;">&nbsp;</i>
-                  <el-input
-                    v-model="item.name"
-                    size="mini"
-                    style="width: 200px;"
-                    :maxlength="10"
-                    :ref="'editInput_' + index"
-                    v-if="item.showEditInput"
-                    @blur="item.showEditInput = false"
-                  >
-                  </el-input>
-                  <el-button
-                    v-else
-                    style="width: 200px;"
-                    @click="clickOperateButton(index)"
-                  >
-                    {{ item.name }}
-                    <i
-                      class="el-icon-edit el-icon--right"
-                      @click="updateEditInput(index)"
-                    ></i>
-                  </el-button>
-                  <el-button type="text" @click="deleteButton(index)" class="el-icon-close delete"></el-button>
-                </li>
-              </draggable>
-            </ul>
-          </el-col>
-          <el-col :span="5">
-            <ul class="static-buttons-wrapper">
-              <li class="button-item">用户返回</li>
-              <li class="button-item">自动消失</li>
-            </ul>
-          </el-col>
+                </el-input>
+                <el-button
+                  v-else
+                  style="width: 200px;"
+                  :type="buttonActiveIndex === index ? 'primary' : ''"
+                >
+                  {{ item.name }}
+                  <i
+                    class="el-icon-edit el-icon--right"
+                    @click="updateEditInput(index)"
+                  ></i>
+                </el-button>
+                <el-button type="text" @click="deleteButton(index)" class="el-icon-close delete"></el-button>
+              </div>
+            </draggable>
+          </div>
+
         </div>
-        <div class="button-detail" v-if="buttonDetail">
-          <span class="button-id">按钮ID：{{ buttonDetail.buttonId }}</span>
-          <Behavior
-            :list="buttonDetail.nextNodeList"
-            :skillList="skillList"
-            :childNodeList="childNodeList"
-            desc="操作"
-            :isLimitOnly="false"
-            @del="deleteOperate"
-            @add="addOperate"
-          ></Behavior>
-        </div>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="submitForm">保存</el-button>
-      </el-form-item>
+        <template v-if="buttonDetail">
+          <div class="add-button-wrap">
+            <div>按钮详情</div>
+          </div>
+          <div class="button-detail">
+            <el-form-item label="按钮ID：" style="margin-bottom: 3px;">
+              {{ buttonDetail.buttonId }}
+            </el-form-item>
+            <Behavior
+              :list="buttonDetail.nextNodeList"
+              :skillList="skillList"
+              :childNodeList="childNodeList"
+              desc="操作"
+              :isLimitOnly="false"
+              @del="deleteOperate"
+              @add="addOperate"
+            ></Behavior>
+          </div>
+        </template>
+      </div>
+
+      <el-button type="primary" @click="submitForm" class="save-sty">保存</el-button>
     </el-form>
   </div>
 </template>
@@ -348,72 +368,60 @@ export default {
 }
 </script>
 <style lang="stylus" scoped>
-        >>>.dialogue-form-wrapper {
-            .el-form-item__label {
-                white-space nowrap
-            }
-            .delay-text-box {
-                display flex
-                align-items center
-                flex-wrap no-wrap
-                .input-wrapper {
-                    width auto
-                    // margin 0 5px
-                }
-            }
-            .buttons-layout {
-                display flex
-                align-items flex-start
-                margin-left -40px
-                .buttons-wrapper {
-                    display flex
-                    // align-items center
-                    flex-wrap wrap
-                    flex-direction column
-                    .button-item {
-                        display flex
-                        align-items center
-                        margin-bottom 15px
-                        &:last-child {
-                            margin-bottom 0
-                        }
-                        .delete {
-                            color #666
-                            font-size 14px
-                            margin-left 10px
-                        }
-                    }
-                }
-                .static-buttons-wrapper {
-                    display flex
-                    flex-direction column
-                    align-items center
-                    .button-item {
-                        border 1px dashed #ccc
-                        font-size 12px
-                        color #666
-                        padding 2px
-                        white-space nowrap
-                        margin-bottom 5px
-                        // &:last-child {
-                        //     margin-bottom 0
-                        // }
-                    }
-                }
-            }
-            .button-detail {
-                margin-left -45px
-            }
-        }
-        >>>.flex-box {
-            display flex
-            align-items center
-        }
-        .text {
-            white-space nowrap
-            margin 0 5px
-            font-size 12px
-        }
+>>>.dialogue-form-wrapper {
+  .el-form-item__label {
+      white-space nowrap
+  }
+  .delay-text-box {
+      display flex
+      align-items center
+      flex-wrap no-wrap
+      .input-wrapper {
+          width auto
+          // margin 0 5px
+      }
+  }
+  .buttons-layout {
+      // display flex
+      // align-items flex-start
+      // margin-left -40px
+      .buttons-wrapper {
+          display flex
+          // align-items center
+          flex-wrap wrap
+          flex-direction column
+
+      }
+      .static-buttons-wrapper {
+          display flex
+          flex-direction column
+          align-items center
+          .button-item {
+              border 1px dashed #ccc
+              font-size 12px
+              color #666
+              padding 2px
+              white-space nowrap
+              margin-bottom 5px
+              // &:last-child {
+              //     margin-bottom 0
+              // }
+          }
+      }
+  }
+  .button-detail {
+      // margin-left -45px
+  }
+}
+>>>.flex-box {
+    display flex
+    align-items center
+}
+.text {
+    white-space nowrap
+    margin 0 5px
+    font-size 12px
+}
 
 .button-id {
     margin-bottom 5px
@@ -428,16 +436,91 @@ export default {
         display flex
         align-items center
         flex-wrap wrap
+        position relative
         .delete {
-            color #666
-            font-size 14px
-            margin-left 10px
+          color #666
+          font-size 14px
+          margin-left 10px
+          right: 18px;
+          position: absolute;
         }
     }
     .short-select-width {
-        width 120px
-        margin-bottom 5px
-        margin-top 5px
+      width 120px
+      margin-bottom 3px
+      margin-top 3px
     }
+}
+.dialogue-detail-wrapper {
+  margin 20px 10px 65px
+}
+.add-button-wrap {
+  display: flex;
+  justify-content: space-between;
+  background: #f6f6f6;
+  align-items: center;
+  height: 30px
+  border-radius 5px 5px 0 0
+  padding: 5px
+  margin-top: 10px
+}
+.button-active {
+  background: #f6f6f6;
+}
+.button-item {
+  display flex
+  align-items center
+  position relative
+  // justify-content center
+  margin-bottom 3px
+  &:last-child {
+    margin-bottom 0
+  }
+  .delete {
+    color #666
+    font-size 14px
+    right: 18px;
+    position: absolute;
+  }
+}
+.el-icon-caret-right {
+  opacity 0
+}
+.caret-active {
+  opacity 1
+}
+.default-btn {
+  color: #f00;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-gap: 10px
+  padding: 3px 22px
+  font-size: 12px;
+  border-radius: 3px;
+  .item {
+    display: inline-block;
+    height 31.6px
+    line-height 31.6px
+    white-space: nowrap;
+    cursor: pointer;
+    background: #FFF;
+    -webkit-appearance: none;
+    text-align: center;
+    box-sizing: border-box;
+    font-size: 12px;
+    border-radius: 4px;
+    border: 1px dashed #ababab;
+    color: #c1c1c1;
+  }
+}
+.button-id{
+  font-size 12px
+  margin 2px 18px
+}
+.save-sty{
+  position: absolute;
+  bottom: 20px;
+  right: 10px;
+  left: 10px;
 }
 </style>

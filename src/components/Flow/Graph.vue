@@ -425,7 +425,8 @@ export default {
         'er-rect',
         {
           inherit: 'rect',
-          // height: 60,
+          width: NODE_WIDTH,
+          height: LINE_HEIGHT,
           markup: [
             {
               tagName: 'rect',
@@ -717,8 +718,7 @@ export default {
       } else if (type === 'dialogue') {
         node = this.graph.createNode({
           shape: 'er-rect',
-          width: NODE_WIDTH,
-          height: LINE_HEIGHT,
+
           label: ctype,
           text: {
             textAnchor: 'left', // 左对齐

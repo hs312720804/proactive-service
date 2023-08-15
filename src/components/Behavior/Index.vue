@@ -149,16 +149,16 @@ export default {
         // padding-left 10px
         .all-list-wrapper {
             .head-text {
-                white-space nowrap
-                margin-right 5px
-                color #666
-                font-size 14px
+              white-space nowrap
+              margin-right 50px
+              color #666
+              font-size 14px
             }
             .list-item {
                 display flex
                 align-items center
                 flex-wrap wrap
-                padding 10px
+                position relative
                 .short-select-width {
                     width 110px
                     margin-bottom 5px
@@ -168,6 +168,8 @@ export default {
                     color #666
                     font-size 14px
                     margin-left 10px
+                    right: 18px;
+                    position: absolute;
                 }
             }
         }

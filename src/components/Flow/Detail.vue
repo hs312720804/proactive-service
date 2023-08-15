@@ -355,7 +355,7 @@ export default {
   >>>.detail-drawer {
     .el-drawer__header {
       font-weight bold
-      font-size 25px
+      font-size 16px
       color #5f95ff
     }
   }
