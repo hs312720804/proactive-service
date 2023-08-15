@@ -1,6 +1,6 @@
 <template>
   <div class="flow-composition-wrapper">
-    <div class="composition-header">组件：</div>
+    <div class="composition-header">组件</div>
     <div class="composition-content">
       <svg
         class="rhombic judge"

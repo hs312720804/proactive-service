@@ -90,7 +90,7 @@ export default {
       const dagreLayout = new DagreLayout({
         type: 'dagre',
         rankdir: 'LR',
-        align: 'UR',
+        // align: 'UR',
         ranksep: 55,
         nodesep: 25
       })
@@ -664,7 +664,7 @@ export default {
     initGraph () {
       const LINE_HEIGHT = this.LINE_HEIGHT
       const NODE_WIDTH = this.NODE_WIDTH
-      // 自定义边
+      // 自定义边（需要）
       Graph.registerEdge(
         'implement',
         {
@@ -751,8 +751,8 @@ export default {
                     height: LINE_HEIGHT,
                     strokeWidth: 1,
                     stroke: '#5F95FF',
-                    fill: '#EFF4FF',
-                    magnet: true
+                    fill: '#EFF4FF'
+                    // magnet: true
                   },
                   portNameLabel: {
                     ref: 'portBody',
@@ -778,6 +778,7 @@ export default {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       const scope = this
       this.graph = new Graph({
+
         container: document.getElementById(this.containerId),
         interacting: function (cellView) {
           if (cellView.cell.hasParent()) { // 子节点 不允许移动 （比如对话框内的节点）
@@ -806,24 +807,41 @@ export default {
         panning: true, // 是否启用画布平移
         mousewheel: true,
         connecting: {
+          snap: true,
+          allowBlank: false,
+          allowLoop: false,
+          highlight: true,
+          allowPort: false,
+          allowEdge: false,
           router: {
             name: 'er',
             args: {
               offset: 25,
               direction: 'H'
             }
-          },
-          createEdge () {
-            return new Shape.Edge({
-              attrs: {
-                line: {
-                  stroke: '#A2B1C3',
-                  strokeWidth: 2
-                }
-              }
-            })
           }
+          // createEdge () {
+          //   return new Shape.Edge({
+          //     attrs: {
+          //       line: {
+          //         stroke: '#A2B1C3',
+          //         strokeWidth: 2
+          //       }
+          //     }
+          //   })
+          // }
         }
+        // connecting: {
+        //   snap: true,
+        //   allowBlank: false,
+        //   allowLoop: false,
+        //   highlight: true,
+        //   allowPort: false,
+        //   allowEdge: false,
+        //   connector: 'rounded',
+        //   connectionPoint: 'boundary'
+
+        // }
       })
       this.graph.use( // 拉动节点 显示图形转换 初始化
         new Transform({
@@ -1010,152 +1028,152 @@ export default {
       //   }
       // })
     },
-    initShapeConfig () { // 初始化矩形图形配置
-      // https://x6.antv.antgroup.com/tutorial/basic/node#:~:text=%7D-,%E5%AE%9A%E5%88%B6%E8%8A%82%E7%82%B9,-%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87
-      Shape.Rect.config({ // config 改变rect默认设置 ， 同修改全局的有个regiserNode
-        width: 80,
-        height: 40,
-        markup: [
-          {
-            tagName: 'rect',
-            selector: 'body'
-          },
-          {
-            tagName: 'text',
-            selector: 'label'
-          }
-        ],
-        attrs: {
-          body: { // 对应selector css
-            fill: '#eff4ff',
-            stroke: '#5f95ff',
-            strokeWidth: 1
-          },
-          label: {
-            fontSize: 14,
-            fill: '#000',
-            fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
-            textAnchor: 'middle', // 左对齐
-            textVerticalAnchor: 'middle',
-            textWrap: {
-              width: 180,
-              height: 50,
-              ellipsis: true
-            }
-            // refX: -10, // x 轴偏移量
-            // refY: -10
-          }
-        },
-        propHooks: { // 自定义选项
-          label (metadata) {
-            const { label, ...others } = metadata
-            if (label) {
-              ObjectExt.setByPath(others, 'attrs/text/text', label)
-            }
-            return others
-          },
-          rx (metadata) {
-            const { rx, ...others } = metadata
-            if (rx != null) {
-              ObjectExt.setByPath(others, 'attrs/body/rx', rx)
-            }
-            return others
-          },
-          ry (metadata) {
-            const { ry, ...others } = metadata
-            if (ry != null) {
-              ObjectExt.setByPath(others, 'attrs/body/ry', ry)
-            }
-            return others
-          }
-        }
-      })
-      Graph.registerNode( // 对话框内的动态按钮 底部需要有连接桩
-        'dynamic-button',
-        {
-          inherit: 'rect',
-          width: 50,
-          height: 20,
-          attrs: {
-            body: {
-              fill: '#eff4ff',
-              stroke: '#5f95ff',
-              strokeWidth: 1,
-              rx: 6,
-              ry: 6
-            },
-            text: {
-              fontSize: 12,
-              fill: '#000',
-              fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
-              textAnchor: 'middle', // 左对齐
-              textVerticalAnchor: 'middle'
-            }
-          },
-          ports: { // 连接桩
-            groups: {
-              bottom: {
-                position: 'bottom',
-                attrs: {
-                  circle: {
-                  // magnet: true,
-                    stroke: '#5f95ff',
-                    r: 3
-                  }
-                }
-              }
-            }
-          }
-        },
-        true
-      )
-      Graph.registerNode( // 对话框内的虚线边框静态按钮
-        'dotted-button',
-        {
-          inherit: 'rect', // 继承于 rect 节点
-          width: 60,
-          height: 25,
-          attrs: {
-            body: {
-            // rx: 6,
-            // ry: 6,
-              fill: '#eff4ff',
-              stroke: '#b8b0b0',
-              strokeWidth: 1,
-              strokeDasharray: 8
-            },
-            text: {
-              fontSize: 12,
-              fill: '#b8b0b0',
-              fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
-              textAnchor: 'middle', // 左对齐
-              textVerticalAnchor: 'middle'
-            }
-          }
-        },
-        true
-      )
-      Graph.registerNode( // 节点左上方的标题节点
-        'title-node',
-        {
-          inherit: 'rect',
-          attrs: {
-            body: {
-              fill: 'transparent',
-              stroke: ''
-            },
-            label: {
-              fill: '#000',
-              fontSize: 12
-            }
-          },
-          data: {
-            type: 'title-node'
-          }
-        },
-        true
-      )
-    },
+    // initShapeConfig () { // 初始化矩形图形配置
+    //   // https://x6.antv.antgroup.com/tutorial/basic/node#:~:text=%7D-,%E5%AE%9A%E5%88%B6%E8%8A%82%E7%82%B9,-%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87
+    //   Shape.Rect.config({ // config 改变rect默认设置 ， 同修改全局的有个regiserNode
+    //     width: 80,
+    //     height: 40,
+    //     markup: [
+    //       {
+    //         tagName: 'rect',
+    //         selector: 'body'
+    //       },
+    //       {
+    //         tagName: 'text',
+    //         selector: 'label'
+    //       }
+    //     ],
+    //     attrs: {
+    //       body: { // 对应selector css
+    //         fill: '#eff4ff',
+    //         stroke: '#5f95ff',
+    //         strokeWidth: 1
+    //       },
+    //       label: {
+    //         fontSize: 14,
+    //         fill: '#000',
+    //         fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
+    //         textAnchor: 'middle', // 左对齐
+    //         textVerticalAnchor: 'middle',
+    //         textWrap: {
+    //           width: 180,
+    //           height: 50,
+    //           ellipsis: true
+    //         }
+    //         // refX: -10, // x 轴偏移量
+    //         // refY: -10
+    //       }
+    //     },
+    //     propHooks: { // 自定义选项
+    //       label (metadata) {
+    //         const { label, ...others } = metadata
+    //         if (label) {
+    //           ObjectExt.setByPath(others, 'attrs/text/text', label)
+    //         }
+    //         return others
+    //       },
+    //       rx (metadata) {
+    //         const { rx, ...others } = metadata
+    //         if (rx != null) {
+    //           ObjectExt.setByPath(others, 'attrs/body/rx', rx)
+    //         }
+    //         return others
+    //       },
+    //       ry (metadata) {
+    //         const { ry, ...others } = metadata
+    //         if (ry != null) {
+    //           ObjectExt.setByPath(others, 'attrs/body/ry', ry)
+    //         }
+    //         return others
+    //       }
+    //     }
+    //   })
+    //   Graph.registerNode( // 对话框内的动态按钮 底部需要有连接桩
+    //     'dynamic-button',
+    //     {
+    //       inherit: 'rect',
+    //       width: 50,
+    //       height: 20,
+    //       attrs: {
+    //         body: {
+    //           fill: '#eff4ff',
+    //           stroke: '#5f95ff',
+    //           strokeWidth: 1,
+    //           rx: 6,
+    //           ry: 6
+    //         },
+    //         text: {
+    //           fontSize: 12,
+    //           fill: '#000',
+    //           fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
+    //           textAnchor: 'middle', // 左对齐
+    //           textVerticalAnchor: 'middle'
+    //         }
+    //       },
+    //       ports: { // 连接桩
+    //         groups: {
+    //           bottom: {
+    //             position: 'bottom',
+    //             attrs: {
+    //               circle: {
+    //               // magnet: true,
+    //                 stroke: '#5f95ff',
+    //                 r: 3
+    //               }
+    //             }
+    //           }
+    //         }
+    //       }
+    //     },
+    //     true
+    //   )
+    //   Graph.registerNode( // 对话框内的虚线边框静态按钮
+    //     'dotted-button',
+    //     {
+    //       inherit: 'rect', // 继承于 rect 节点
+    //       width: 60,
+    //       height: 25,
+    //       attrs: {
+    //         body: {
+    //         // rx: 6,
+    //         // ry: 6,
+    //           fill: '#eff4ff',
+    //           stroke: '#b8b0b0',
+    //           strokeWidth: 1,
+    //           strokeDasharray: 8
+    //         },
+    //         text: {
+    //           fontSize: 12,
+    //           fill: '#b8b0b0',
+    //           fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
+    //           textAnchor: 'middle', // 左对齐
+    //           textVerticalAnchor: 'middle'
+    //         }
+    //       }
+    //     },
+    //     true
+    //   )
+    //   Graph.registerNode( // 节点左上方的标题节点
+    //     'title-node',
+    //     {
+    //       inherit: 'rect',
+    //       attrs: {
+    //         body: {
+    //           fill: 'transparent',
+    //           stroke: ''
+    //         },
+    //         label: {
+    //           fill: '#000',
+    //           fontSize: 12
+    //         }
+    //       },
+    //       data: {
+    //         type: 'title-node'
+    //       }
+    //     },
+    //     true
+    //   )
+    // },
     initRhombicNode () { // 初始化菱形节点
       // #region 初始化图形
       const ports = {

@@ -90,7 +90,7 @@ export default {
       const dagreLayout = new DagreLayout({
         type: 'dagre',
         rankdir: 'TB',
-        // align: 'UR',
+        align: 'UR',
         ranksep: 55,
         nodesep: 25
       })
@@ -130,7 +130,7 @@ export default {
               parentId: item.nodeId
             }
           })
-          allCellList = allCellList.concat(arr).concat(item)
+          allCellList = allCellList.concat(arr)
         } else {
           allCellList.push(item)
         }
@@ -176,7 +176,7 @@ export default {
             }
           }
           cells.push(obj)
-        } else if (item.nodeType === 2) { // 对话框
+        } else if (item.nodeType === 2) {
           const ports = item.buttonDataList.map(obj => {
             const a = {
               id: obj.buttonId,
@@ -192,18 +192,7 @@ export default {
             }
             return a
           })
-          // ports.unshift({
-          //   id: item.nodeId,
-          //   group: 'list',
-          //   attrs: {
-          //     portNameLabel: {
-          //       text: `${item.context}--${item.nodeId}`
-          //     },
-          //     portTypeLabel: {
-          //       text: item.nodeId
-          //     }
-          //   }
-          // })
+
           obj = {
             ...commonObj,
             shape: 'er-rect',
@@ -253,15 +242,13 @@ export default {
           let sourceData = {}
           // eslint-disable-next-line no-case-declarations
           let targetData = {}
+
           const aaa = allCellList.find(obj => {
-            return obj.nodeId === source || obj.id === target
+            return obj.nodeId === source
           })
           const bbb = allCellList.find(obj => {
-            return obj.nodeId === target || obj.id === target
+            return obj.nodeId === target
           })
-          console.log('allCellList---->', allCellList)
-          console.log('aaa', aaa, source)
-          console.log('bbb', bbb, target)
           if (aaa && bbb) {
             sourceData = {
               cell: aaa.parentId ? aaa.parentId : aaa.nodeId,
@@ -271,8 +258,10 @@ export default {
               cell: bbb.parentId ? bbb.parentId : bbb.nodeId,
               port: bbb.parentId ? bbb.nodeId : null
             }
-            console.log('sourceData', sourceData)
-            console.log('targetData', targetData)
+            // console.log('aaa', aaa)
+            // console.log('bbb', bbb)
+            // console.log('sourceData', sourceData)
+            // console.log('targetData', targetData)
             const obj = {
               nodeType: item.nodeType,
               shape: 'implement',
@@ -286,14 +275,325 @@ export default {
             }
             cells.push(obj)
           }
-          console.log('-------------------------------------', index)
         }
       })
       // 222222222222222222222
       console.log('cells========>', cells)
+      // const cells = [
+      //   {
+      //     id: '1',
+      //     nodeType: 2,
+      //     shape: 'class',
+      //     name: [
+      //       '<<Abstract>>',
+      //       '动物'
+      //     ],
+      //     attributes: [
+      //       '+有生命'
+      //     ],
+      //     methods: [
+      //       '+新陈代谢()',
+      //       '+繁殖()'
+      //     ],
+      //     position: {
+      //       x: 300,
+      //       y: 40
+      //     }
+      //   }]
 
       cells.forEach((treeItem, treeIndex) => {
         switch (treeItem.nodeType) {
+          // case 1: // 'start'
+          //   // eslint-disable-next-line no-case-declarations
+          //   let startParentNode = { // 开始节点
+          //     id: treeItem.nodeId.toString(), // String，节点的唯一标识
+          //     shape: 'ellipse', // 使用 ellipse 渲染
+          //     x: 0, // Number，必选，节点位置的 x 值
+          //     y: 0, // Number，必选，节点位置的 y 值
+          //     width: 100, // Number，可选，节点大小的 width 值
+          //     height: 50, // Number，可选，节点大小的 height 值
+          //     attrs: {
+          //       body: {
+          //         fill: '#eff4ff',
+          //         stroke: '#5f95ff',
+          //         strokeWidth: 1,
+          //         rx: 16,
+          //         ry: 16
+          //       },
+          //       label: {
+          //         text: treeItem.title,
+          //         fill: '#333',
+          //         fontSize: 16,
+          //         fontWeight: 'normal',
+          //         fontVariant: 'small-caps'
+          //       }
+          //     },
+          //     data: {
+          //       type: 'start',
+          //       ...treeItem
+          //     }
+          //   }
+          //   // eslint-disable-next-line no-case-declarations
+          //   const RateNode = null
+          //   startParentNode = this.graph.addNode(startParentNode)
+          //   if (!this.isEdit && this.showAnylise) {
+          //     treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
+          //       startParentNode.addChild(this.graph.addNode({
+          //         shape: 'title-node',
+          //         x: startParentNode.getBBox().x - startParentNode.size().width - 30,
+          //         y: startParentNode.getBBox().y + 30 * index,
+          //         attrs: {
+          //           text: {
+          //             text: item
+          //           }
+          //         }
+          //       }))
+          //     })
+          //   }
+          //   startParentNode.addChild(RateNode)
+          //   break
+          // case 2: // 'dialogue'
+          //   // eslint-disable-next-line no-case-declarations
+          //   const dialogNode = {
+          //     shape: 'rect',
+          //     width: 320,
+          //     height: 80,
+          //     x: 200 + 200 * treeIndex,
+          //     y: 200 + 100 * treeIndex,
+          //     deep: true,
+          //     position: {
+          //       x: 200 + 200 * treeIndex,
+          //       y: 200 + 100 * treeIndex
+          //       // deep: true
+          //     },
+          //     label: '',
+          //     attrs: {
+          //       text: {
+          //         // textAnchor: 'left', // 左对齐
+          //         // refX: -10, // x 轴偏移量
+          //         // refY: -10,
+          //         textAnchor: 'center',
+          //         text: treeItem?.context || ''
+          //       }
+          //     },
+          //     data: {
+          //       type: 'dialogue',
+          //       ctype: '对话框',
+          //       ...treeItem
+          //     }
+          //   }
+          //   // eslint-disable-next-line no-case-declarations
+          //   const parentNode = this.graph.addNode(dialogNode)
+          //   // eslint-disable-next-line no-case-declarations
+          //   const titleNode = this.graph.addNode({
+          //     shape: 'title-node',
+          //     x: parentNode.getBBox().x - 30,
+          //     y: parentNode.getBBox().y - 30,
+          //     attrs: {
+          //       text: {
+          //         text: treeItem?.title
+          //       }
+          //     }
+          //   })
+          //   parentNode.addChild(titleNode)
+          //   if (treeItem?.buttonDataList) { // 渲染底部按钮 包括动态按钮 和 静态按钮
+          //     const staticButtons = treeItem.buttonDataList.filter((item, index) => {
+          //       return item.type === 2 || item.type === 3
+          //     })
+          //     const dynamicButtons = treeItem.buttonDataList.filter((item, index) => {
+          //       return item.type === 1
+          //     })
+          //     dynamicButtons.forEach((buttonItem, buttonIndex) => {
+          //       const node = this.graph.addNode({
+          //         shape: 'dynamic-button',
+          //         x: parentNode.getBBox().x + 10 + 60 * buttonIndex,
+          //         y: parentNode.getBBox().y + parentNode.size().height - 30,
+          //         attrs: {
+          //           text: {
+          //             text: buttonItem.title
+          //           }
+          //         },
+          //         ports: {
+          //           items: [
+          //             {
+          //               id: `${parentNode.id}_${buttonIndex}`,
+          //               group: 'bottom',
+          //               zIndex: 20
+          //             }
+          //           ]
+          //         },
+          //         data: {
+          //           'button-type': 'dialogue-button',
+          //           ...buttonItem
+          //         }
+          //       })
+          //       parentNode.addChild(node)
+          //     })
+          //     staticButtons.forEach((buttonItem, buttonIndex) => {
+          //       const node = this.graph.addNode({
+          //         shape: 'dotted-button',
+          //         x: parentNode.getBBox().x + parentNode.size().width - 60 - 10,
+          //         y: parentNode.getBBox().y + parentNode.size().height / 2 - 20 + 30 * buttonIndex,
+          //         attrs: {
+          //           text: {
+          //             text: buttonItem.title
+          //           }
+          //         },
+          //         data: {
+          //           'button-type': 'dialogue-static-button',
+          //           ...buttonItem
+          //         }
+          //       })
+          //       parentNode.addChild(node)
+          //     })
+          //   }
+          //   if (!this.isEdit && this.showAnylise) {
+          //     treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
+          //       parentNode.addChild(this.graph.addNode({
+          //         shape: 'title-node',
+          //         x: parentNode.getBBox().x - 80,
+          //         y: parentNode.getBBox().y + 30 * index,
+          //         attrs: {
+          //           text: {
+          //             text: item
+          //           }
+          //         }
+          //       }))
+          //     })
+          //   }
+          //   break
+          // case 3: // judge
+          //   // eslint-disable-next-line no-case-declarations
+          //   const judgeParentNode = this.graph.addNode({
+          //     shape: 'custom-polygon',
+          //     data: {
+          //       ...treeItem
+          //     },
+          //     x: 50 + 100 * treeIndex,
+          //     y: 50 + 100 * treeIndex
+          //   })
+          //   // eslint-disable-next-line no-case-declarations
+          //   const juidgeTitleNode = this.graph.addNode({
+          //     shape: 'title-node',
+          //     x: judgeParentNode.getBBox().x - 30,
+          //     y: judgeParentNode.getBBox().y - 30,
+          //     attrs: {
+          //       text: {
+          //         text: treeItem?.title
+          //       }
+          //     }
+          //   })
+          //   judgeParentNode.addChild(juidgeTitleNode)
+          //   if (!this.isEdit && this.showAnylise) {
+          //     treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
+          //       judgeParentNode.addChild(this.graph.addNode({
+          //         shape: 'title-node',
+          //         x: judgeParentNode.getBBox().x - 80,
+          //         y: judgeParentNode.getBBox().y + 30 * index,
+          //         attrs: {
+          //           text: {
+          //             text: item
+          //           }
+          //         }
+          //       }))
+          //     })
+          //   }
+          //   break
+          // case 4: // skill节点 技能
+          //   // eslint-disable-next-line no-case-declarations
+          //   const skillNode = this.graph.addNode({
+          //     shape: 'rect',
+          //     size: {
+          //       width: 100,
+          //       height: 40
+          //     },
+          //     x: -200 + 100 * treeIndex,
+          //     y: 300 + 100 * treeIndex,
+          //     attrs: {
+          //       text: {
+          //         text: treeItem.title
+          //       }
+          //     },
+          //     data: {
+          //       ...treeItem,
+          //       type: 'skill'
+          //     }
+          //   })
+          //   if (!this.isEdit && this.showAnylise) {
+          //     treeItem?.conversionRateStr.split('/n').forEach((item, index) => {
+          //       skillNode.addChild(this.graph.addNode({
+          //         shape: 'title-node',
+          //         x: skillNode.getBBox().x - 100,
+          //         y: skillNode.getBBox().y + 30 * index,
+          //         attrs: {
+          //           text: {
+          //             text: item
+          //           }
+          //         }
+          //       }))
+          //     })
+          //   }
+          //   break
+          // case 5: // 连线
+          //   // eslint-disable-next-line no-case-declarations
+          //   const { source, target } = treeItem
+          //   // eslint-disable-next-line no-case-declarations
+          //   let sourceData = {}
+          //   // eslint-disable-next-line no-case-declarations
+          //   let targetData = {}
+          //   // eslint-disable-next-line no-case-declarations
+          //   const sourceCell = this.graph.getNodes().find((node, index) => {
+          //     return this.getNodeId(node) === source
+          //   })
+          //   // eslint-disable-next-line no-case-declarations
+          //   const targetCell = this.graph.getNodes().find((node, index) => {
+          //     return this.getNodeId(node) === target
+          //   })
+          //   if (sourceCell.hasPorts()) {
+          //     const bottomPort = sourceCell.getPorts().find((port, index) => {
+          //       return port.group === 'bottom'
+          //     })
+          //     sourceData = {
+          //       cell: sourceCell.id,
+          //       port: bottomPort.id
+          //     }
+          //   } else {
+          //     sourceData = {
+          //       cell: sourceCell.id
+          //     }
+          //   }
+          //   if (targetCell?.hasPorts() && targetCell.getData().type === 'judge') {
+          //     const topPort = targetCell.getPorts().find((port, index) => {
+          //       return port.group === 'top'
+          //     })
+          //     targetData = {
+          //       cell: targetCell.id,
+          //       port: topPort.id
+          //     }
+          //   } else {
+          //     targetData = {
+          //       cell: targetCell?.id
+          //     }
+          //   }
+          //   this.graph.addEdge({
+          //     shape: 'implement',
+          //     source: {
+          //       ...sourceData
+          //     },
+          //     target: {
+          //       ...targetData
+          //     },
+          //     label: treeItem?.lineText
+          //     // router: {
+          //     //   name: 'manhattan',
+          //     //   // name: 'er',
+          //     //   args: {
+          //     //     startDirections: ['bottom'],
+          //     //     endDirections: ['top']
+          //     //   }
+          //     // }
+          //   })
+          //   break
           // default:
           //   break
           case 1: // 'start'
@@ -404,7 +704,7 @@ export default {
         'er-rect',
         {
           inherit: 'rect',
-          // height: 60,
+          height: 60,
           markup: [
             {
               tagName: 'rect',
@@ -710,6 +1010,170 @@ export default {
     reduceZoom () {
       this.graph.zoom(-0.1).centerContent()
     },
+    initConfig () {
+      // this.initShapeConfig()
+      this.initRhombicNode()
+      // this.initCustomNode()
+    },
+    initCustomNode () {
+      // Graph.registerVueComponent('dialogue', Dialogue, ['testArr']) // 注册dialogue的自定义vue组件
+      // register({
+      //   shape: 'dialogue',
+      //   width: 350,
+      //   height: 150,
+      //   component: Dialogue,
+      //   data: {
+      //     type: 'dialogue',
+      //     ctype: '对话框'
+      //   }
+      // })
+    },
+    // initShapeConfig () { // 初始化矩形图形配置
+    //   // https://x6.antv.antgroup.com/tutorial/basic/node#:~:text=%7D-,%E5%AE%9A%E5%88%B6%E8%8A%82%E7%82%B9,-%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87
+    //   Shape.Rect.config({ // config 改变rect默认设置 ， 同修改全局的有个regiserNode
+    //     width: 80,
+    //     height: 40,
+    //     markup: [
+    //       {
+    //         tagName: 'rect',
+    //         selector: 'body'
+    //       },
+    //       {
+    //         tagName: 'text',
+    //         selector: 'label'
+    //       }
+    //     ],
+    //     attrs: {
+    //       body: { // 对应selector css
+    //         fill: '#eff4ff',
+    //         stroke: '#5f95ff',
+    //         strokeWidth: 1
+    //       },
+    //       label: {
+    //         fontSize: 14,
+    //         fill: '#000',
+    //         fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
+    //         textAnchor: 'middle', // 左对齐
+    //         textVerticalAnchor: 'middle',
+    //         textWrap: {
+    //           width: 180,
+    //           height: 50,
+    //           ellipsis: true
+    //         }
+    //         // refX: -10, // x 轴偏移量
+    //         // refY: -10
+    //       }
+    //     },
+    //     propHooks: { // 自定义选项
+    //       label (metadata) {
+    //         const { label, ...others } = metadata
+    //         if (label) {
+    //           ObjectExt.setByPath(others, 'attrs/text/text', label)
+    //         }
+    //         return others
+    //       },
+    //       rx (metadata) {
+    //         const { rx, ...others } = metadata
+    //         if (rx != null) {
+    //           ObjectExt.setByPath(others, 'attrs/body/rx', rx)
+    //         }
+    //         return others
+    //       },
+    //       ry (metadata) {
+    //         const { ry, ...others } = metadata
+    //         if (ry != null) {
+    //           ObjectExt.setByPath(others, 'attrs/body/ry', ry)
+    //         }
+    //         return others
+    //       }
+    //     }
+    //   })
+    //   Graph.registerNode( // 对话框内的动态按钮 底部需要有连接桩
+    //     'dynamic-button',
+    //     {
+    //       inherit: 'rect',
+    //       width: 50,
+    //       height: 20,
+    //       attrs: {
+    //         body: {
+    //           fill: '#eff4ff',
+    //           stroke: '#5f95ff',
+    //           strokeWidth: 1,
+    //           rx: 6,
+    //           ry: 6
+    //         },
+    //         text: {
+    //           fontSize: 12,
+    //           fill: '#000',
+    //           fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
+    //           textAnchor: 'middle', // 左对齐
+    //           textVerticalAnchor: 'middle'
+    //         }
+    //       },
+    //       ports: { // 连接桩
+    //         groups: {
+    //           bottom: {
+    //             position: 'bottom',
+    //             attrs: {
+    //               circle: {
+    //               // magnet: true,
+    //                 stroke: '#5f95ff',
+    //                 r: 3
+    //               }
+    //             }
+    //           }
+    //         }
+    //       }
+    //     },
+    //     true
+    //   )
+    //   Graph.registerNode( // 对话框内的虚线边框静态按钮
+    //     'dotted-button',
+    //     {
+    //       inherit: 'rect', // 继承于 rect 节点
+    //       width: 60,
+    //       height: 25,
+    //       attrs: {
+    //         body: {
+    //         // rx: 6,
+    //         // ry: 6,
+    //           fill: '#eff4ff',
+    //           stroke: '#b8b0b0',
+    //           strokeWidth: 1,
+    //           strokeDasharray: 8
+    //         },
+    //         text: {
+    //           fontSize: 12,
+    //           fill: '#b8b0b0',
+    //           fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
+    //           textAnchor: 'middle', // 左对齐
+    //           textVerticalAnchor: 'middle'
+    //         }
+    //       }
+    //     },
+    //     true
+    //   )
+    //   Graph.registerNode( // 节点左上方的标题节点
+    //     'title-node',
+    //     {
+    //       inherit: 'rect',
+    //       attrs: {
+    //         body: {
+    //           fill: 'transparent',
+    //           stroke: ''
+    //         },
+    //         label: {
+    //           fill: '#000',
+    //           fontSize: 12
+    //         }
+    //       },
+    //       data: {
+    //         type: 'title-node'
+    //       }
+    //     },
+    //     true
+    //   )
+    // },
     initRhombicNode () { // 初始化菱形节点
       // #region 初始化图形
       const ports = {
@@ -834,12 +1298,6 @@ export default {
         true
       )
     },
-    initConfig () {
-      // this.initShapeConfig()
-      this.initRhombicNode() // 初始化菱形节点
-      // this.initCustomNode()
-    },
-
     initGraphListen () {
       this.graph.on('node:removed', ({ node, index, options }) => {
         // console.debug('node:removed: ', node, index, options)
