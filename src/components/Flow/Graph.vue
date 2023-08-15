@@ -95,7 +95,7 @@ export default {
         // nodesep: 25,
         nodesepFunc: (d) => { // 纵向间距
           if (d.data.nodeType === 2) { // 对话框
-            return 105
+            return 0 + 20 * d.data.buttonDataList.length
           } else if (d.data.nodeType === 4) { // 普通方框
             return 1
           } else {
@@ -130,9 +130,10 @@ export default {
       this.graph.fromJSON(model)
     },
     generateRenderTree (treeData) { // 生成渲染树 x6 cell 格式树
+      const graph = this.graph
       console.log('generateRenderTree: ', treeData)
-      if (this.graph && this.graph.getCellCount() > 0) {
-        this.graph.clearCells()
+      if (graph && graph.getCellCount() > 0) {
+        graph.clearCells()
       }
 
       const cells2 = []
@@ -248,11 +249,11 @@ export default {
           const obj = {
             id: item.nodeId,
             nodeType: item.nodeType,
-            shape: 'rect',
-            size: {
-              width: 100,
-              height: 40
-            },
+            shape: 'c-rect',
+            // size: {
+            //   width: 100,
+            //   height: 40
+            // },
             attrs: {
               text: {
                 text: item.title
@@ -331,7 +332,9 @@ export default {
             break
         }
         // 1111111111111111
-        this.graph.resetCells(cells2)
+        graph.resetCells(cells2)
+        graph.centerContent()
+        // graph.zoomToFit({ padding: 10, maxScale: 1 })
         // this.graph.zoomToFit({ padding: 10, maxScale: 1 })
       })
       this.layout()
@@ -461,6 +464,14 @@ export default {
                   {
                     tagName: 'text',
                     selector: 'portTypeLabel'
+                  },
+                  // {
+                  //   tagName: 'circle',
+                  //   selector: 'portCircle'
+                  // },
+                  {
+                    tagName: 'circle',
+                    selector: 'portCircle2'
                   }
                 ],
                 attrs: {
@@ -483,6 +494,19 @@ export default {
                     refX: 95,
                     refY: 6,
                     fontSize: 10
+                  },
+                  // portCircle: {
+                  //   r: 4,
+                  //   refY: 12,
+                  //   fill: '#5F95FF',
+                  //   stroke: '#5F95FF'
+                  // },
+                  portCircle2: {
+                    r: 4,
+                    refX: NODE_WIDTH,
+                    refY: 12,
+                    fill: '#5F95FF',
+                    stroke: '#000'
                   }
                 },
                 position: 'erPortPosition'
@@ -525,6 +549,7 @@ export default {
         panning: true, // 是否启用画布平移
         mousewheel: true,
         connecting: {
+          connector: 'rounded',
           snap: true,
           allowBlank: false,
           allowLoop: false,
@@ -586,9 +611,9 @@ export default {
         },
         getDropNode: (afterNode) => {
           console.debug('after getDropNode: ', afterNode)
-          const targetType = afterNode.getData().type
-          const targetCtype = afterNode.getData().ctype
-          const nodeList = this.graph.getNodes().filter((item) => item.getData().type === targetType)
+          // const targetType = afterNode.getData().type
+          // const targetCtype = afterNode.getData().ctype
+          // const nodeList = this.graph.getNodes().filter((item) => item.getData().type === targetType)
           return afterNode.clone()
           // return afterNode.clone().setAttrByPath('text/text', `${targetCtype}${nodeList.length + 1}`)
         },
@@ -596,19 +621,22 @@ export default {
           const { type, ctype } = node.getData()
           const nodeList = this.graph.getNodes().filter((item) => item.getData().type === type)
           const nodeTitle = `${ctype}${nodeList.length + 1}`
-          const titleNode = {
-            shape: 'er-rect',
-            x: node.getBBox().x - 30,
-            y: node.getBBox().y - 30,
-            label: `${nodeTitle}`
-            // attrs: {
-            //   text: {
-            //     text: nodeTitle
-            //   }
-            // }
-          }
+          // const titleNode = {
+          //   shape: 'er-rect',
+          //   x: node.getBBox().x - 30,
+          //   y: node.getBBox().y - 30,
+          //   label: `${nodeTitle}`,
+          //   width: 150,
+          //   height: 24,
+          //   nodeType: 2
+          //   // attrs: {
+          //   //   text: {
+          //   //     text: nodeTitle
+          //   //   }
+          //   // }
+          // }
 
-          this.graph.addNode(titleNode)
+          // this.graph.addNode(titleNode)
           // node.addChild(titleNode)
           if (type === 'judge') {
             try {
@@ -690,7 +718,7 @@ export default {
         node = this.graph.createNode({
           shape: 'er-rect',
           width: NODE_WIDTH,
-          height: 100,
+          height: LINE_HEIGHT,
           label: ctype,
           text: {
             textAnchor: 'left', // 左对齐
@@ -705,8 +733,8 @@ export default {
         })
       } else if (type === 'skill') {
         node = this.graph.createNode({
-          shape: 'rect',
-          width: 100,
+          shape: 'c-rect',
+          // width: 100,
           height: 40,
           attrs: {
             body: {
@@ -812,24 +840,23 @@ export default {
         'custom-polygon',
         {
           inherit: 'polygon',
-          width: 100,
-          height: 50,
+          width: 70,
+          height: 70,
           attrs: {
             body: {
               strokeWidth: 1,
-              stroke: '#5F95FF',
-              fill: '#EFF4FF',
+              stroke: '#C4C4C4',
+              fill: '#E4E4E4',
+              rx: 5,
+              ry: 5,
               refPoints: '0,10 10,0 20,10 10,20'
             },
-            // text: {
-            //   fontSize: 12,
-            //   fill: '#262626',
-            //   textAnchor: 'left', // 左对齐
-            //   refX: -5, // x 轴偏移量
-            //   refY: -5,
-            //   text: '判定'
-            // }
             text: {
+              fontSize: 12,
+              fill: '#262626',
+              textAnchor: 'middle',
+              // refX: -5, // x 轴偏移量
+              // refY: -5,
               text: '判定'
             }
           },
@@ -853,11 +880,143 @@ export default {
       )
     },
     initConfig () {
-      // this.initShapeConfig()
+      this.initShapeConfig()
       this.initRhombicNode() // 初始化菱形节点
       // this.initCustomNode()
     },
+    initShapeConfig () { // 初始化矩形图形配置
+      Graph.registerNode(
+        'c-rect',
+        {
+          inherit: 'rect',
+          width: 130,
+          height: 50,
+          markup: [
+            {
+              tagName: 'rect',
+              selector: 'body'
+            },
+            {
+              tagName: 'text',
+              selector: 'label'
+            }
+          ],
+          attrs: {
+            body: {
+              strokeWidth: 1,
+              fill: '#BFE8E2',
+              stroke: '#A8D7CD',
+              rx: 10, // 圆角矩形
+              ry: 10
+            },
+            label: {
+              textWrap: {
+                // ellipsis: true
+                // width: -10
+              },
+              breakWord: false,
+              textAnchor: 'middle',
+              textVerticalAnchor: 'middle',
+              // refX: '50%',
+              // refY: '50%',
+              // refRCircumscribed: '100%', // 圆半径为节点宽度/高度中较大的那个值的一半
+              // refCx: '50%', // 圆中心 x 坐标位于节点中心
+              // refCy: '50%', // 圆中心 y 坐标位于节点中心
+              fontSize: 12
+            }
 
+          }
+        },
+        true
+      )
+      // // https://x6.antv.antgroup.com/tutorial/basic/node#:~:text=%7D-,%E5%AE%9A%E5%88%B6%E8%8A%82%E7%82%B9,-%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87
+      // Shape.Rect.config({ // config 改变rect默认设置 ， 同修改全局的有个regiserNode
+      //   width: '100%',
+      //   height: '100%',
+      //   markup: [
+      //     {
+      //       tagName: 'rect',
+      //       selector: 'body'
+      //     },
+      //     {
+      //       tagName: 'text',
+      //       selector: 'label'
+      //     }
+      //   ],
+      //   attrs: {
+      //     body: { // 对应selector css
+      //       fill: '#eff4ff',
+      //       stroke: '#5f95ff',
+      //       strokeWidth: 1
+      //     },
+      //     label: {
+      //       fontSize: 14,
+      //       fill: '#000',
+      //       fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
+      //       textAnchor: 'middle', // 左对齐
+      //       textVerticalAnchor: 'middle',
+      //       textWrap: {
+      //         width: 180,
+      //         height: 50,
+      //         ellipsis: true
+      //       }
+      //       // refX: -10, // x 轴偏移量
+      //       // refY: -10
+      //     }
+      //   },
+      //   propHooks: { // 自定义选项
+      //     label (metadata) {
+      //       const { label, ...others } = metadata
+      //       if (label) {
+      //         ObjectExt.setByPath(others, 'attrs/text/text', label)
+      //       }
+      //       return others
+      //     },
+      //     rx (metadata) {
+      //       const { rx, ...others } = metadata
+      //       if (rx != null) {
+      //         ObjectExt.setByPath(others, 'attrs/body/rx', rx)
+      //       }
+      //       return others
+      //     },
+      //     ry (metadata) {
+      //       const { ry, ...others } = metadata
+      //       if (ry != null) {
+      //         ObjectExt.setByPath(others, 'attrs/body/ry', ry)
+      //       }
+      //       return others
+      //     }
+      //   }
+      // })
+      // Graph.registerNode('self-node', {
+      //   draw (cfg, group) {
+      //     const labelObj = group.addShape('text', {
+      //       attrs: {
+      //         x: 10,
+      //         y: 10,
+      //         text: '121212',
+      //         textAlign: 'left',
+      //         textBaseline: 'top',
+      //         lineHeight: 1
+      //       }
+      //     })
+      //     // 根据label，计算宽高，需要自己实现
+      //     const { width, height } = caclWH(label)
+
+      //     const rect = group.addShape('rect', {
+      //       attrs: {
+      //         width,
+      //         height,
+      //         x: -width / 2,
+      //         y: -height / 2,
+      //         radius: 4,
+      //         ...nodeStyle
+      //       }
+      //     })
+      //     return rect
+      //   }
+      // })
+    },
     initGraphListen () {
       this.graph.on('node:removed', ({ node, index, options }) => {
         // console.debug('node:removed: ', node, index, options)
