@@ -97,6 +97,7 @@
             <el-form-item label="按钮ID：" style="margin-bottom: 3px;">
               {{ buttonDetail.buttonId }}
             </el-form-item>
+            <!-- {{ childNodeList }} -->
             <Behavior
               :list="buttonDetail.nextNodeList"
               :skillList="skillList"

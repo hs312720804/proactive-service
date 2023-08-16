@@ -150,7 +150,7 @@ export default {
         .all-list-wrapper {
             .head-text {
               white-space nowrap
-              margin-right 50px
+              margin-right 39px
               color #666
               font-size 14px
             }

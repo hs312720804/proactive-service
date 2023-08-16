@@ -157,11 +157,15 @@ export default {
       treeData.forEach((item, index) => {
         const commonObj = {
           id: item.nodeId,
-          label: `${item.context}--${item.nodeId}`,
-          width: 150,
-          height: 24,
+          label: item.context ? `${item.context}--${item.nodeId}` : item.title,
           ports: [],
-          nodeType: item.nodeType
+          nodeType: item.nodeType,
+          attrs: {
+            title: {
+              text: item.title
+            }
+          }
+
         }
         let obj = {}
         if (item.nodeType === 1) {
@@ -234,12 +238,18 @@ export default {
             }
           }
           cells.push(obj)
-        } else if (item.nodeType === 3) {
+        } else if (item.nodeType === 3) { // 菱形
           const obj = {
             nodeId: item.nodeId,
             id: item.nodeId,
             nodeType: item.nodeType,
             shape: 'custom-polygon',
+            attrs: {
+              title: {
+                text: item.title
+              },
+              text: ''
+            },
             data: {
               ...item
             }
@@ -254,11 +264,12 @@ export default {
             //   width: 100,
             //   height: 40
             // },
-            attrs: {
-              text: {
-                text: item.title
-              }
-            },
+            // attrs: {
+            //   text: {
+            //     text: item.title
+            //   }
+            // },
+            label: item.title,
             data: {
               ...item,
               type: 'skill'
@@ -309,9 +320,11 @@ export default {
         }
       })
       // 222222222222222222222
-      console.log('cells========>', cells)
+      // console.log('cells========>', cells)
 
       cells.forEach((treeItem, treeIndex) => {
+        console.log('treeItem------->', treeItem)
+
         switch (treeItem.nodeType) {
           // default:
           //   break
@@ -435,19 +448,31 @@ export default {
             {
               tagName: 'text',
               selector: 'label'
+            },
+            {
+              tagName: 'text',
+              selector: 'title'
             }
           ],
           attrs: {
             rect: {
               strokeWidth: 1,
               stroke: '#5F95FF',
-              fill: '#5F95FF'
-
+              fill: '#5F95FF',
+              height: 30
             },
             label: {
               fontWeight: 'bold',
               fill: '#000',
               fontSize: 14
+            },
+            title: {
+              fill: '#999',
+              fontSize: 12,
+              refY: -12,
+              refX: 0,
+              // textAlign: 'left'
+              textAnchor: 'start'
             }
           },
           ports: {
@@ -466,10 +491,6 @@ export default {
                     tagName: 'text',
                     selector: 'portTypeLabel'
                   },
-                  // {
-                  //   tagName: 'circle',
-                  //   selector: 'portCircle'
-                  // },
                   {
                     tagName: 'circle',
                     selector: 'portCircle2'
@@ -496,12 +517,6 @@ export default {
                     refY: 6,
                     fontSize: 10
                   },
-                  // portCircle: {
-                  //   r: 4,
-                  //   refY: 12,
-                  //   fill: '#5F95FF',
-                  //   stroke: '#5F95FF'
-                  // },
                   portCircle2: {
                     r: 4,
                     refX: NODE_WIDTH,
@@ -649,7 +664,8 @@ export default {
               if (res.code === 1000) {
                 const { nodeId } = res.data
                 node.setData({
-                  nodeId: nodeId.toString()
+                  nodeId: nodeId.toString(),
+                  title: nodeTitle
                 })
                 return true
               }
@@ -666,7 +682,9 @@ export default {
                 // console.debug('addDialogueNodeAPI res: ', res)
                 const { nodeId } = res.data
                 node.setData({
-                  nodeId: nodeId.toString()
+                  nodeId: nodeId.toString(),
+                  title: nodeTitle
+
                 })
                 return true
               }
@@ -700,11 +718,13 @@ export default {
       })
     },
     handleCompositionDrag (e) { // 拖拽组件回调
+      // console.log(1111111111111)
       const LINE_HEIGHT = this.LINE_HEIGHT
       const NODE_WIDTH = this.NODE_WIDTH
       const type = e.currentTarget.dataset.type
       const ctype = e.currentTarget.dataset.ctype
       console.debug('handleCompositionDrag: ', type, ctype)
+      // console.log('e.currentTarget=====> ', e)
       let node = null
       if (type === 'judge') {
         node = this.graph.createNode({
@@ -718,14 +738,7 @@ export default {
       } else if (type === 'dialogue') {
         node = this.graph.createNode({
           shape: 'er-rect',
-
           label: ctype,
-          text: {
-            textAnchor: 'left', // 左对齐
-            refX: -5, // x 轴偏移量
-            refY: -5,
-            text: ctype
-          },
           data: {
             type,
             ctype
@@ -842,6 +855,21 @@ export default {
           inherit: 'polygon',
           width: 70,
           height: 70,
+          markup: [
+            {
+              tagName: 'polygon',
+              selector: 'body'
+            },
+            {
+              tagName: 'text',
+              selector: 'text'
+            },
+            {
+              tagName: 'text',
+              selector: 'title'
+            }
+          ],
+
           attrs: {
             body: {
               strokeWidth: 1,
@@ -858,6 +886,14 @@ export default {
               // refX: -5, // x 轴偏移量
               // refY: -5,
               text: '判定'
+            },
+            title: {
+              fill: '#999',
+              fontSize: 12,
+              refY: -12,
+              refX: 0,
+              // textAlign: 'left'
+              textAnchor: 'start'
             }
           },
           data: {
@@ -1033,41 +1069,42 @@ export default {
           nodeList: this.graph.getNodes()
         })
       })
-      // this.graph.on('cell:mouseenter', ({ cell }) => {
-      //   // console.debug('mouseenter cell: ', cell)
-      //   if (cell.isNode()) {
-      //     cell.getData().nodeType !== 1 && cell.id !== 'start' && !cell.hasParent() && this.isEdit && cell.addTools([
-      //       {
-      //         name: 'button-remove',
-      //         args: {
-      //           x: '100%',
-      //           y: '50%',
-      //           offset: { x: -10, y: 0 },
-      //           onClick: async (payload) => {
-      //             const { cell, e } = payload
-      //             // console.debug('button-remove: ', e, cell)
-      //             try {
-      //               const res = await deleteNodeAPI({
-      //                 nodeId: cell.getData().nodeId
-      //               })
-      //               if (res.code === 1000) {
-      //                 cell.remove()
-      //                 // console.debug('graph: ', this.graph.toJSON())
-      //                 this.jsonToGraph(this.graph.toJSON())
-      //                 return true
-      //               }
-      //             } catch (error) {
-      //               console.error('delete node error: ', error)
-      //               return false
-      //             }
-      //           }
-      //         }
-      //       }
-      //     ])
-      //   } else {
-      //     cell.addTools(['vertices', 'segments']) // 线段工具
-      //   }
-      // })
+      // 鼠标hover 时，添加删除按钮
+      this.graph.on('cell:mouseenter', ({ cell }) => {
+        // console.debug('mouseenter cell: ', cell)
+        if (cell.isNode()) {
+          cell.getData().nodeType !== 1 && cell.id !== 'start' && !cell.hasParent() && this.isEdit && cell.addTools([
+            {
+              name: 'button-remove',
+              args: {
+                x: '100%',
+                y: '50%',
+                offset: { x: -5, y: 0 },
+                onClick: async (payload) => {
+                  const { cell, e } = payload
+                  // console.debug('button-remove: ', e, cell)
+                  try {
+                    const res = await deleteNodeAPI({
+                      nodeId: cell.getData().nodeId
+                    })
+                    if (res.code === 1000) {
+                      cell.remove()
+                      // console.debug('graph: ', this.graph.toJSON())
+                      this.jsonToGraph(this.graph.toJSON())
+                      return true
+                    }
+                  } catch (error) {
+                    console.error('delete node error: ', error)
+                    return false
+                  }
+                }
+              }
+            }
+          ])
+        } else {
+          cell.addTools(['vertices', 'segments']) // 线段工具
+        }
+      })
       this.graph.on('cell:mouseleave', ({ cell }) => {
         cell.removeTools()
       })

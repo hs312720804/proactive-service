@@ -70,7 +70,8 @@ export default {
   color #fff
   padding-left 10px
   user-select none
- }
+  text-align: center;
+}
   .composition-content {
     border: 1px dashed #000000;
     display flex
