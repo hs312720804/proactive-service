@@ -24,6 +24,7 @@ import Operate from '@/components/Flow/Operate'
 import { addJudgeNodeAPI, addDialogueNodeAPI, deleteNodeAPI, getVersionIdAPI, getTreeDataAPI } from '@/services/flow'
 import { getStatuTitleAPI } from '@/services/services'
 import { getAnyliseTreeAPI } from '@/services/anylise'
+import initRegister from './index.js'
 export default {
 
   components: {
@@ -364,179 +365,13 @@ export default {
     logGraph () {
       console.debug('logGraph: ', this.graph.toJSON())
     },
-    // testLinkPort () { // 测试连接桩 连接对话框底部按钮能力
-    //   // 获取页面节点
-    //   const nodeList = this.graph.getNodes()
-    //   const dialogNode = nodeList.find((node, index) => {
-    //     return node.getData().nodeType === 2
-    //   })
-    //   // 获取连接桩id
-    //   const childrenId = dialogNode.getChildren()[0].id
-    //   const firstPortId = dialogNode.getChildren()[0].getPorts()[0].id
-    //   // 获取开始节点
-    //   const startNode = nodeList.find((node, index) => {
-    //     return node.id === 'start'
-    //   })
-    //   // 建立连接线
-    //   this.graph.addEdge({
-    //     shape: 'org-edge',
-    //     source: {
-    //       cell: childrenId,
-    //       port: firstPortId
-    //     },
-    //     target: { cell: startNode },
-    //     router: {
-    //       name: 'manhattan',
-    //       args: {
-    //         startDirections: ['top'],
-    //         endDirections: ['bottom']
-    //       }
-    //     }
-    //   })
-    //   console.debug('graph: ', this.graph.toJSON())
-    // },
+
     initGraph () {
-      const LINE_HEIGHT = this.LINE_HEIGHT
-      const NODE_WIDTH = this.NODE_WIDTH
-      // 自定义边（需要）
-      Graph.registerEdge(
-        'implement',
-        {
-          inherit: 'edge',
-          attrs: {
-            line: {
-              strokeWidth: 1,
-              strokeDasharray: '3,3',
-              targetMarker: {
-                name: 'path',
-                d: 'M 20 0 L 0 10 L 20 20 z',
-                fill: 'white',
-                offsetX: -10
-              }
-            }
-          }
-        },
-        true
-      )
-      Graph.registerPortLayout(
-        'erPortPosition',
-        (portsPositionArgs) => {
-          return portsPositionArgs.map((_, index) => {
-            return {
-              position: {
-                x: 0,
-                y: (index + 1) * LINE_HEIGHT
-              },
-              angle: 0
-            }
-          })
-        },
-        true
-      )
-      // #region 注册基础图形
-      Graph.registerNode(
-        'er-rect',
-        {
-          inherit: 'rect',
-          width: NODE_WIDTH,
-          height: LINE_HEIGHT,
-          markup: [
-            {
-              tagName: 'rect',
-              selector: 'body'
-            },
-            {
-              tagName: 'text',
-              selector: 'label'
-            },
-            {
-              tagName: 'text',
-              selector: 'title'
-            }
-          ],
-          attrs: {
-            rect: {
-              strokeWidth: 1,
-              stroke: '#5F95FF',
-              fill: '#5F95FF',
-              height: 30
-            },
-            label: {
-              fontWeight: 'bold',
-              fill: '#000',
-              fontSize: 14
-            },
-            title: {
-              fill: '#999',
-              fontSize: 12,
-              refY: -12,
-              refX: 0,
-              // textAlign: 'left'
-              textAnchor: 'start'
-            }
-          },
-          ports: {
-            groups: {
-              list: {
-                markup: [
-                  {
-                    tagName: 'rect',
-                    selector: 'portBody'
-                  },
-                  {
-                    tagName: 'text',
-                    selector: 'portNameLabel'
-                  },
-                  {
-                    tagName: 'text',
-                    selector: 'portTypeLabel'
-                  },
-                  {
-                    tagName: 'circle',
-                    selector: 'portCircle2'
-                  }
-                ],
-                attrs: {
-                  portBody: {
-                    width: NODE_WIDTH,
-                    height: LINE_HEIGHT,
-                    strokeWidth: 1,
-                    stroke: '#5F95FF',
-                    fill: '#EFF4FF'
-                    // magnet: true
-                  },
-                  portNameLabel: {
-                    ref: 'portBody',
-                    refX: 6,
-                    refY: 6,
-                    fontSize: 10
-                  },
-                  portTypeLabel: {
-                    ref: 'portBody',
-                    refX: 95,
-                    refY: 6,
-                    fontSize: 10
-                  },
-                  portCircle2: {
-                    r: 4,
-                    refX: NODE_WIDTH,
-                    refY: 12,
-                    fill: '#5F95FF',
-                    stroke: '#000'
-                  }
-                },
-                position: 'erPortPosition'
-              }
-            }
-          }
-        },
-        true
-      )
-
+      // 注册节点，连线等
+      const RegisterGraph = initRegister(Graph)
       // eslint-disable-next-line @typescript-eslint/no-this-alias
-      const scope = this
-      this.graph = new Graph({
 
+      this.graph = new RegisterGraph({
         container: document.getElementById(this.containerId),
         interacting: function (cellView) {
           if (cellView.cell.hasParent()) { // 子节点 不允许移动 （比如对话框内的节点）
@@ -602,7 +437,8 @@ export default {
 
         // }
       })
-      this.graph.use( // 拉动节点 显示图形转换 初始化
+      const graph = this.graph
+      graph.use( // 拉动节点 显示图形转换 初始化
         new Transform({
           resizing: this.resizingOptions
         })
@@ -611,14 +447,14 @@ export default {
       // console.debug('graphInfo renderdata: ', graphInfo)
       // console.debug('graphInfo renderdata: ', this.tree)
 
-      this.graph.centerContent() // 居中显示画布
-      this.graph.use(
+      graph.centerContent() // 居中显示画布
+      graph.use(
         new Snapline({
           enabled: true
         })
       )
       this.dnd = new Dnd({
-        target: this.graph,
+        target: graph,
         scaled: false,
         dndContainer: document.querySelector('.composition-content'),
         getDragNode: (beforeNode) => {
@@ -637,23 +473,7 @@ export default {
           const { type, ctype } = node.getData()
           const nodeList = this.graph.getNodes().filter((item) => item.getData().type === type)
           const nodeTitle = `${ctype}${nodeList.length + 1}`
-          // const titleNode = {
-          //   shape: 'er-rect',
-          //   x: node.getBBox().x - 30,
-          //   y: node.getBBox().y - 30,
-          //   label: `${nodeTitle}`,
-          //   width: 150,
-          //   height: 24,
-          //   nodeType: 2
-          //   // attrs: {
-          //   //   text: {
-          //   //     text: nodeTitle
-          //   //   }
-          //   // }
-          // }
 
-          // this.graph.addNode(titleNode)
-          // node.addChild(titleNode)
           if (type === 'judge') {
             try {
               const res = await addJudgeNodeAPI({
@@ -684,7 +504,6 @@ export default {
                 node.setData({
                   nodeId: nodeId.toString(),
                   title: nodeTitle
-
                 })
                 return true
               }
@@ -769,290 +588,13 @@ export default {
     reduceZoom () {
       this.graph.zoom(-0.1).centerContent()
     },
-    initRhombicNode () { // 初始化菱形节点
-      // #region 初始化图形
-      const ports = {
-        groups: {
-          top: {
-            position: 'top',
-            attrs: {
-              circle: {
-                r: 4,
-                magnet: true,
-                stroke: '#5F95FF',
-                strokeWidth: 1,
-                fill: '#fff',
-                style: {
-                  visibility: 'hidden'
-                }
-              }
-            }
-          },
-          right: {
-            position: 'right',
-            attrs: {
-              circle: {
-                r: 4,
-                magnet: true,
-                stroke: '#5F95FF',
-                strokeWidth: 1,
-                fill: '#fff',
-                style: {
-                  visibility: 'hidden'
-                }
-              }
-            }
-          },
-          bottom: {
-            position: 'bottom',
-            attrs: {
-              circle: {
-                r: 4,
-                magnet: true,
-                stroke: '#5F95FF',
-                strokeWidth: 1,
-                fill: '#fff',
-                style: {
-                  visibility: 'hidden'
-                }
-              }
-            }
-          },
-          left: {
-            position: 'left',
-            attrs: {
-              circle: {
-                r: 4,
-                magnet: true,
-                stroke: '#5F95FF',
-                strokeWidth: 1,
-                fill: '#fff',
-                style: {
-                  visibility: 'hidden'
-                }
-              }
-            }
-          }
-        },
-        items: [
-          {
-            group: 'top'
-          },
-          {
-            group: 'right'
-          },
-          {
-            group: 'bottom'
-          },
-          {
-            group: 'left'
-          }
-        ]
-      }
-      Graph.registerNode(
-        'custom-polygon',
-        {
-          inherit: 'polygon',
-          width: 70,
-          height: 70,
-          markup: [
-            {
-              tagName: 'polygon',
-              selector: 'body'
-            },
-            {
-              tagName: 'text',
-              selector: 'text'
-            },
-            {
-              tagName: 'text',
-              selector: 'title'
-            }
-          ],
 
-          attrs: {
-            body: {
-              strokeWidth: 1,
-              stroke: '#C4C4C4',
-              fill: '#E4E4E4',
-              rx: 5,
-              ry: 5,
-              refPoints: '0,10 10,0 20,10 10,20'
-            },
-            text: {
-              fontSize: 12,
-              fill: '#262626',
-              textAnchor: 'middle',
-              // refX: -5, // x 轴偏移量
-              // refY: -5,
-              text: '判定'
-            },
-            title: {
-              fill: '#999',
-              fontSize: 12,
-              refY: -12,
-              refX: 0,
-              // textAlign: 'left'
-              textAnchor: 'start'
-            }
-          },
-          data: {
-            type: 'judge',
-            ctype: '判定'
-          },
-          ports: {
-            ...ports,
-            items: [
-              {
-                group: 'top'
-              },
-              {
-                group: 'bottom'
-              }
-            ]
-          }
-        },
-        true
-      )
-    },
-    initConfig () {
-      this.initShapeConfig()
-      this.initRhombicNode() // 初始化菱形节点
-      // this.initCustomNode()
-    },
-    initShapeConfig () { // 初始化矩形图形配置
-      Graph.registerNode(
-        'c-rect',
-        {
-          inherit: 'rect',
-          width: 130,
-          height: 50,
-          markup: [
-            {
-              tagName: 'rect',
-              selector: 'body'
-            },
-            {
-              tagName: 'text',
-              selector: 'label'
-            }
-          ],
-          attrs: {
-            body: {
-              strokeWidth: 1,
-              fill: '#BFE8E2',
-              stroke: '#A8D7CD',
-              rx: 10, // 圆角矩形
-              ry: 10
-            },
-            label: {
-              textWrap: {
-                // ellipsis: true
-                // width: -10
-              },
-              breakWord: false,
-              textAnchor: 'middle',
-              textVerticalAnchor: 'middle',
-              // refX: '50%',
-              // refY: '50%',
-              // refRCircumscribed: '100%', // 圆半径为节点宽度/高度中较大的那个值的一半
-              // refCx: '50%', // 圆中心 x 坐标位于节点中心
-              // refCy: '50%', // 圆中心 y 坐标位于节点中心
-              fontSize: 12
-            }
+    // initConfig () {
+    //   this.initShapeConfig()
+    //   this.initRhombicNode() // 初始化菱形节点
+    //   // this.initCustomNode()
+    // },
 
-          }
-        },
-        true
-      )
-      // // https://x6.antv.antgroup.com/tutorial/basic/node#:~:text=%7D-,%E5%AE%9A%E5%88%B6%E8%8A%82%E7%82%B9,-%E6%88%91%E4%BB%AC%E5%8F%AF%E4%BB%A5%E9%80%9A%E8%BF%87
-      // Shape.Rect.config({ // config 改变rect默认设置 ， 同修改全局的有个regiserNode
-      //   width: '100%',
-      //   height: '100%',
-      //   markup: [
-      //     {
-      //       tagName: 'rect',
-      //       selector: 'body'
-      //     },
-      //     {
-      //       tagName: 'text',
-      //       selector: 'label'
-      //     }
-      //   ],
-      //   attrs: {
-      //     body: { // 对应selector css
-      //       fill: '#eff4ff',
-      //       stroke: '#5f95ff',
-      //       strokeWidth: 1
-      //     },
-      //     label: {
-      //       fontSize: 14,
-      //       fill: '#000',
-      //       fontFamily: 'Pingfang-medium, Arial, helvetica, sans-serif',
-      //       textAnchor: 'middle', // 左对齐
-      //       textVerticalAnchor: 'middle',
-      //       textWrap: {
-      //         width: 180,
-      //         height: 50,
-      //         ellipsis: true
-      //       }
-      //       // refX: -10, // x 轴偏移量
-      //       // refY: -10
-      //     }
-      //   },
-      //   propHooks: { // 自定义选项
-      //     label (metadata) {
-      //       const { label, ...others } = metadata
-      //       if (label) {
-      //         ObjectExt.setByPath(others, 'attrs/text/text', label)
-      //       }
-      //       return others
-      //     },
-      //     rx (metadata) {
-      //       const { rx, ...others } = metadata
-      //       if (rx != null) {
-      //         ObjectExt.setByPath(others, 'attrs/body/rx', rx)
-      //       }
-      //       return others
-      //     },
-      //     ry (metadata) {
-      //       const { ry, ...others } = metadata
-      //       if (ry != null) {
-      //         ObjectExt.setByPath(others, 'attrs/body/ry', ry)
-      //       }
-      //       return others
-      //     }
-      //   }
-      // })
-      // Graph.registerNode('self-node', {
-      //   draw (cfg, group) {
-      //     const labelObj = group.addShape('text', {
-      //       attrs: {
-      //         x: 10,
-      //         y: 10,
-      //         text: '121212',
-      //         textAlign: 'left',
-      //         textBaseline: 'top',
-      //         lineHeight: 1
-      //       }
-      //     })
-      //     // 根据label，计算宽高，需要自己实现
-      //     const { width, height } = caclWH(label)
-
-      //     const rect = group.addShape('rect', {
-      //       attrs: {
-      //         width,
-      //         height,
-      //         x: -width / 2,
-      //         y: -height / 2,
-      //         radius: 4,
-      //         ...nodeStyle
-      //       }
-      //     })
-      //     return rect
-      //   }
-      // })
-    },
     initGraphListen () {
       this.graph.on('node:removed', ({ node, index, options }) => {
         // console.debug('node:removed: ', node, index, options)
@@ -1261,7 +803,7 @@ export default {
     }
   },
   mounted () {
-    this.initConfig()
+    // this.initConfig()
     this.initGraph()
     this.initGraphListen()
     this.initVuexListen()
