@@ -2,8 +2,8 @@
 //   2: 'er-rect', // 对话框  type: 'dialogue'
 //   3: 'custom-polygon', // 菱形（判断）type: 'judge'
 //   4: 'c-rect', // 标准矩形（技能） type: 'skill'
-//   5: 'implement' // 连线
-//   6: 'end' // 结束  type: 'end'
+//   5: 'end' // 结束  type: 'end'
+//   6: 'implement' // 连线
 
 function initRegister (Graph) {
   const LINE_HEIGHT = 24
@@ -370,7 +370,21 @@ function initRegister (Graph) {
       inherit: 'circle',
       width: 60,
       height: 60,
-      label: 'circle',
+      label: '结束',
+      markup: [
+        {
+          tagName: 'circle',
+          selector: 'body'
+        },
+        {
+          tagName: 'text',
+          selector: 'text'
+        },
+        {
+          tagName: 'text',
+          selector: 'title'
+        }
+      ],
       attrs: {
         body: {
           fill: '#feebe7',
@@ -379,6 +393,14 @@ function initRegister (Graph) {
         text: {
           fill: '#262626',
           fontSize: 12
+        },
+        title: {
+          fill: '#999',
+          fontSize: 12,
+          refY: -12,
+          refX: 0,
+          // textAlign: 'left'
+          textAnchor: 'start'
         }
       }
     },

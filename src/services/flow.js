@@ -55,6 +55,13 @@ export function addDialogueNodeAPI (data) { // 添加对话框节点
     data
   })
 }
+export function addEndNodeAPI (data) { // 添加结束节点
+  return fetch({
+    method: 'post',
+    url: 'proactive_admin_api/interactify/node/end/add',
+    data
+  })
+}
 
 export function getDialogueNodeDetailAPI (params) { // 获取对话框节点详情
   return fetch({

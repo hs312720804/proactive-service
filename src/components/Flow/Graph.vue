@@ -21,7 +21,7 @@ import { Transform } from '@antv/x6-plugin-transform' // 拉动节点 显示图�
 import { DagreLayout } from '@antv/layout' // 层次布局
 import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
-import { addJudgeNodeAPI, addDialogueNodeAPI, deleteNodeAPI, getVersionIdAPI, getTreeDataAPI } from '@/services/flow'
+import { addJudgeNodeAPI, addDialogueNodeAPI, addEndNodeAPI, deleteNodeAPI, getVersionIdAPI, getTreeDataAPI } from '@/services/flow'
 import { getStatuTitleAPI } from '@/services/services'
 import { getAnyliseTreeAPI } from '@/services/anylise'
 import initRegister from './index.js'
@@ -152,7 +152,8 @@ export default {
           2: 'er-rect', // 对话框
           3: 'custom-polygon', // 菱形（判断）
           4: 'c-rect', // 标准矩形（技能）
-          5: 'implement' // 连线
+          5: 'end', // 结束  type: 'end'
+          6: 'implement' // 连线
         }
         const commonObj = {
           id: item.nodeId, // String，节点的唯一标识
@@ -226,7 +227,20 @@ export default {
             }
           }
           cells.push(obj)
-        } else if (item.nodeType === 5) { // 连线
+        } else if (item.nodeType === 5) { // 结束 end
+          const obj = {
+            ...commonObj,
+            attrs: {
+              title: {
+                text: item.title
+              }
+            },
+            data: {
+              ...item
+            }
+          }
+          cells.push(obj)
+        } else if (item.nodeType === 6) { // 连线
           const { source, target } = item
 
           let sourceData = {}
@@ -287,7 +301,7 @@ export default {
       const createCells = []
       cells.forEach((treeItem, treeIndex) => {
         if (treeItem.nodeType) {
-          if (treeItem.nodeType === 5) {
+          if (treeItem.nodeType === 6) {
             createCells.push(this.graph.createEdge(treeItem)) // 连线
           } else {
             createCells.push(this.graph.createNode(treeItem))// 节点
@@ -424,11 +438,9 @@ export default {
             judge: addJudgeNodeAPI,
             dialogue: addDialogueNodeAPI,
             // skill: 'c-rect',
-            end: 'end'
+            end: addEndNodeAPI
           }
-          if (type === 'end') {
-            return true
-          }
+
           try {
             const res = await keyV[type]({
               title: nodeTitle,
@@ -519,9 +531,6 @@ export default {
       })
     },
     handleCompositionDrag (e) { // 拖拽组件回调
-      // console.log(1111111111111)
-      const LINE_HEIGHT = this.LINE_HEIGHT
-      const NODE_WIDTH = this.NODE_WIDTH
       const type = e.currentTarget.dataset.type
       const ctype = e.currentTarget.dataset.ctype
       console.debug('handleCompositionDrag: ', type, ctype)
@@ -530,7 +539,6 @@ export default {
       const keyV = {
         judge: 'custom-polygon',
         dialogue: 'er-rect',
-        skill: 'c-rect',
         end: 'end'
       }
 
