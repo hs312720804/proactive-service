@@ -1,8 +1,9 @@
 //   1: 'c-ellipse', // 椭圆（开始）
-//   2: 'er-rect', // 对话框
-//   3: 'custom-polygon', // 菱形（判断）
-//   4: 'c-rect', // 标准矩形（技能）
+//   2: 'er-rect', // 对话框  type: 'dialogue'
+//   3: 'custom-polygon', // 菱形（判断）type: 'judge'
+//   4: 'c-rect', // 标准矩形（技能） type: 'skill'
 //   5: 'implement' // 连线
+//   6: 'end' // 结束  type: 'end'
 
 function initRegister (Graph) {
   const LINE_HEIGHT = 24
@@ -356,6 +357,28 @@ function initRegister (Graph) {
           fontSize: 16,
           fontWeight: 'normal',
           fontVariant: 'small-caps'
+        }
+      }
+    },
+    true
+  )
+
+  // 初始化矩形(技能的样式)图形配置
+  Graph.registerNode(
+    'end',
+    {
+      inherit: 'circle',
+      width: 60,
+      height: 60,
+      label: 'circle',
+      attrs: {
+        body: {
+          fill: '#feebe7',
+          stroke: '#ff645a'
+        },
+        text: {
+          fill: '#262626',
+          fontSize: 12
         }
       }
     },
