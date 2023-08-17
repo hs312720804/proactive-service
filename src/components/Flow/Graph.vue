@@ -89,6 +89,7 @@ export default {
   methods: {
     // 按照树级结构，重新渲染节点
     layout () {
+      const graph = this.graph
       const dagreLayout = new DagreLayout({
         type: 'dagre',
         rankdir: 'LR',
@@ -129,7 +130,11 @@ export default {
 
       const model = dagreLayout.layout(data)
 
-      this.graph.fromJSON(model)
+      graph.fromJSON(model)
+      graph.scaleContentToFit().centerContent() // 居中显示画布
+      // graph.on('render:done', () => {
+      //   graph.centerContent().scaleContentToFit() // 居中显示画布
+      // })
     },
     // 生成渲染树 x6 cell 格式树
     generateRenderTree (treeData) {
@@ -193,7 +198,7 @@ export default {
             ports,
             data: {
               type: 'dialogue',
-              // ctype: '对话框',
+              ctype: '对话框',
               ...item
             }
           }
@@ -290,7 +295,6 @@ export default {
         }
 
         graph.resetCells(createCells)
-        graph.centerContent()
         // graph.zoomToFit({ padding: 10, maxScale: 1 })
         // this.graph.zoomToFit({ padding: 10, maxScale: 1 })
       })
@@ -391,7 +395,6 @@ export default {
       // console.debug('graphInfo renderdata: ', graphInfo)
       // console.debug('graphInfo renderdata: ', this.tree)
 
-      graph.centerContent() // 居中显示画布
       graph.use(
         new Snapline({
           enabled: true
@@ -417,54 +420,82 @@ export default {
           const { type, ctype } = node.getData()
           const nodeList = this.graph.getNodes().filter((item) => item.getData().type === type)
           const nodeTitle = `${ctype}${nodeList.length + 1}`
-
-          if (type === 'judge') {
-            try {
-              const res = await addJudgeNodeAPI({
-                title: nodeTitle,
-                versionId: this.versionId
-              })
-              // console.debug('addJudgeNodeAPI res: ', res)
-              if (res.code === 1000) {
-                const { nodeId } = res.data
-                node.setData({
-                  nodeId: nodeId.toString()
-                })
-                // 设置title，更新属性
-                node.setAttrs({
-                  title: { text: nodeTitle }
-                })
-                return true
-              }
-            } catch (error) {
-              return false
-            }
-          } else if (type === 'dialogue') {
-            try {
-              const res = await addDialogueNodeAPI({
-                title: nodeTitle,
-                versionId: this.versionId
-              })
-              if (res.code === 1000) {
-                // console.debug('addDialogueNodeAPI res: ', res)
-                const { nodeId } = res.data
-                // 设置title，更新属性
-                node.setData({
-                  nodeId: nodeId.toString()
-                })
-                node.setAttrs({
-                  title: { text: nodeTitle }
-                })
-                // node.attrs.title.text = nodeTitle
-                return true
-              }
-            } catch (error) {
-              console.error('add dialogue api error: ', error)
-              return false
-            } finally {
-              this.logGraph()
-            }
+          const keyV = {
+            judge: addJudgeNodeAPI,
+            dialogue: addDialogueNodeAPI,
+            // skill: 'c-rect',
+            end: 'end'
           }
+          if (type === 'end') {
+            return true
+          }
+          try {
+            const res = await keyV[type]({
+              title: nodeTitle,
+              versionId: this.versionId
+            })
+            if (res.code === 1000) {
+              const { nodeId } = res.data
+              node.setData({
+                nodeId: nodeId.toString()
+              })
+              // 设置title，更新属性
+              node.setAttrs({
+                title: { text: nodeTitle }
+              })
+              return true
+            }
+          } catch (error) {
+            return false // 不创建
+          }
+
+          // if (type === 'judge') {
+          //   try {
+          //     const res = await addJudgeNodeAPI({
+          //       title: nodeTitle,
+          //       versionId: this.versionId
+          //     })
+          //     // console.debug('addJudgeNodeAPI res: ', res)
+          //     if (res.code === 1000) {
+          //       const { nodeId } = res.data
+          //       node.setData({
+          //         nodeId: nodeId.toString()
+          //       })
+          //       // 设置title，更新属性
+          //       node.setAttrs({
+          //         title: { text: nodeTitle }
+          //       })
+          //       return true
+          //     }
+          //   } catch (error) {
+          //     return false
+          //   }
+          // } else if (type === 'dialogue') {
+          //   try {
+          //     const res = await addDialogueNodeAPI({
+          //       title: nodeTitle,
+          //       versionId: this.versionId
+          //     })
+          //     if (res.code === 1000) {
+          //       // console.debug('addDialogueNodeAPI res: ', res)
+          //       const { nodeId } = res.data
+          //       // 设置title，更新属性
+          //       node.setData({
+          //         nodeId: nodeId.toString()
+          //       })
+          //       node.setAttrs({
+          //         title: { text: nodeTitle }
+          //       })
+          //       // node.attrs.title.text = nodeTitle
+          //       return true
+          //     }
+          //   } catch (error) {
+          //     console.error('add dialogue api error: ', error)
+          //     return false
+          //   } finally {
+          //     this.logGraph()
+          //   }
+          // }
         }
       })
     },
@@ -499,7 +530,8 @@ export default {
       const keyV = {
         judge: 'custom-polygon',
         dialogue: 'er-rect',
-        skill: 'c-rect'
+        skill: 'c-rect',
+        end: 'end'
       }
 
       node = this.graph.createNode({
@@ -612,7 +644,8 @@ export default {
         console.log('node-->', node)
         const { type, nodeId, nodeType } = node.getData()
         console.debug('click: node.getData(): ', node.getData())
-        if ((type !== 'skill' || nodeType !== 4) && !node.hasParent()) {
+        // 【技能】、【结束】 节点不能点击打开详情
+        if ((type !== 'skill' || nodeType !== 4) && !node.hasParent() && type !== 'end') {
           this.$emit('updateDetail', true)
           // save to vuex
           store.commit('flow/setCellRenderData', node)
