@@ -42,7 +42,6 @@
               <template v-if="childItem.tagKey === 'button_click'">
                 <span class="txt">{{ childItem.tagName }}</span>
                 <el-select
-                  v-if="cache[childItem.tagKey].list"
                   style="width: 130px"
                   :key="n + 'dialogue'"
                   v-model="childItem.dialogueNodeId"
@@ -51,13 +50,15 @@
                   placeholder="请选择对话框"
                   @change="getDialogueButtonList(childItem, { needClear: true })"
                 >
-                  <el-option
-                    v-for="dialogueItem in cache[childItem.tagKey].list"
-                    :key="dialogueItem.id"
-                    :value="dialogueItem.id"
-                    :label="dialogueItem.name"
-                  >
-                  </el-option>
+                  <template v-if="cache[childItem.tagKey]">
+                    <el-option
+                      v-for="dialogueItem in cache[childItem.tagKey].list"
+                      :key="dialogueItem.id"
+                      :value="dialogueItem.id"
+                      :label="dialogueItem.name"
+                    >
+                    </el-option>
+                  </template>
                 </el-select>
                 <el-select
                   v-if="childItem.dialogueNodeId"
@@ -68,13 +69,27 @@
                   clearable
                   placeholder="请选择按钮"
                 >
-                  <el-option
-                    v-for="buttonItem in cache[childItem.tagKey + '_button'].list"
-                    :key="buttonItem.id"
-                    :value="buttonItem.id.toString()"
-                    :label="buttonItem.name"
-                  >
-                  </el-option>
+                  <template v-if="cache[childItem.tagKey + '_button']">
+                    <el-option
+                      v-for="buttonItem in cache[childItem.tagKey + '_button'].list"
+                      :key="buttonItem.id"
+                      :value="buttonItem.id.toString()"
+                      :label="buttonItem.name"
+                    >
+                    </el-option>
+                  </template>
+                </el-select>
+                <el-select
+                  style="width: 80px"
+                  name="oxve"
+                  v-model="childItem.operator"
+                  class="input-inline"
+                >
+                  <el-option value="="></el-option>
+                  <el-option value=">="></el-option>
+                  <el-option value="<="></el-option>
+                  <el-option value=">"></el-option>
+                  <el-option value="<"></el-option>
                 </el-select>
                 <el-input
                   v-if="childItem.dialogueNodeId && childItem.buttonId"
@@ -99,13 +114,27 @@
                   clearable
                   placeholder="请选择对话框"
                 >
-                  <el-option
-                    v-for="dialogueItem in cache['button_click'].list"
-                    :key="dialogueItem.id"
-                    :value="dialogueItem.id"
-                    :label="dialogueItem.name"
-                  >
-                  </el-option>
+                  <template v-if="cache['button_click']">
+                    <el-option
+                      v-for="dialogueItem in cache['button_click'].list"
+                      :key="dialogueItem.id"
+                      :value="dialogueItem.id"
+                      :label="dialogueItem.name"
+                    >
+                    </el-option>
+                  </template>
+                </el-select>
+                <el-select
+                  style="width: 80px"
+                  name="oxve"
+                  v-model="childItem.operator"
+                  class="input-inline"
+                >
+                  <el-option value="="></el-option>
+                  <el-option value=">="></el-option>
+                  <el-option value="<="></el-option>
+                  <el-option value=">"></el-option>
+                  <el-option value="<"></el-option>
                 </el-select>
                 <el-input
                   v-if="childItem.showDialogueNodeId"
@@ -153,13 +182,16 @@
                   clearable
                   placeholder="请选择"
                 >
-                  <el-option
-                    v-for="crowdItem in cache[childItem.tagKey].list"
-                    :key="crowdItem.id"
-                    :value="crowdItem.id"
-                    :label="crowdItem.name"
-                  >
-                  </el-option>
+                  <template v-if="cache[childItem.tagKey]">
+
+                    <el-option
+                      v-for="crowdItem in cache[childItem.tagKey].list"
+                      :key="crowdItem.id"
+                      :value="crowdItem.id"
+                      :label="crowdItem.name"
+                    >
+                    </el-option>
+                  </template>
                 </el-select>
               </template>
               <!-- 用户行为满足 -->
@@ -173,13 +205,15 @@
                   clearable
                   placeholder="请选择"
                 >
-                  <el-option
-                    v-for="eventItem in cache[childItem.tagKey].list"
-                    :key="eventItem.eventCode"
-                    :value="eventItem.eventCode"
-                    :label="eventItem.eventName"
-                  >
-                  </el-option>
+                  <template v-if="cache[childItem.tagKey]">
+                    <el-option
+                      v-for="eventItem in cache[childItem.tagKey].list"
+                      :key="eventItem.eventCode"
+                      :value="eventItem.eventCode"
+                      :label="eventItem.eventName"
+                    >
+                    </el-option>
+                  </template>
                 </el-select>
               </template>
               <!-- 时间到达 -->
@@ -472,7 +506,7 @@ export default {
                 id: `${item.policyId}_${item.crowdId}`,
                 name: `${item.crowdId}_${item.crowdName}`
               }
-            })
+            }) || []
           })
         }
       } catch (error) {
@@ -486,7 +520,7 @@ export default {
         })
         if (res.code === 1000) {
           this.$set(this.cache, tagKey, {
-            list: res.data
+            list: res.data || []
           })
         }
       } catch (error) {
@@ -506,7 +540,7 @@ export default {
         })
         if (res.code === 1000) {
           this.$set(this.cache, `${tagKey}_button`, {
-            list: res.data
+            list: res.data || []
           })
         }
       } catch (error) {
@@ -518,7 +552,7 @@ export default {
         const res = await getUserEventListAPI({})
         if (res.code === 1000) {
           this.$set(this.cache, tagKey, {
-            list: res.data
+            list: res.data || []
           })
         }
       } catch (error) {
