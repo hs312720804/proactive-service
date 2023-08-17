@@ -1,14 +1,15 @@
 <template>
-  <div class="judge-detail-wrapper">
+  <div class="dialogue-detail-wrapper">
     <el-form
       class="judge-form-wrapper"
       ref="judgeForm"
       :rules="rules"
       :model="form"
-      label-width="100px"
+      label-width="80px"
+      label-position="left"
     >
-      <el-form-item label="节点ID：">{{ form.nodeId }}</el-form-item>
-      <el-form-item label="命名/展示：" prop="title">
+      <el-form-item label="节点ID">{{ form.nodeId }}</el-form-item>
+      <el-form-item label="命名/展示" prop="title">
         <el-col :span="20">
           <el-input v-model="form.title"></el-input>
         </el-col>
@@ -47,7 +48,7 @@
       <div class="gurantee-box">
         <p class="title">兜底</p>
         <div class="flex-box">
-          <span class="text">进入分支:</span>
+          <span class="text">进入分支</span>
           <Behavior
             :list="nextNodeList"
             :skillList="skillList"
@@ -59,10 +60,8 @@
           ></Behavior>
         </div>
       </div>
-      <el-form-item style="margin-top: 10px;">
-        <el-button type="primary" @click="submitForm">保存</el-button>
-      </el-form-item>
     </el-form>
+    <el-button type="primary" class="save-sty" @click="submitForm">保存</el-button>
   </div>
 </template>
 <script>
@@ -122,9 +121,13 @@ export default {
     }
   },
   watch: {
-    renderData: function (newval, oldval) {
-      console.debug('watch renderData : ', newval)
-      this.initData()
+    renderData: {
+      handler (val) {
+        // console.debug('watch renderData : ', val)
+        this.initData()
+      },
+      deep: true,
+      immediate: true
     }
   },
   methods: {
@@ -253,7 +256,7 @@ export default {
       return data
     },
     initData () {
-      let renderData = JSON.parse(JSON.stringify(this.$props.renderData))
+      let renderData = JSON.parse(JSON.stringify(this.renderData))
       // console.debug('init renderData: ', renderData)
       renderData = this.initTransformData(renderData)
       this.form = {
@@ -326,12 +329,16 @@ export default {
 </script>
 <style lang="stylus" scoped>
   >>>.judge-form-wrapper {
+    position: absolute;
+    bottom: 63px;
+    top: 68px;
+    overflow: auto;
     .el-form-item__label {
       white-space nowrap
     }
     .draglist-wrapper {
-      width 92%
-      margin 10px auto 0
+      // width 92%
+      // margin 10px auto 0
       .list-item {
         background-color rgb(239, 244, 255)
         padding 10px
@@ -356,8 +363,8 @@ export default {
       margin-top 10px
       background-color rgb(239, 244, 255)
       padding 10px
-      width 92%
-      margin 0 auto
+      // width 92%
+      // margin 0 auto
       box-sizing border-box
       .title {
         font-weight bold
@@ -388,4 +395,14 @@ export default {
       }
     }
   }
+
+.save-sty{
+  position: absolute;
+  bottom: 20px;
+  right: 10px;
+  left: 10px;
+}
+.dialogue-detail-wrapper {
+  margin 20px 10px 65px
+}
 </style>

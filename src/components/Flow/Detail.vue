@@ -1,6 +1,10 @@
 <template>
-  <div class="graph-info-detail-component">
-    <el-drawer
+  <div
+    class="graph-info-detail-component"
+    style="animation: all 0.5s;"
+    :class="{'detail-component-hide': !showDetail}"
+  >
+    <!-- <el-drawer
       ref="drawer"
       custom-class="detail-drawer"
       :title="title"
@@ -8,14 +12,24 @@
       :direction="direction"
       :before-close="handleClose"
       :close-on-press-escape="false"
-      :modal-append-to-body="false"
+      :modal-append-to-body="true"
       :wrapperClosable="true"
       :modal="false"
       :size="400"
     >
+
+    </el-drawer> -->
+    <div
+      class="flex-item"
+      :class="showDetail ? 'el-icon-s-unfold' :'el-icon-s-fold'"
+      @click="showDetail = !showDetail"
+    >
+    </div>
+    <div v-if="show">
+      <div class="title">{{ title }}</div>
       <template v-if="nodeType === 'start'">
-        <el-form :model="startForm" label-width="70px">
-          <el-form-item label="操作：">
+        <el-form :model="startForm" label-width="80px" label-position="left" style="margin: 20px 10px 65px;">
+          <el-form-item label="操作">
             <el-col :span="11">
               <el-select
                 v-model="startForm.NodeOrSkill"
@@ -58,9 +72,7 @@
               </el-select>
             </el-col>
           </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="saveStartNodeOperate">保存</el-button>
-          </el-form-item>
+          <el-button type="primary" @click="saveStartNodeOperate" style="width: 100%">保存</el-button>
         </el-form>
       </template>
       <template v-else-if="nodeType === 'judge'">
@@ -83,7 +95,7 @@
           @submit="handleSubmitDialogue"
         ></DialogueDetail>
       </template>
-    </el-drawer>
+    </div>
   </div>
 </template>
 <script>
@@ -92,6 +104,7 @@ import DialogueDetail from '@/components/Flow/DialogueDetail.vue'
 import JudgeDetail from '@/components/Flow/JudgeDetail.vue'
 import { getSkillListAPI } from '@/services/skill'
 import { getStartNodeAPI, getDialogueNodeDetailAPI, updateStartNodeAPI, updateDialogueDetailAPI, getJudgeNodeDetailAPI, updateJudgeNodeDetailAPI, getVersionIdAPI, getNodeSelectListAPI } from '@/services/flow'
+import { mapGetters } from 'vuex'
 export default {
   components: {
     DialogueDetail,
@@ -106,9 +119,10 @@ export default {
   inject: ['serviceId'],
   data () {
     return {
+      showDetail: true,
       direction: 'rtl',
       showBool: this.showNodeDetail,
-      nodeType: store.getters.nodeType,
+      // nodeType: store.getters.nodeType,
       versionId: 0,
       startForm: {
         NodeOrSkill: '',
@@ -119,13 +133,29 @@ export default {
       dialogueDetailData: {},
       judgeDetailData: {},
       startDetailData: {},
-      drawerRef: null
+      drawerRef: null,
+      show: false
     }
   },
   watch: {
     versionId (newval, oldval) {
       // console.debug('versionId: ', newval)
       this.getNodeSelectList(newval)
+    },
+    nodeId: {
+      async handler (val) {
+        this.showDetail = true
+        console.log('val------>', val)
+        this.show = false
+        this.getVersionId()
+        this.getSkillList()
+        await this.reFill()
+        this.initDrawerRef()
+        this.$nextTick(() => {
+          this.show = true
+        })
+      },
+      immediate: true
     }
   },
   methods: {
@@ -196,7 +226,7 @@ export default {
       }
     },
     handleClose (done) {
-      const nodeType = store.getters.nodeType
+      // const nodeType = store.getters.nodeType
       // 服务交互，节点多时，每次保存都需要较长时间影响体验。建议优化。Bug: CLOUDARCH-904 先隐藏自动保存功能
       // if (nodeType === 'start') {
       //   this.saveStartNodeOperate()
@@ -217,7 +247,7 @@ export default {
       try {
         const res = await updateJudgeNodeDetailAPI(payload)
         if (res.code === 1000) {
-          this.drawerRef.closeDrawer()
+          // this.drawerRef.closeDrawer()
           store.commit('flow/updateJudgeNodeDetail', payload)
         }
         // console.debug('updateJudgeNodeDetailAPI res: ', res)
@@ -230,7 +260,7 @@ export default {
       try {
         const res = await updateDialogueDetailAPI(payload)
         if (res.code === 1000) {
-          this.drawerRef.closeDrawer()
+          // this.drawerRef.closeDrawer()
           store.commit('flow/updateDialogueDetail', payload)
         }
       } catch (error) {
@@ -276,7 +306,7 @@ export default {
     async reFill () { // 回填（重新打开drawer的时候）
       // console.debug('getters: ', store.getters.cellRenderData)
       const nodeId = store.getters.nodeId
-      const nodeType = store.getters.nodeType
+      const nodeType = this.nodeType
       const cellRenderData = store.getters.cellRenderData
       if (nodeType === 'start') {
         const res = await getStartNodeAPI({
@@ -307,7 +337,7 @@ export default {
         const res = await getDialogueNodeDetailAPI({
           nodeId
         })
-        // console.debug('getDialogueNodeDetailAPI res:', res)
+        // console.log('getDialogueNodeDetailAPI res:', res)
         if (res.code === 1000) {
           this.dialogueDetailData = res.data
         }
@@ -330,10 +360,12 @@ export default {
     }
   },
   computed: {
+    ...mapGetters(['nodeId', 'nodeType']),
     title () {
-      if (store.getters.nodeType === 'start') {
+      if (this.nodeType === 'start') {
         return '开始'
       } else {
+        // console.log('store.getters.cellRenderData', store.getters.cellRenderData.getData())
         // return store.getters.cellRenderData.getAttrs('label/text').text.text
         return store.getters.cellRenderData.getData().ctype
       }
@@ -348,12 +380,6 @@ export default {
 
       return flag || []
     }
-  },
-  mounted () {
-    this.getVersionId()
-    this.getSkillList()
-    this.reFill()
-    this.initDrawerRef()
   }
 }
 </script>
@@ -366,5 +392,34 @@ export default {
       color #5f95ff
     }
   }
+  position: fixed;
+  z-index: 999;
+  top: 0;
+  width: 400px;
+  background: #fff;
+  right: 0;
+  height: 100%;
+  border: 10px solid #f6f6f6;
+  box-sizing: border-box;
+}
+.title {
+  font-weight bold
+  font-size 16px
+  color #5f95ff
+  padding: 15px 15px 0 10px;
+}
+.detail-component-hide {
+  width: 0
+  border: 0
+}
+.flex-item {
+  font-size: 30px;
+  color: #000000;
+  position: absolute;
+  left: -34px;
+  top: 50%;
+  background: #7777772b;
+  padding: 20px 0;
+  border-radius: 20px 0 0 20px;
 }
 </style>

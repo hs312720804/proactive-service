@@ -43,7 +43,7 @@
       <div>
         <div class="add-button-wrap">
           <div>按钮</div>
-          <el-button type="text" @click="addButton">添加</el-button>
+          <el-button type="primary" plain icon="el-icon-plus" @click="addButton">添加</el-button>
         </div>
         <div class="buttons-layout">
           <div class="default-btn">
@@ -60,7 +60,7 @@
                 :class="{'button-active': buttonActiveIndex === index}"
                 @click="clickOperateButton(index)"
               >
-                <i class="el-icon-caret-right" :class="{'caret-active': buttonActiveIndex === index}" style="margin-right: 5px;color: #409EFF; "></i>
+                <i class="el-icon-caret-right" :class="{'caret-active': buttonActiveIndex === index}" style="margin-right: 5px;color: #85ce61; "></i>
                 <span class="button-id">{{ item.buttonId }}</span>
                 <el-input
                   v-model="item.name"
@@ -75,7 +75,7 @@
                 <el-button
                   v-else
                   style="width: 200px;"
-                  :type="buttonActiveIndex === index ? 'primary' : ''"
+                  :type="buttonActiveIndex === index ? 'success' : ''"
                 >
                   {{ item.name }}
                   <i
@@ -90,7 +90,7 @@
 
         </div>
         <template v-if="buttonDetail">
-          <div class="add-button-wrap">
+          <div class="add-button-wrap detail-button-wrap">
             <div>按钮详情</div>
           </div>
           <div class="button-detail">
@@ -111,8 +111,8 @@
         </template>
       </div>
 
-      <el-button type="primary" @click="submitForm" class="save-sty">保存</el-button>
     </el-form>
+    <el-button type="primary" @click="submitForm" class="save-sty">保存</el-button>
   </div>
 </template>
 <script>
@@ -361,17 +361,25 @@ export default {
     this.clickOperateButton(0)
   },
   watch: {
-    renderData: function (newval, oldval) {
-      // console.debug('renderData: ', newval)
-      this.initData()
+    renderData: {
+      handler (val) {
+        console.debug('watch renderData : ', val)
+        this.initData()
+      },
+      deep: true,
+      immediate: true
     }
   }
 }
 </script>
 <style lang="stylus" scoped>
 >>>.dialogue-form-wrapper {
+  position: absolute;
+  bottom: 63px;
+  top: 68px;
+  overflow: auto;
   .el-form-item__label {
-      white-space nowrap
+    white-space nowrap
   }
   .delay-text-box {
       display flex
@@ -458,13 +466,39 @@ export default {
 .add-button-wrap {
   display: flex;
   justify-content: space-between;
-  background: #f6f6f6;
+  // background: #f6f6f6;
   align-items: center;
   height: 30px
   border-radius 5px 5px 0 0
   padding: 5px
   margin-top: 10px
+
+  // display: flex;
+  // justify-content: space-between;
+  // background: #ffb98c12
+  // align-items: center;
+  // height: 22px
+  // border-radius 5px 5px 0 0
+  padding: 5px 5px 5px 15px
+  // margin-top: 10px
+  position: relative;
+  // // border-bottom 1px solid #e1e1e1;
+  &:before{
+    content: ''
+    height 65%
+    width 5px
+    background #ffb98c
+    position: absolute;
+    left: 0;
+    border-radius: 3px 0 0 3px;
+  }
 }
+.detail-button-wrap {
+  &:before{
+    background #85ce61
+  }
+}
+
 .button-active {
   background: #f6f6f6;
 }
@@ -474,6 +508,7 @@ export default {
   position relative
   // justify-content center
   margin-bottom 3px
+  height 32px
   &:last-child {
     margin-bottom 0
   }
@@ -486,6 +521,7 @@ export default {
 }
 .el-icon-caret-right {
   opacity 0
+  font-size 20px
 }
 .caret-active {
   opacity 1

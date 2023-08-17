@@ -165,11 +165,11 @@ export default {
                     margin-left 5px
                 }
                 .delete {
-                    color #666
-                    font-size 14px
-                    margin-left 10px
-                    right: 18px;
-                    position: absolute;
+                  color #666
+                  font-size 14px
+                  margin-left 10px
+                  right: 0px;
+                  position: absolute;
                 }
             }
         }
