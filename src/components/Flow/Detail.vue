@@ -146,7 +146,7 @@ export default {
       }
     },
     getNodeId (node) {
-      const data = node.getData()
+      const data = node.data
       if (data.nodeType === 3 || data.nodeType === 2 || data.nodeType === 1) {
         return data.nodeId
       } else if (data.type === 1 && data['button-type'] === 'dialogue-button') {
@@ -171,7 +171,6 @@ export default {
           skillParam: '',
           versionId: this.versionId
         }
-        this.updateStartPickSkill()
       } else if (NodeOrSkill === 2) { // node
         payload = {
           nextNodeId: NodeOrSkillVal || '',
@@ -180,11 +179,16 @@ export default {
           skillParam: '',
           versionId: this.versionId
         }
-        this.updateStartPickNode()
       }
       try {
         const res = await updateStartNodeAPI(payload)
         if (res.code === 1000) {
+          if (NodeOrSkill === 1) { // skill
+            this.updateStartPickSkill()
+          } else if (NodeOrSkill === 2) { // node
+            this.updateStartPickNode()
+          }
+          return res
           // console.debug('updateStartNodeAPI res: ', res)
         }
       } catch (error) {
@@ -336,10 +340,13 @@ export default {
     },
     childNodeList () { // 除了开始节点以外的所有节点 废弃 不从前端计算节点
       const currentGraph = store.getters.graphList.find(item => item.serviceId === this.serviceId)
-      return currentGraph?.nodeList.filter(item => item.getData().nodeType === 2 ||
-               item.getData().nodeType === 3 ||
-               (item.getData().type === 1 && item.getData()['button-type'] === 'dialogue-button')) ||
-                []
+
+      const flag = currentGraph?.nodeList.filter(item => {
+        const data = item.data
+        return data.nodeType === 2 || data.nodeType === 3 || (data.type === 1 && data['button-type'] === 'dialogue-button')
+      })
+
+      return flag || []
     }
   },
   mounted () {

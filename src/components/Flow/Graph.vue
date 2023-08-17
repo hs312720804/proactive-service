@@ -56,38 +56,39 @@ export default {
         orthogonal: true,
         restrict: false,
         preserveAspectRatio: true
-      },
-      startNode: { // 开始节点
-        id: '', // String，节点的唯一标识
-        shape: 'ellipse', // 使用 ellipse 渲染
-        x: 50, // Number，必选，节点位置的 x 值
-        y: 50, // Number，必选，节点位置的 y 值
-        width: 100, // Number，可选，节点大小的 width 值
-        height: 50, // Number，可选，节点大小的 height 值
-        attrs: {
-          body: {
-            fill: '#eff4ff',
-            stroke: '#5f95ff',
-            strokeWidth: 1,
-            rx: 16,
-            ry: 16
-          },
-          label: {
-            text: '开始',
-            fill: '#333',
-            fontSize: 16,
-            fontWeight: 'normal',
-            fontVariant: 'small-caps'
-          }
-        },
-        data: {
-          type: 'start'
-        }
       }
+      // startNode: { // 开始节点
+      //   id: '', // String，节点的唯一标识
+      //   shape: 'ellipse', // 使用 ellipse 渲染
+      //   x: 50, // Number，必选，节点位置的 x 值
+      //   y: 50, // Number，必选，节点位置的 y 值
+      //   width: 100, // Number，可选，节点大小的 width 值
+      //   height: 50, // Number，可选，节点大小的 height 值
+      //   attrs: {
+      //     body: {
+      //       fill: '#eff4ff',
+      //       stroke: '#5f95ff',
+      //       strokeWidth: 1,
+      //       rx: 16,
+      //       ry: 16
+      //     },
+      //     label: {
+      //       text: '开始',
+      //       fill: '#333',
+      //       fontSize: 16,
+      //       fontWeight: 'normal',
+      //       fontVariant: 'small-caps'
+      //     }
+      //   },
+      //   data: {
+      //     type: 'start'
+      //   }
+      // }
     }
   },
   methods: {
-    layout () { // 按照树级结构，重新渲染节点
+    // 按照树级结构，重新渲染节点
+    layout () {
       const dagreLayout = new DagreLayout({
         type: 'dagre',
         rankdir: 'LR',
@@ -130,70 +131,34 @@ export default {
 
       this.graph.fromJSON(model)
     },
-    generateRenderTree (treeData) { // 生成渲染树 x6 cell 格式树
+    // 生成渲染树 x6 cell 格式树
+    generateRenderTree (treeData) {
       const graph = this.graph
       console.log('generateRenderTree: ', treeData)
       if (graph && graph.getCellCount() > 0) {
         graph.clearCells()
       }
 
-      const cells2 = []
       const cells = []
-      let allCellList = []
-      treeData.map((item, index) => {
-        if (item.buttonDataList) {
-          const arr = item.buttonDataList.map(obj => {
-            return {
-              nodeId: obj.buttonId,
-              type: obj.type,
-              title: obj.title,
-              parentId: item.nodeId
-            }
-          })
-          allCellList = allCellList.concat(arr).concat(item)
-        } else {
-          allCellList.push(item)
-        }
-      })
       treeData.forEach((item, index) => {
-        const commonObj = {
-          id: item.nodeId,
-          label: item.context ? `${item.context}--${item.nodeId}` : item.title,
-          ports: [],
-          nodeType: item.nodeType,
-          attrs: {
-            title: {
-              text: item.title
-            }
-          }
-
+        let obj
+        const keyV = {
+          1: 'c-ellipse', // 椭圆（开始）
+          2: 'er-rect', // 对话框
+          3: 'custom-polygon', // 菱形（判断）
+          4: 'c-rect', // 标准矩形（技能）
+          5: 'implement' // 连线
         }
-        let obj = {}
-        if (item.nodeType === 1) {
+        const commonObj = {
+          id: item.nodeId, // String，节点的唯一标识
+          nodeType: item.nodeType,
+          shape: keyV[item.nodeType] // 使用 ellipse 渲染
+        }
+
+        if (item.nodeType === 1) { // 开始
           obj = {
             ...commonObj,
-            id: item.nodeId.toString(), // String，节点的唯一标识
-            shape: 'ellipse', // 使用 ellipse 渲染
-            x: 0, // Number，必选，节点位置的 x 值
-            y: 0, // Number，必选，节点位置的 y 值
-            width: 100, // Number，可选，节点大小的 width 值
-            height: 50, // Number，可选，节点大小的 height 值
-            attrs: {
-              body: {
-                fill: '#eff4ff',
-                stroke: '#5f95ff',
-                strokeWidth: 1,
-                rx: 16,
-                ry: 16
-              },
-              label: {
-                text: item.title,
-                fill: '#333',
-                fontSize: 16,
-                fontWeight: 'normal',
-                fontVariant: 'small-caps'
-              }
-            },
+            label: item.title,
             data: {
               type: 'start',
               ...item
@@ -216,60 +181,39 @@ export default {
             }
             return a
           })
-          // ports.unshift({
-          //   id: item.nodeId,
-          //   group: 'list',
-          //   attrs: {
-          //     portNameLabel: {
-          //       text: `${item.context}--${item.nodeId}`
-          //     },
-          //     portTypeLabel: {
-          //       text: item.nodeId
-          //     }
-          //   }
-          // })
+
           obj = {
             ...commonObj,
-            shape: 'er-rect',
+            label: item.context ? `${item.context}--${item.nodeId}` : item.title,
+            attrs: {
+              title: {
+                text: item.title
+              }
+            },
             ports,
             data: {
               type: 'dialogue',
-              ctype: '对话框',
+              // ctype: '对话框',
               ...item
             }
           }
           cells.push(obj)
         } else if (item.nodeType === 3) { // 菱形
           const obj = {
-            nodeId: item.nodeId,
-            id: item.nodeId,
-            nodeType: item.nodeType,
-            shape: 'custom-polygon',
+            ...commonObj,
             attrs: {
               title: {
                 text: item.title
-              },
-              text: ''
+              }
             },
             data: {
               ...item
             }
           }
           cells.push(obj)
-        } else if (item.nodeType === 4) {
+        } else if (item.nodeType === 4) { // 技能
           const obj = {
-            id: item.nodeId,
-            nodeType: item.nodeType,
-            shape: 'c-rect',
-            // size: {
-            //   width: 100,
-            //   height: 40
-            // },
-            // attrs: {
-            //   text: {
-            //     text: item.title
-            //   }
-            // },
+            ...commonObj,
             label: item.title,
             data: {
               ...item,
@@ -277,22 +221,38 @@ export default {
             }
           }
           cells.push(obj)
-        } else if (item.nodeType === 5) {
+        } else if (item.nodeType === 5) { // 连线
           const { source, target } = item
 
-          // eslint-disable-next-line no-case-declarations
           let sourceData = {}
-          // eslint-disable-next-line no-case-declarations
           let targetData = {}
+
+          let allCellList = []
+          treeData.forEach((item, index) => {
+            if (item.buttonDataList) {
+              const arr = item.buttonDataList.map(obj => {
+                return {
+                  nodeId: obj.buttonId,
+                  type: obj.type,
+                  title: obj.title,
+                  parentId: item.nodeId
+                }
+              })
+              allCellList = allCellList.concat(arr).concat(item)
+            } else {
+              allCellList.push(item)
+            }
+          })
+
           const aaa = allCellList.find(obj => {
             return obj.nodeId === source || obj.id === target
           })
           const bbb = allCellList.find(obj => {
             return obj.nodeId === target || obj.id === target
           })
-          console.log('allCellList---->', allCellList)
-          console.log('aaa', aaa, source)
-          console.log('bbb', bbb, target)
+          // console.log('allCellList---->', allCellList)
+          // console.log('aaa', aaa, source)
+          // console.log('bbb', bbb, target)
           if (aaa && bbb) {
             sourceData = {
               cell: aaa.parentId ? aaa.parentId : aaa.nodeId,
@@ -302,11 +262,10 @@ export default {
               cell: bbb.parentId ? bbb.parentId : bbb.nodeId,
               port: bbb.parentId ? bbb.nodeId : null
             }
-            console.log('sourceData', sourceData)
-            console.log('targetData', targetData)
+            // console.log('sourceData', sourceData)
+            // console.log('targetData', targetData)
             const obj = {
-              nodeType: item.nodeType,
-              shape: 'implement',
+              ...commonObj,
               source: {
                 ...sourceData
               },
@@ -317,36 +276,20 @@ export default {
             }
             cells.push(obj)
           }
-          console.log('-------------------------------------', index)
         }
       })
-      // 222222222222222222222
-      // console.log('cells========>', cells)
 
+      const createCells = []
       cells.forEach((treeItem, treeIndex) => {
-        console.log('treeItem------->', treeItem)
-
-        switch (treeItem.nodeType) {
-          // default:
-          //   break
-          case 1: // 'start'
-            cells2.push(this.graph.createNode(treeItem))
-            break
-          case 2: // 'dialogue'
-            cells2.push(this.graph.createNode(treeItem))
-            break
-          case 3: // judge 判断
-            cells2.push(this.graph.createNode(treeItem))
-            break
-          case 4: // skill节点 技能
-            cells2.push(this.graph.createNode(treeItem))
-            break
-          case 5: // 连线
-            cells2.push(this.graph.createEdge(treeItem))
-            break
+        if (treeItem.nodeType) {
+          if (treeItem.nodeType === 5) {
+            createCells.push(this.graph.createEdge(treeItem)) // 连线
+          } else {
+            createCells.push(this.graph.createNode(treeItem))// 节点
+          }
         }
-        // 1111111111111111
-        graph.resetCells(cells2)
+
+        graph.resetCells(createCells)
         graph.centerContent()
         // graph.zoomToFit({ padding: 10, maxScale: 1 })
         // this.graph.zoomToFit({ padding: 10, maxScale: 1 })
@@ -362,6 +305,7 @@ export default {
       }
       return ''
     },
+    // 打印
     logGraph () {
       console.debug('logGraph: ', this.graph.toJSON())
     },
@@ -484,8 +428,11 @@ export default {
               if (res.code === 1000) {
                 const { nodeId } = res.data
                 node.setData({
-                  nodeId: nodeId.toString(),
-                  title: nodeTitle
+                  nodeId: nodeId.toString()
+                })
+                // 设置title，更新属性
+                node.setAttrs({
+                  title: { text: nodeTitle }
                 })
                 return true
               }
@@ -501,10 +448,14 @@ export default {
               if (res.code === 1000) {
                 // console.debug('addDialogueNodeAPI res: ', res)
                 const { nodeId } = res.data
+                // 设置title，更新属性
                 node.setData({
-                  nodeId: nodeId.toString(),
-                  title: nodeTitle
+                  nodeId: nodeId.toString()
                 })
+                node.setAttrs({
+                  title: { text: nodeTitle }
+                })
+                // node.attrs.title.text = nodeTitle
                 return true
               }
             } catch (error) {
@@ -545,41 +496,47 @@ export default {
       console.debug('handleCompositionDrag: ', type, ctype)
       // console.log('e.currentTarget=====> ', e)
       let node = null
-      if (type === 'judge') {
-        node = this.graph.createNode({
-          shape: 'custom-polygon',
-          label: '',
-          data: {
-            type,
-            ctype
-          }
-        })
-      } else if (type === 'dialogue') {
-        node = this.graph.createNode({
-          shape: 'er-rect',
-          label: ctype,
-          data: {
-            type,
-            ctype
-          }
-        })
-      } else if (type === 'skill') {
-        node = this.graph.createNode({
-          shape: 'c-rect',
-          // width: 100,
-          height: 40,
-          attrs: {
-            body: {
-              rx: 6,
-              ry: 6
-            }
-          },
-          data: {
-            type
-          }
-        })
+      const keyV = {
+        judge: 'custom-polygon',
+        dialogue: 'er-rect',
+        skill: 'c-rect'
       }
+
+      node = this.graph.createNode({
+        shape: keyV[type],
+        label: ctype,
+        data: {
+          type,
+          ctype
+        }
+      })
       this.dnd.start(node, e)
+      // if (type === 'judge') {
+      //   node = this.graph.createNode({
+      //     shape: 'custom-polygon',
+      //     label: '',
+      //     data: {
+      //       type,
+      //       ctype
+      //     }
+      //   })
+      // } else if (type === 'dialogue') {
+      //   node = this.graph.createNode({
+      //     shape: 'er-rect',
+      //     label: ctype,
+      //     data: {
+      //       type,
+      //       ctype
+      //     }
+      //   })
+      // } else if (type === 'skill') {
+      //   node = this.graph.createNode({
+      //     shape: 'c-rect',
+      //     data: {
+      //       type
+      //     }
+      //   })
+      // }
     },
     addZoom () {
       // 偏移歪了
@@ -673,37 +630,46 @@ export default {
         node.y -= node.size.height / 2
       })
     },
-    updateStartNodeLink (payload) { // 更新节点信息 连线布局
-      // console.debug('updateStartNodeLink: ')
-      if (payload.serviceId !== this.serviceId) return
-      setTimeout(() => {
-        this.getTreeData()
-        store.commit('flow/updateStatuTitle', {
-          serviceId: this.serviceId
-        })
-      }, 500)
-    },
-    updateJudgeNodeRender (formInfo) {
-      // console.debug('updateJudgeNodeRender: ')
-      setTimeout(() => {
-        this.getTreeData()
-        store.commit('flow/updateStatuTitle', {
-          serviceId: this.serviceId
-        })
-      }, 500)
-    },
-    updateDialogueNodeRender (formInfo) { // 更新画布中 刚更新过的对话框节点 渲染
-      // console.debug('updateDialogueNodeRender: ')
-      setTimeout(() => {
-        this.getTreeData()
-        store.commit('flow/updateStatuTitle', {
-          serviceId: this.serviceId
-        })
-      }, 500)
-      this.$nextTick(() => {
-        this.logGraph()
-      })
-    },
+    // async updateStartNodeLink (payload) { // 更新节点信息 连线布局
+    //   // console.debug('updateStartNodeLink: ')
+    //   if (payload.serviceId !== this.serviceId) return
+    //   // setTimeout(() => {
+    //   await this.getTreeData()
+    //   store.commit('flow/updateStatuTitle', {
+    //     serviceId: this.serviceId
+    //   })
+    //   this.$message.success('更新成功1')
+    //   this.$nextTick(() => {
+    //     this.logGraph()
+    //   })
+    //   // }, 500)
+    // },
+    // async updateJudgeNodeRender (formInfo) {
+    //   // console.debug('updateJudgeNodeRender: ')
+    //   // setTimeout(() => {
+    //   await this.getTreeData()
+    //   store.commit('flow/updateStatuTitle', {
+    //     serviceId: this.serviceId
+    //   })
+    //   this.$message.success('更新成功2')
+    //   this.$nextTick(() => {
+    //     this.logGraph()
+    //   })
+    //   // }, 500)
+    // },
+    // async updateDialogueNodeRender (formInfo) { // 更新画布中 刚更新过的对话框节点 渲染
+    //   // console.debug('updateDialogueNodeRender: ')
+    //   // setTimeout(() => {
+    //   await this.getTreeData()
+    //   store.commit('flow/updateStatuTitle', {
+    //     serviceId: this.serviceId
+    //   })
+    //   this.$message.success('更新成功3')
+    //   // }, 500)
+    //   this.$nextTick(() => {
+    //     this.logGraph()
+    //   })
+    // },
     async getAnyliseTreeData (formData) {
       try {
         delete formData.time
@@ -719,31 +685,70 @@ export default {
       }
     },
     initVuexListen () {
-      store.subscribe((mutation, state) => {
+      store.subscribe(async (mutation, state) => {
+        const payload = mutation.payload
         if (mutation.type === 'flow/updateStartNodeLink') {
           // console.debug('mutation type triggle,', mutation.type)
           if (mutation.payload.serviceId !== this.serviceId) return
-          this.updateStartNodeLink(mutation.payload)
+          // this.updateStartNodeLink(mutation.payload)
+          // ------------------
+          if (payload.serviceId !== this.serviceId) return
+          // setTimeout(() => {
+          await this.getTreeData()
+          store.commit('flow/updateStatuTitle', {
+            serviceId: this.serviceId
+          })
+          this.$message.success('更新成功')
+          console.log('更新成功1')
+          this.$nextTick(() => {
+            this.logGraph()
+          })
         }
         if (mutation.type === 'flow/updateDialogueDetail') {
-          this.updateDialogueNodeRender(mutation.payload)
+          // this.updateDialogueNodeRender(mutation.payload)
+          // console.debug('updateDialogueNodeRender: ')
+          // setTimeout(() => {
+          await this.getTreeData()
+          store.commit('flow/updateStatuTitle', {
+            serviceId: this.serviceId
+          })
+          this.$message.success('更新成功')
+          console.log('更新成功2')
+          // }, 500)
+          this.$nextTick(() => {
+            this.logGraph()
+          })
         }
         if (mutation.type === 'flow/updateJudgeNodeDetail') {
-          this.updateJudgeNodeRender(mutation.payload)
+          // this.updateJudgeNodeRender(mutation.payload)
+          // console.debug('updateJudgeNodeRender: ')
+          // setTimeout(() => {
+          await this.getTreeData()
+          store.commit('flow/updateStatuTitle', {
+            serviceId: this.serviceId
+          })
+          this.$message.success('更新成功3')
+          this.$nextTick(() => {
+            this.logGraph()
+          })
         }
         if (mutation.type === 'flow/updateGraphTree') {
           if (mutation.payload.serviceId !== this.serviceId) return
           console.debug('mutation updateGraphTree getTreeData')
-          this.getTreeData().then(() => {
-            setTimeout(() => {
-              this.getVersionId()
-            }, 800)
-          })
-          setTimeout(() => {
-            store.commit('flow/updateVersionId', {
+          await this.getTreeData().then(() => {
+            // setTimeout(() => {
+            this.getVersionId()
+            // }, 800)
+            return store.commit('flow/updateVersionId', {
               serviceId: this.serviceId
             })
           })
+
+          this.$nextTick(() => {
+            this.logGraph()
+          })
+          // setTimeout(() => {
+          // })
         }
         if (mutation.type === 'flow/setAnyliseFilterForm') {
           // console.debug('setAnyliseFilterForm: ', mutation.payload)

@@ -1,3 +1,9 @@
+//   1: 'c-ellipse', // 椭圆（开始）
+//   2: 'er-rect', // 对话框
+//   3: 'custom-polygon', // 菱形（判断）
+//   4: 'c-rect', // 标准矩形（技能）
+//   5: 'implement' // 连线
+
 function initRegister (Graph) {
   const LINE_HEIGHT = 24
   const NODE_WIDTH = 150
@@ -323,6 +329,34 @@ function initRegister (Graph) {
           fontSize: 12
         }
 
+      }
+    },
+    true
+  )
+
+  // 初始化 开始 图形配置
+  Graph.registerNode(
+    'c-ellipse',
+    {
+      inherit: 'ellipse',
+      x: 0, // Number，必选，节点位置的 x 值
+      y: 0, // Number，必选，节点位置的 y 值
+      width: 100, // Number，可选，节点大小的 width 值
+      height: 50, // Number，可选，节点大小的 height 值
+      attrs: {
+        body: {
+          fill: '#eff4ff',
+          stroke: '#5f95ff',
+          strokeWidth: 1,
+          rx: 16,
+          ry: 16
+        },
+        label: {
+          fill: '#333',
+          fontSize: 16,
+          fontWeight: 'normal',
+          fontVariant: 'small-caps'
+        }
       }
     },
     true
