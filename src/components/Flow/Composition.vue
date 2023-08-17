@@ -32,6 +32,10 @@
         对话框
         <div class="dnd-rect-btn"></div>
       </div>
+
+      <div data-type="end" data-ctype="结束" class="end-sty" @mousedown="startDrag">
+        结束
+      </div>
     </div>
   </div>
 </template>
@@ -55,8 +59,7 @@ export default {
   top: 10%;
   left: 0;
   width: 91px;
-  height: 218px;
-
+  // height: 218px;
   box-sizing: border-box;
   z-index: 100;
   background-color: #ffffff;
@@ -72,55 +75,67 @@ export default {
   user-select none
   text-align: center;
 }
-  .composition-content {
-    border: 1px dashed #000000;
-    display flex
-    flex-direction column
-    justify-content center
-    align-items center
-    // padding 20px
-    box-sizing border-box
-    width 100%
-    height 180px
-    .rhombic {
-      width: 45px;
-      height: 45px;
-      text-align: center;
-      border: 1px solid rgb(196, 196, 196);
-      background-color: rgb(228, 228, 228);
-      color: rgb(125, 118, 113);
-      transform rotate(45deg)
-      display: inline-block;
-      font-size: 12px
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: #303133;
-      font-size: 12px;
-      white-space: nowrap;
-      overflow: hidden;
-      span {
-        transform: rotate(-45deg);
-      }
-    }
-    .dnd-rect {
-      width 80px
-      height 24px
-      // margin 16px
-      margin-top 28px
-      line-height 24px
-      text-align center
-      cursor move
-      font-size 14px
-      user-select none
-      color #000
-      border 1px solid #5F95FF
-      background-color #5F95FF
-      .dnd-rect-btn {
-        border 1px solid #5F95FF
-        background-color #EFF4FF
-        height 24px
-      }
+.composition-content {
+  border: 1px dashed #000000;
+  display flex
+  flex-direction column
+  justify-content center
+  align-items center
+  padding 15px 0
+  box-sizing border-box
+  width 100%
+  >div {
+    margin-top 15px
+  }
+  // height 180px
+  .rhombic {
+    width: 45px;
+    height: 45px;
+    text-align: center;
+    border: 1px solid rgb(196, 196, 196);
+    background-color: rgb(228, 228, 228);
+    color: rgb(125, 118, 113);
+    transform rotate(45deg)
+    display: inline-block;
+    font-size: 12px
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #303133;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 12px 0;
+    span {
+      transform: rotate(-45deg);
     }
   }
+  .dnd-rect {
+    width 80px
+    line-height 24px
+    text-align center
+    cursor move
+    font-size 14px
+    user-select none
+    color #000
+    border 1px solid #5F95FF
+    background-color #5F95FF
+    .dnd-rect-btn {
+      border 1px solid #5F95FF
+      background-color #EFF4FF
+      height 24px
+    }
+  }
+}
+.end-sty {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #feebe7;
+  border: 2px solid #ff645a;
+  line-height: 60px;
+  text-align: center;
+  color: #303133;
+  font-size: 12px;
+}
 </style>
