@@ -90,7 +90,7 @@
           </div>
 
         </div>
-        <template v-if="buttonDetail">
+        <template v-if="buttonDetail.buttonId">
           <div class="add-button-wrap detail-button-wrap">
             <div>按钮详情</div>
           </div>
@@ -241,9 +241,9 @@ export default {
     addOperate () {
       console.debug('addOperate')
       const list = this.detailForm.interActifyButtonsList
-      const obj = list.find(item => item.buttonId === this.buttonActiveIndex)
-      this.buttonActiveIndex = obj ? obj.buttonId : ''
-      const buttonItem = list[this.buttonActiveIndex]
+      const index = list.findIndex(item => item.buttonId === this.buttonActiveIndex)
+      // this.buttonActiveIndex = obj ? obj.buttonId : ''
+      const buttonItem = list[index]
       if (!buttonItem?.nextNodeList) {
         this.$set(buttonItem, 'nextNodeList', [{ }])
       } else {
@@ -253,23 +253,20 @@ export default {
     updateEditInput (index) {
       console.debug('updateEditInput', index)
       this.$set(this.detailForm.interActifyButtonsList[index], 'showEditInput', true)
-      const list = this.detailForm.interActifyButtonsList
-      const obj = list.find(item => item.buttonId === this.buttonActiveIndex)
-      this.buttonDetail = this.detailForm.interActifyButtonsList[this.buttonActiveIndex]
-      this.buttonActiveIndex = obj ? obj.buttonId : ''
-      // this.buttonActiveIndex = index
       this.$nextTick(() => {
         this.$refs[`editInput_${index}`][0].$refs.input.focus()
       })
     },
     clickOperateButton (index) {
       const list = this.detailForm.interActifyButtonsList
-      this.buttonActiveIndex = list[index].buttonId
-      this.buttonDetail = list[index]
-
       if (list && list.length > 0) {
-        const obj = list.find(item => item.buttonId === this.buttonDetail.buttonId)
-        this.checked = obj.isActive
+        this.buttonActiveIndex = list[index].buttonId
+        this.buttonDetail = list[index]
+
+        if (list && list.length > 0) {
+          const obj = list.find(item => item.buttonId === this.buttonDetail.buttonId)
+          this.checked = obj.isActive
+        }
       }
     },
     initTransformData (data) {
