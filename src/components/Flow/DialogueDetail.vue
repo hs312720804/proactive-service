@@ -473,8 +473,9 @@ export default {
 }
 
 .button-id {
-    margin-bottom 5px
-    display inline-block
+  margin-bottom 5px
+  display inline-block
+  width: 40px;
 }
 .operate-list-wrapper {
     .head-text {
