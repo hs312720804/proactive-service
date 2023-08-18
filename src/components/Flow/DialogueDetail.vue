@@ -57,11 +57,12 @@
                 v-for="(item, index) in detailForm.interActifyButtonsList"
                 :key="item.id"
                 class="button-item"
-                :class="{'button-active': buttonActiveIndex === index}"
+                :class="{'button-active': buttonActiveIndex === item.buttonId}"
                 @click="clickOperateButton(index)"
               >
-                <i class="el-icon-caret-right" :class="{'caret-active': buttonActiveIndex === index}" style="margin-right: 5px;color: #85ce61; "></i>
+                <i class="el-icon-caret-right" :class="{'caret-active': buttonActiveIndex === item.buttonId}" style="margin-right: 5px;color: #85ce61; "></i>
                 <span class="button-id">{{ item.buttonId }}</span>
+                <!-- {{ item.isActive }} -->
                 <el-input
                   v-model="item.name"
                   size="mini"
@@ -75,7 +76,7 @@
                 <el-button
                   v-else
                   style="width: 200px;"
-                  :type="buttonActiveIndex === index ? 'success' : ''"
+                  :type="buttonActiveIndex === item.buttonId ? 'success' : ''"
                 >
                   {{ item.name }}
                   <i
@@ -96,6 +97,13 @@
           <div class="button-detail">
             <el-form-item label="按钮ID：" style="margin-bottom: 3px;">
               {{ buttonDetail.buttonId }}
+              <el-checkbox
+                v-model="checked"
+                :true-label="1"
+                :false-label="0"
+                class="default-click"
+                @change="checkedChange"
+              >设为默认落焦</el-checkbox>
             </el-form-item>
             <!-- {{ childNodeList }} -->
             <Behavior
@@ -165,11 +173,34 @@ export default {
         ]
       },
       buttonDetail: {}, // 按钮详情
-      buttonActiveIndex: 0
+      buttonActiveIndex: '', // 所选按钮id
+      checked: 0
     }
   },
-  computed: {},
+  computed: {
+    // checked () {
+    //   return this.defaultButtonId === this.buttonDetail.buttonId
+    // }
+  },
   methods: {
+    checkedChange (val) {
+      console.log('val--->', val)
+      const list = this.detailForm.interActifyButtonsList
+      this.detailForm.interActifyButtonsList = list.map(item => {
+        if (val && item.buttonId === this.buttonActiveIndex) {
+          return {
+            ...item,
+            isActive: 1
+          }
+        } else {
+          return {
+            ...item,
+            isActive: 0
+          }
+        }
+      })
+      // this.checked = val
+    },
     handleDisplayDuration () {
       console.debug('handleDisplayDuration', this.detailForm.displayDuration)
     },
@@ -209,7 +240,10 @@ export default {
     },
     addOperate () {
       console.debug('addOperate')
-      const buttonItem = this.detailForm.interActifyButtonsList[this.buttonActiveIndex]
+      const list = this.detailForm.interActifyButtonsList
+      const obj = list.find(item => item.buttonId === this.buttonActiveIndex)
+      this.buttonActiveIndex = obj ? obj.buttonId : ''
+      const buttonItem = list[this.buttonActiveIndex]
       if (!buttonItem?.nextNodeList) {
         this.$set(buttonItem, 'nextNodeList', [{ }])
       } else {
@@ -219,15 +253,24 @@ export default {
     updateEditInput (index) {
       console.debug('updateEditInput', index)
       this.$set(this.detailForm.interActifyButtonsList[index], 'showEditInput', true)
-      this.buttonDetail = this.detailForm.interActifyButtonsList[index]
-      this.buttonActiveIndex = index
+      const list = this.detailForm.interActifyButtonsList
+      const obj = list.find(item => item.buttonId === this.buttonActiveIndex)
+      this.buttonDetail = this.detailForm.interActifyButtonsList[this.buttonActiveIndex]
+      this.buttonActiveIndex = obj ? obj.buttonId : ''
+      // this.buttonActiveIndex = index
       this.$nextTick(() => {
         this.$refs[`editInput_${index}`][0].$refs.input.focus()
       })
     },
     clickOperateButton (index) {
-      this.buttonActiveIndex = index
-      this.buttonDetail = this.detailForm.interActifyButtonsList[index]
+      const list = this.detailForm.interActifyButtonsList
+      this.buttonActiveIndex = list[index].buttonId
+      this.buttonDetail = list[index]
+
+      if (list && list.length > 0) {
+        const obj = list.find(item => item.buttonId === this.buttonDetail.buttonId)
+        this.checked = obj.isActive
+      }
     },
     initTransformData (data) {
       data.interActifyButtonsList.forEach((buttonItem, buttonIndex) => {
@@ -559,5 +602,9 @@ export default {
   bottom: 20px;
   right: 10px;
   left: 10px;
+}
+.default-click{
+  float: right;
+  margin-right: 10px;
 }
 </style>
