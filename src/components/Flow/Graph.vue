@@ -725,6 +725,43 @@ export default {
         console.error('getAnyliseTreeData error: ', error)
       }
     },
+    initVuexListen2 () {
+      store.subscribe(async (mutation, state) => {
+        const payload = mutation.payload
+        const type = mutation.type
+        // debugger
+        console.log('payload---------?>>>', payload)
+        // if (payload.serviceId !== this.serviceId) return
+        if (type === 'flow/updateStartNodeLink' || type === 'flow/updateDialogueDetail' || type === 'flow/updateJudgeNodeDetail') {
+          await this.getTreeData()
+          store.commit('flow/updateStatuTitle', {
+            serviceId: this.serviceId
+          })
+          this.$message.success('更新成功')
+          console.log('更新成功1----type-------', mutation.type)
+          this.$nextTick(() => {
+            this.logGraph()
+          })
+        } else if (type === 'flow/updateGraphTree') {
+          // console.debug('mutation updateGraphTree getTreeData')
+          await this.getTreeData().then(() => {
+            // setTimeout(() => {
+            this.getVersionId()
+            // }, 800)
+            return store.commit('flow/updateVersionId', {
+              serviceId: this.serviceId
+            })
+          })
+
+          this.$nextTick(() => {
+            this.logGraph()
+          })
+        } else if (mutation.type === 'flow/setAnyliseFilterForm') {
+          // console.debug('setAnyliseFilterForm: ', mutation.payload)
+          this.getAnyliseTreeData(mutation.payload)
+        }
+      })
+    },
     initVuexListen () {
       store.subscribe(async (mutation, state) => {
         const payload = mutation.payload
