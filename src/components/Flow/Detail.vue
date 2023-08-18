@@ -401,6 +401,7 @@ export default {
   height: 100%;
   border: 10px solid #f6f6f6;
   box-sizing: border-box;
+  box-shadow: 0 8px 10px -5px rgba(0,0,0,.2),0 16px 24px 2px rgba(0,0,0,.14),0 6px 30px 5px rgba(0,0,0,.12);
 }
 .title {
   font-weight bold
@@ -416,7 +417,7 @@ export default {
   font-size: 30px;
   color: #000000;
   position: absolute;
-  left: -34px;
+  left: -40px;
   top: 50%;
   background: #7777772b;
   padding: 20px 0;
