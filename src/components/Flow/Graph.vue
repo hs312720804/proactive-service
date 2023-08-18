@@ -40,6 +40,7 @@ export default {
   inject: ['serviceId'],
   data () {
     return {
+      needToLayout: true,
       LINE_HEIGHT: 24,
       NODE_WIDTH: 150,
       showAnylise: false,
@@ -131,7 +132,11 @@ export default {
       const model = dagreLayout.layout(data)
 
       graph.fromJSON(model)
-      graph.scaleContentToFit().centerContent() // 居中显示画布
+
+      if (this.needToLayout) {
+        graph.scaleContentToFit().centerContent() // 居中显示画布
+      }
+
       // graph.on('render:done', () => {
       //   graph.centerContent().scaleContentToFit() // 居中显示画布
       // })
@@ -718,33 +723,40 @@ export default {
         if (res.code === 1000) {
           // console.debug('getAnyliseTreeData')
           this.tree = res.data
-          this.treeToGraph()
           this.showAnylise = true
+          this.treeToGraph()
         }
       } catch (error) {
         console.error('getAnyliseTreeData error: ', error)
       }
     },
-    initVuexListen2 () {
+    initVuexListen () {
       store.subscribe(async (mutation, state) => {
         const payload = mutation.payload
         const type = mutation.type
         // debugger
-        console.log('payload---------?>>>', payload)
-        // if (payload.serviceId !== this.serviceId) return
-        if (type === 'flow/updateStartNodeLink' || type === 'flow/updateDialogueDetail' || type === 'flow/updateJudgeNodeDetail') {
-          await this.getTreeData()
+        // console.log('payload---------?>>>', payload)
+        // console.log('mutation.payload.serviceId', mutation.payload.serviceId)
+        // console.log('this.serviceId', this.serviceId)
+        // console.log('----------------------------------------')
+        const layoutType = 'notNeedToLayout'
+        if (payload.serviceId && payload.serviceId !== this.serviceId) return
+
+        if (type === 'flow/updateStartNodeLink' ||
+            type === 'flow/updateDialogueDetail' ||
+            type === 'flow/updateJudgeNodeDetail') {
+          await this.getTreeData(layoutType)
           store.commit('flow/updateStatuTitle', {
             serviceId: this.serviceId
           })
-          this.$message.success('更新成功')
+          // this.$message.success('更新成功')
           console.log('更新成功1----type-------', mutation.type)
           this.$nextTick(() => {
             this.logGraph()
           })
         } else if (type === 'flow/updateGraphTree') {
           // console.debug('mutation updateGraphTree getTreeData')
-          await this.getTreeData().then(() => {
+          await this.getTreeData(layoutType).then(() => {
             // setTimeout(() => {
             this.getVersionId()
             // }, 800)
@@ -762,9 +774,12 @@ export default {
         }
       })
     },
-    initVuexListen () {
+    initVuexListen2 () {
       store.subscribe(async (mutation, state) => {
         const payload = mutation.payload
+        console.log('mutation.payload.serviceId', mutation.payload.serviceId)
+        console.log('this.serviceId', this.serviceId)
+        console.log('----------------------------------------')
         if (mutation.type === 'flow/updateStartNodeLink') {
           // console.debug('mutation type triggle,', mutation.type)
           if (mutation.payload.serviceId !== this.serviceId) return
@@ -847,7 +862,7 @@ export default {
         console.error('getVersionId error: ', error)
       }
     },
-    async getTreeData () {
+    async getTreeData (type) {
       try {
         const res = await getTreeDataAPI({
           serviceId: Number(this.serviceId)
@@ -855,6 +870,8 @@ export default {
         console.debug('getTreeData res: ', res)
         if (res.code === 1000) {
           this.tree = res.data
+          this.needToLayout = type !== 'notNeedToLayout'
+          this.treeToGraph()
         }
       } catch (error) {
         console.error('getTreeData error: ', error)
@@ -870,13 +887,13 @@ export default {
     }
   },
   watch: {
-    tree: {
-      handler (newVal, oldVal) {
-        // console.debug('tree watch: ', newVal, oldVal)
-        this.treeToGraph()
-      },
-      deep: true
-    }
+    // tree: {
+    //   handler (newVal, oldVal) {
+    //     // console.debug('tree watch: ', newVal, oldVal)
+    //     this.treeToGraph()
+    //   },
+    //   deep: true
+    // }
   },
   created () {
     if (this.isEdit) {
