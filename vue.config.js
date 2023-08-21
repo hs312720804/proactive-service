@@ -1,7 +1,7 @@
 const path = require('path')
 const { defineConfig } = require('@vue/cli-service')
 
-// const BACKEND = process.env.BACKEND || '172.20.151.197:9080'
+// const BACKEND = process.env.BACKEND || '172.20.151.14:8964'
 const BACKEND = process.env.BACKEND || '172.20.151.211:80'
 const HOST = process.env.HOST || '0.0.0.0'
 const PORT = process.env.PORT || '8686'

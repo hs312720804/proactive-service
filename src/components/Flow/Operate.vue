@@ -1,6 +1,6 @@
 <template>
-  <ul class="operate-component-wrapper">
-    <li
+  <div class="operate-component-wrapper">
+    <span
       class="operate-button"
       :class="item.command"
       v-for="(item, index) in features"
@@ -8,8 +8,8 @@
       @click="handleCommand(item.command)"
     >
       {{ item.title }}
-    </li>
-  </ul>
+    </span>
+  </div>
 </template>
 <script>
 export default {
@@ -52,10 +52,10 @@ export default {
   // border 1px solid #ddd
   margin-right 0px
   z-index 100
-  background-color #d3d3d347
 
   .operate-button {
-    width 80px
+    background-color #d3d3d347
+    width 60px
     margin 0 auto
     height 60px
     font-size 60px
@@ -63,6 +63,7 @@ export default {
     text-align center
     cursor pointer
     user-select none
+    margin-top 20px
   }
   .reduce {
     font-size: 97px;
