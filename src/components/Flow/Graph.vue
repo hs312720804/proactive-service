@@ -142,6 +142,7 @@ export default {
       // })
     },
     // 生成渲染树 x6 cell 格式树
+    // treeData - 后端返回的所有节点、连线的数据
     generateRenderTree (treeData) {
       const graph = this.graph
       console.log('generateRenderTree: ', treeData)
@@ -177,8 +178,12 @@ export default {
           }
           cells.push(obj)
         } else if (item.nodeType === 2) { // 对话框
-          const ports = item.buttonDataList.map(obj => {
-            const a = {
+          const ports = item.buttonDataList.map((obj, index) => {
+            // 判断是否有连线
+            const hasEdge = treeData.find(node => {
+              return node.nodeType === 6 && node.source === obj.buttonId
+            })
+            return {
               id: obj.buttonId,
               group: 'list',
               attrs: {
@@ -187,10 +192,20 @@ export default {
                 },
                 portTypeLabel: {
                   text: obj.buttonId
-                }
+                },
+                portCircle2: {
+                  text: hasEdge ? '.' : '' // 节点右侧的圆点，有连线时就显示，没有就不显示
+                },
+                portFan: obj.isActive === 1 // 节点左侧的三角形，只有勾选了【设为默认落焦】的按钮才显示
+                  ? {
+                      fill: 'rgba(0,0,0,0.38)',
+                      refX: 0,
+                      refY: 14,
+                      refPoints: '0,0 0,10 10,10 0,0'
+                    }
+                  : undefined
               }
             }
-            return a
           })
 
           obj = {
@@ -252,6 +267,7 @@ export default {
           let targetData = {}
 
           let allCellList = []
+          // 将 buttonDataList 中的数组也拉平到数组当中
           treeData.forEach((item, index) => {
             if (item.buttonDataList) {
               const arr = item.buttonDataList.map(obj => {

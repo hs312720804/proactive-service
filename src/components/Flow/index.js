@@ -103,8 +103,12 @@ function initRegister (Graph) {
                 selector: 'portTypeLabel'
               },
               {
-                tagName: 'circle',
+                tagName: 'text',
                 selector: 'portCircle2'
+              },
+              {
+                tagName: 'polyline',
+                selector: 'portFan'
               }
             ],
             attrs: {
@@ -129,12 +133,22 @@ function initRegister (Graph) {
                 fontSize: 10
               },
               portCircle2: {
-                r: 4,
-                refX: NODE_WIDTH,
-                refY: 12,
+                // ref: 'portBody',
+                // r: 4,
+                refX: NODE_WIDTH - 10,
+                refY: -48,
                 fill: '#5F95FF',
-                stroke: '#000'
+                stroke: '#000',
+                fontSize: 80
               }
+              // portFan: {
+              //   // ref: 'portBody',
+              //   fill: 'rgba(0,0,0,0.38)',
+              //   // stroke: '#9254de',
+              //   refX: 0,
+              //   refY: 14,
+              //   refPoints: '0,0 0,10 10,10 0,0'
+              // }
             },
             position: 'erPortPosition'
           }
