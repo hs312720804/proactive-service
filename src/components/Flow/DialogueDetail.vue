@@ -75,7 +75,7 @@
                 </el-input>
                 <el-button
                   v-else
-                  style="width: 200px;"
+                  style="width: 200px; position: relative; overflow: hidden;"
                   :type="buttonActiveIndex === item.buttonId ? 'success' : ''"
                 >
                   {{ item.name }}
@@ -83,6 +83,7 @@
                     class="el-icon-edit el-icon--right"
                     @click="updateEditInput(index)"
                   ></i>
+                  <span v-if="item.isActive === 1" class="default-i-active"></span>
                 </el-button>
                 <el-button type="text" @click="deleteButton(index)" class="el-icon-close delete"></el-button>
               </div>
@@ -604,5 +605,16 @@ export default {
 .default-click{
   float: right;
   margin-right: 10px;
+}
+.default-i-active{
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: rgba(0,0,0,0.38);
+  left: -12px;
+  bottom: -12px;
+  margin-left: 0!important;
+  transform: rotate(45deg);
+  box-sizing: border-box;
 }
 </style>
