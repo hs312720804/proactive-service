@@ -3,9 +3,19 @@
     <div class="version-wrapper">
       <span class="edit-statu-title"> {{ editStatuStr }}</span>
       <div class="button-group-wrapper">
-        <el-button type="primary" @click="$message.success('保存成功')">保存</el-button>
-        <el-button plain @click="uploadVersion">上线</el-button>
-        <div class="more" @click.stop>
+        <el-button
+          type="primary"
+          @click="$message.success('保存成功')"
+        >保存</el-button>
+        <el-button
+          plain
+          @click="uploadVersion"
+          :disabled="!accessMap.alive"
+        >上线</el-button>
+        <div
+          class="more"
+          @click.stop
+        >
           <el-dropdown
             placement="bottom-end"
             trigger="click"
@@ -38,6 +48,12 @@ export default {
     return {
       editStatuStr: '未编辑',
       versionId: 0
+    }
+  },
+  computed: {
+    // 所有权限
+    accessMap () {
+      return this.$store.getters.getAccessMap()
     }
   },
   methods: {
@@ -116,45 +132,37 @@ export default {
 }
 </script>
 <style lang="stylus" scoped>
-.version-component-wrapper {
+.version-component-wrapper
+  display flex
+  width 100%
+  height 40px
+  margin-bottom 20px
+  justify-content flex-end
+  .version-wrapper
     display flex
-    width 100%
-    height 40px
-    margin-bottom 20px
-    justify-content flex-end
-    .version-wrapper {
-        display flex
-        align-items center
-        .edit-statu-title {
-            font-size 14px
-            color #999
-            margin-right 10px
-        }
-        .button-group-wrapper {
-            display flex
-            align-items center
-            position relative
-            .more {
-                width 20px
-                height 20px
-                display block
-                cursor pointer
-                margin-left 10px
-                i {
-                    font-size 16px
-                    color #999
-                    transform rotate(90deg)
-                }
-            }
-            .save-text {
-                font-size 12px
-                color #999
-                position absolute
-                bottom -20px
-                left 0
-            }
-        }
-    }
-
-}
+    align-items center
+    .edit-statu-title
+      font-size 14px
+      color #999
+      margin-right 10px
+    .button-group-wrapper
+      display flex
+      align-items center
+      position relative
+      .more
+        width 20px
+        height 20px
+        display block
+        cursor pointer
+        margin-left 10px
+        i
+          font-size 16px
+          color #999
+          transform rotate(90deg)
+      .save-text
+        font-size 12px
+        color #999
+        position absolute
+        bottom -20px
+        left 0
 </style>

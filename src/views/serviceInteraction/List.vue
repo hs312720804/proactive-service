@@ -7,12 +7,19 @@
         :key="index"
         @click="handleCommand('open_' + index)"
       >
-        <img class="list-img" :src="item.img" alt="" />
+        <img
+          class="list-img"
+          :src="item.img"
+          alt=""
+        />
         <div class="content-wrapper">
           <p class="title">{{ item.serviceName }}</p>
           <p class="desc">{{ item.remark }}</p>
         </div>
-        <div class="more" @click.stop>
+        <div
+          class="more"
+          @click.stop
+        >
           <el-dropdown
             placement="bottom-end"
             trigger="click"
@@ -25,14 +32,29 @@
               <el-dropdown-item :command="'anylise_' + index">分析</el-dropdown-item>
               <!-- status 1上架 0下架 -->
               <!-- v-permission="accessMap.offShell" -->
-              <el-dropdown-item v-if="item.status === 1" :command="'withDraw_' + index">下架</el-dropdown-item>
-              <el-dropdown-item v-else-if="item.status === 0" :command="'onShelve_' + index">上架</el-dropdown-item>
-              <el-dropdown-item :command="'delete_' + index">删除</el-dropdown-item>
+              <el-dropdown-item
+                v-if="item.status === 1"
+                :command="'withDraw_' + index"
+                :disabled="!accessMap.offShell"
+              >下架</el-dropdown-item>
+              <el-dropdown-item
+                v-else-if="item.status === 0"
+                :command="'onShelve_' + index"
+                :disabled="!accessMap.interaction_onshell"
+              >上架</el-dropdown-item>
+              <el-dropdown-item
+                :command="'delete_' + index"
+                :disabled="!accessMap.delete"
+              >删除</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </div>
       </li>
-      <li class="list-item-wrapper add-wrapper" @click="add">
+      <li
+        class="list-item-wrapper add-wrapper"
+        @click="add"
+        v-if="accessMap.add"
+      >
         <i class="el-icon-plus add-icon"></i>
         <p class="add-desc">添加服务</p>
       </li>
@@ -44,14 +66,37 @@
       :close-on-click-modal="false"
       @close="closeAddServiceDialog"
     >
-      <el-form :model="servicesForm" :rules="rule" ref="servicesForm">
-        <el-form-item label="服务名" label-width="150" prop="serviceName">
-          <el-input v-model="servicesForm.serviceName" placeholder="请输入" autocomplete="off"></el-input>
+      <el-form
+        :model="servicesForm"
+        :rules="rule"
+        ref="servicesForm"
+      >
+        <el-form-item
+          label="服务名"
+          label-width="150"
+          prop="serviceName"
+        >
+          <el-input
+            v-model="servicesForm.serviceName"
+            placeholder="请输入"
+            autocomplete="off"
+          ></el-input>
         </el-form-item>
-        <el-form-item label="服务标识" label-width="150" prop="serviceKey">
-          <el-input v-model="servicesForm.serviceKey" placeholder="请输入" autocomplete="off"></el-input>
+        <el-form-item
+          label="服务标识"
+          label-width="150"
+          prop="serviceKey"
+        >
+          <el-input
+            v-model="servicesForm.serviceKey"
+            placeholder="请输入"
+            autocomplete="off"
+          ></el-input>
         </el-form-item>
-        <el-form-item label="描述" label-width="150">
+        <el-form-item
+          label="描述"
+          label-width="150"
+        >
           <el-input
             autocomplete="off"
             :rows="5"
@@ -61,9 +106,15 @@
           ></el-input>
         </el-form-item>
       </el-form>
-      <span slot="footer" class="dialog-footer">
+      <span
+        slot="footer"
+        class="dialog-footer"
+      >
         <el-button @click="showAddServiceDialog = false">取 消</el-button>
-        <el-button type="primary" @click="confirmAddService">确 定</el-button>
+        <el-button
+          type="primary"
+          @click="confirmAddService"
+        >确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -94,7 +145,8 @@ export default {
     }
   },
   computed: {
-    accessMap () { // 所有权限
+    // 所有权限
+    accessMap () {
       return this.$store.getters.getAccessMap()
     }
   },
@@ -281,90 +333,76 @@ export default {
 }
 </script>
 <style lang="stylus" scoped>
-ul {
-    margin-block-start 0
-    margin-block-end 0
-    padding-inline-start 0
-    padding-inline-end 0
-    li {
-        list-style none
-    }
-}
-.list-page-wrapper {
-    width 100%
-    min-height 100%
-    background-color #fff
-    padding 20px
-    box-sizing border-box
-    position relative
-    .services-list-wrapper {
+ul
+  margin-block-start 0
+  margin-block-end 0
+  padding-inline-start 0
+  padding-inline-end 0
+  li
+    list-style none
+.list-page-wrapper
+  width 100%
+  min-height 100%
+  background-color #fff
+  padding 20px
+  box-sizing border-box
+  position relative
+  .services-list-wrapper
+    display flex
+    flex-wrap wrap
+    flex-direction row
+    .list-item-wrapper
+      width 250px
+      height 300px
+      box-shadow 0 2px 12px 0 rgba(0, 0, 0, 0.1)
+      margin-right 30px
+      margin-bottom 30px
+      display flex
+      flex-direction column
+      position relative
+      cursor pointer
+      &.add-wrapper
+        border 1px dotted #999
         display flex
-        flex-wrap wrap
-        flex-direction row
-        .list-item-wrapper {
-            width 250px
-            height 300px
-            box-shadow 0 2px 12px 0 rgba(0,0,0,.1)
-            margin-right 30px
-            margin-bottom 30px
-            display flex
-            flex-direction column
-            position relative
-            cursor pointer
-            &.add-wrapper {
-                border 1px dotted #999
-                display flex
-                justify-content center
-                align-items center
-                flex-direction column
-                cursor pointer
-                .add-icon {
-                    font-size 60px
-                    color #999
-                    margin-bottom 20px
-                }
-                .add-desc {
-                    font-size 15px
-                    color #999
-                }
-            }
-            .list-img {
-                width 100%
-                height 150px
-            }
-            .content-wrapper {
-                width 100%
-                flex 1
-                padding 20px
-                box-sizing border-box
-                .title {
-                    font-size 15px
-                    color #000
-                    font-family PingFangSC-Medium
-                    font-weight 500
-                }
-                .desc {
-                    font-size 12px
-                    color #999
-                    font-family PingFangSC-Regular
-                    font-weight 400
-                }
-            }
-            .more {
-                position absolute
-                right 10px
-                bottom 10px
-                width 20px
-                height 20px
-                display block
-                cursor pointer
-                i {
-                    font-size 20px
-                    color #999
-                    transform rotate(90deg)
-                }
-            }
-        }
-    }
-}
+        justify-content center
+        align-items center
+        flex-direction column
+        cursor pointer
+        .add-icon
+          font-size 60px
+          color #999
+          margin-bottom 20px
+        .add-desc
+          font-size 15px
+          color #999
+      .list-img
+        width 100%
+        height 150px
+      .content-wrapper
+        width 100%
+        flex 1
+        padding 20px
+        box-sizing border-box
+        .title
+          font-size 15px
+          color #000
+          font-family PingFangSC-Medium
+          font-weight 500
+        .desc
+          font-size 12px
+          color #999
+          font-family PingFangSC-Regular
+          font-weight 400
+      .more
+        position absolute
+        right 10px
+        bottom 10px
+        width 20px
+        height 20px
+        display block
+        cursor pointer
+        i
+          font-size 20px
+          color #999
+          transform rotate(90deg)
 </style>
