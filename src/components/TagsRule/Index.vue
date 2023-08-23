@@ -93,7 +93,6 @@
                 </el-select>
                 <el-input
                   v-if="childItem.dialogueNodeId && childItem.buttonId"
-                  size="mini"
                   class="short-input"
                   v-model="childItem.count"
                 ></el-input>
@@ -138,7 +137,6 @@
                 </el-select>
                 <el-input
                   v-if="childItem.showDialogueNodeId"
-                  size="mini"
                   class="short-input"
                   v-model="childItem.showCount"
                 ></el-input>
@@ -147,6 +145,46 @@
                   v-if="childItem.showDialogueNodeId"
                 >{{ getTagUnit(childItem.tagKey) }}
                 </span>
+              </template>
+
+              <!-- 属性值满足 -->
+              <template v-else-if="childItem.inputType === 'attr_match'">
+                <span class="txt">{{ childItem.tagName }}</span>
+                <el-select
+                  style="width: 130px"
+                  :key="n + '-dialogue-show' + index"
+                  v-model="childItem.tagKey"
+                  filterable
+                  clearable
+                  placeholder="请选择属性值"
+                >
+                  <template v-if="cache['attr_match']">
+                    <el-option
+                      v-for="dialogueItem in cache['attr_match'].list"
+                      :key="dialogueItem.attrId"
+                      :value="dialogueItem.attrKey"
+                      :label="dialogueItem.attrName"
+                    >
+                    </el-option>
+                  </template>
+                </el-select>
+                <el-select
+                  style="width: 80px"
+                  name="oxve"
+                  v-model="childItem.operator"
+                  class="input-inline"
+                >
+                  <el-option value="="></el-option>
+                  <el-option value=">="></el-option>
+                  <el-option value="<="></el-option>
+                  <el-option value=">"></el-option>
+                  <el-option value="<"></el-option>
+                </el-select>
+                <el-input
+                  class="short-input"
+                  v-model="childItem.value"
+                ></el-input>
+
               </template>
               <!-- 是否有睡觉提醒经验值 -->
               <template v-else-if="childItem.tagKey === 'sleep_time'">
@@ -393,7 +431,7 @@
 </template>
 <script>
 import { dataSourceColorEnum } from '@/utils/tag'
-import { getVersionIdAPI } from '@/services/flow'
+import { getVersionIdAPI, getInteractifyTagAttrAPI } from '@/services/flow'
 import { getCrowdListAPI, getDialogueListAPI, getButtonListAPI, getUserEventListAPI } from '@/services/tag'
 export default {
   inject: ['serviceId'],
@@ -527,6 +565,19 @@ export default {
         console.error('getDialogueList error: ', error)
       }
     },
+    async getAttrMatchEventList (tagKey) { // 获取attr列表
+      try {
+        const res = await getInteractifyTagAttrAPI()
+        if (res.code === 1000) {
+          this.$set(this.cache, tagKey, {
+            list: res.data || []
+          })
+        }
+      } catch (error) {
+        console.error('getDialogueList error: ', error)
+      }
+    },
+
     async getDialogueButtonList (item, payload) { // 获取对话框按钮列表
       const { dialogueNodeId: nodeId, tagKey } = item
       if (payload && payload?.needClear) { // 编辑时，如果修改父级，子级的值也随之修改
@@ -578,6 +629,9 @@ export default {
           break
         case 'event_hit':
           this.getUserEventList(tagKey)
+          break
+        case 'attr_match':
+          this.getAttrMatchEventList(tagKey)
           break
         default:
           break
@@ -631,7 +685,7 @@ export default {
       return data
     },
     initTagsSuggestions () { // 给父组件调用
-      const dynamicFormTagKeys = ['button_click', 'dialog_show', 'dmp_crowd', 'event_hit']
+      const dynamicFormTagKeys = ['button_click', 'dialog_show', 'dmp_crowd', 'event_hit', 'attr_match']
       dynamicFormTagKeys.forEach(key => {
         this.fetchTagSuggestions({ tagKey: key })
       })
