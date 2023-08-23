@@ -17,7 +17,7 @@
       <ul class="draglist-wrapper">
         <draggable v-model="unBackupList" group="people" @start="drag=true" @end="drag=false">
           <li
-            class="list-item"
+            class="draglist-item"
             v-for="(item,index) in unBackupList"
             :key="index"
           >
@@ -347,7 +347,7 @@ export default {
     .draglist-wrapper {
       // width 92%
       // margin 10px auto 0
-      .list-item {
+      .draglist-item {
         background-color rgb(239, 244, 255)
         padding 10px
         margin-bottom 10px
