@@ -2,6 +2,7 @@
   <div
     class="graph-info-detail-component"
     style="animation: all 0.5s;"
+    :style="{width: nodeType === 'judge' ? '500px' : '400px'}"
     :class="{'detail-component-hide': !showDetail}"
   >
     <!-- <el-drawer
@@ -81,6 +82,7 @@
           :versionId="versionId"
           :skillList="skillList"
           :childNodeList="nodeSelectList"
+          :attrList="attrList"
           :renderData="judgeDetailData"
           @submit="handleSubmitJudge"
         ></JudgeDetail>
@@ -91,6 +93,7 @@
           :versionId="versionId"
           :skillList="skillList"
           :childNodeList="nodeSelectList"
+          :attrList="attrList"
           :renderData="dialogueDetailData"
           @submit="handleSubmitDialogue"
         ></DialogueDetail>
@@ -103,7 +106,7 @@ import store from 'cseed-frame/store/_index'
 import DialogueDetail from '@/components/Flow/DialogueDetail.vue'
 import JudgeDetail from '@/components/Flow/JudgeDetail.vue'
 import { getSkillListAPI } from '@/services/skill'
-import { getStartNodeAPI, getDialogueNodeDetailAPI, updateStartNodeAPI, updateDialogueDetailAPI, getJudgeNodeDetailAPI, updateJudgeNodeDetailAPI, getVersionIdAPI, getNodeSelectListAPI } from '@/services/flow'
+import { getInteractifyTagAttrAPI, getStartNodeAPI, getDialogueNodeDetailAPI, updateStartNodeAPI, updateDialogueDetailAPI, getJudgeNodeDetailAPI, updateJudgeNodeDetailAPI, getVersionIdAPI, getNodeSelectListAPI } from '@/services/flow'
 import { mapGetters } from 'vuex'
 export default {
   components: {
@@ -119,6 +122,7 @@ export default {
   inject: ['serviceId'],
   data () {
     return {
+      attrList: [],
       showDetail: true,
       direction: 'rtl',
       showBool: this.showNodeDetail,
@@ -149,6 +153,7 @@ export default {
         this.show = false
         this.getVersionId()
         this.getSkillList()
+        this.getInteractifyTagAttr() // 获取属性list
         await this.reFill()
         this.initDrawerRef()
         this.$nextTick(() => {
@@ -159,6 +164,14 @@ export default {
     }
   },
   methods: {
+    // 获取可调用的属性列表
+    async getInteractifyTagAttr () {
+      const res = await getInteractifyTagAttrAPI()
+      if (res.code === 1000) {
+        this.attrList = res.data
+      }
+      // console.log('data------>', data)
+    },
     updateNodeOrSkillPick (val) { // 开始详情 改变选择 节点/技能
       this.startForm.NodeOrSkillVal = null
     },
@@ -204,6 +217,15 @@ export default {
       } else if (NodeOrSkill === 2) { // node
         payload = {
           nextNodeId: NodeOrSkillVal || '',
+          callType: NodeOrSkill,
+          nodeId: this.startDetailData.nodeId,
+          skillParam: '',
+          versionId: this.versionId
+        }
+      } else if (NodeOrSkill === 3) { // attr
+        payload = {
+          nextAttrId: NodeOrSkillVal || '',
+          attrParam: '',
           callType: NodeOrSkill,
           nodeId: this.startDetailData.nodeId,
           skillParam: '',
@@ -261,7 +283,10 @@ export default {
         const res = await updateDialogueDetailAPI(payload)
         if (res.code === 1000) {
           // this.drawerRef.closeDrawer()
-          store.commit('flow/updateDialogueDetail', payload)
+          store.commit('flow/updateDialogueDetail', {
+            ...payload,
+            serviceId: this.serviceId
+          })
         }
       } catch (error) {
         console.error('handleSubmitDialogue error: ', error)
@@ -316,9 +341,14 @@ export default {
           console.debug('getStartNodeAPI res:', res)
           this.startDetailData = res.data
           const { callType, nextNodeId, nextSkillId } = res.data
+          const keyV = {
+            1: 'nextSkillId',
+            2: 'nextNodeId',
+            3: 'nextAttrId'
+          }
           this.startForm = {
             NodeOrSkill: callType,
-            NodeOrSkillVal: callType === 1 ? nextSkillId : nextNodeId
+            NodeOrSkillVal: res.data[keyV[callType]]
           }
         }
         if (Object.keys(cellRenderData.model.incomings).length > 0) {
@@ -385,13 +415,6 @@ export default {
 </script>
 <style lang="stylus" scoped>
 .graph-info-detail-component {
-  >>>.detail-drawer {
-    .el-drawer__header {
-      font-weight bold
-      font-size 16px
-      color #5f95ff
-    }
-  }
   position: fixed;
   z-index: 999;
   top: 0;
@@ -402,6 +425,13 @@ export default {
   border: 10px solid #f6f6f6;
   box-sizing: border-box;
   box-shadow: 0 8px 10px -5px rgba(0,0,0,.2),0 16px 24px 2px rgba(0,0,0,.14),0 6px 30px 5px rgba(0,0,0,.12);
+  >>>.detail-drawer {
+    .el-drawer__header {
+      font-weight bold
+      font-size 16px
+      color #5f95ff
+    }
+  }
 }
 .title {
   font-weight bold

@@ -44,6 +44,7 @@ function initRegister (Graph) {
     },
     true
   )
+  // ---------------------------------------------------
   // 注册弹窗
   Graph.registerNode(
     'er-rect',
@@ -157,6 +158,8 @@ function initRegister (Graph) {
     },
     true
   )
+  // ---------------------------------------------------
+
   // 初始化菱形的 port
   const ports = {
     groups: {
@@ -302,8 +305,9 @@ function initRegister (Graph) {
     },
     true
   )
+  // ---------------------------------------------------
 
-  // 初始化矩形(技能的样式)图形配置
+  // skill图形配置
   Graph.registerNode(
     'c-rect',
     {
@@ -348,6 +352,48 @@ function initRegister (Graph) {
     },
     true
   )
+  // attrs 图形配置
+  Graph.registerNode(
+    'c-attrs',
+    {
+      inherit: 'rect',
+      width: 130,
+      height: 50,
+      markup: [
+        {
+          tagName: 'rect',
+          selector: 'body'
+        },
+        {
+          tagName: 'text',
+          selector: 'label'
+        }
+      ],
+      attrs: {
+        body: {
+          strokeWidth: 1,
+          fill: '#f9d591',
+          // fill: '#ffecc8',
+          stroke: '#e3dac8',
+          rx: 10, // 圆角矩形
+          ry: 10
+        },
+        label: {
+          textWrap: {
+            ellipsis: true,
+            width: -10
+          },
+          breakWord: false,
+          textAnchor: 'middle',
+          textVerticalAnchor: 'middle',
+          fontSize: 12
+        }
+
+      }
+    },
+    true
+  )
+  // ---------------------------------------------------
 
   // 初始化 开始 图形配置
   Graph.registerNode(
@@ -376,8 +422,9 @@ function initRegister (Graph) {
     },
     true
   )
+  // ---------------------------------------------------
 
-  // 初始化矩形(技能的样式)图形配置
+  // end 图形配置
   Graph.registerNode(
     'end',
     {
