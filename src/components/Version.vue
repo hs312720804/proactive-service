@@ -88,8 +88,13 @@ export default {
     },
     initVuexListen () {
       store.subscribe((mutation, state) => {
+        // console.debug('updateStatuTitle mutation: ')
+        const payload = mutation.payload
+
+        // 只处理当前tab中的数据，其他tab中的监听，直接返回，不处理
+        if (payload.serviceId && payload.serviceId !== this.serviceId) return
+
         if (mutation.type === 'flow/updateStatuTitle') {
-          // console.debug('updateStatuTitle mutation: ')
           this.fetchStatuTitle()
         } else if (mutation.type === 'flow/updateVersionId') { // 更新版本id
           this.getVersionId()
