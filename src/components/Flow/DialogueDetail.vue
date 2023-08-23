@@ -47,51 +47,92 @@
         </div>
         <div class="buttons-layout">
           <div class="default-btn">
-            <span class="item">用户返回</span>
-            <span class="item">自动消失</span>
+            <!-- <span
+              class="item"
+              @click="clickDefaultButton(returnButtonObj)"
+            >
+              用户返回
+            </span>
+            <span
+              class="item"
+              @click="clickDefaultButton(disappearButtonObj)"
+            >
+              自动消失
+            </span> -->
+            <!-- {{ defaultButtonList }} -->
+            <!-- class="button-item" -->
+            <!-- {{ buttonActiveIndex }} -->
+            <!-- <div
+              v-for="(item) in defaultButtonList"
+              :key="item.buttonId"
+              class="item"
+              :class="{'default-button-active': buttonActiveIndex === item.buttonId}"
+              @click="clickDefaultButton(item)"
+            >
+              {{ item.name }}
+              <span v-if="item.isActive === 1" class="default-i-active"></span>
+            </div> -->
           </div>
-
+          <!-- {{ detailForm.interActifyButtonsList }} -->
           <div class="buttons-wrapper" v-if="detailForm.interActifyButtonsList.length > 0">
             <draggable v-model="detailForm.interActifyButtonsList" group="buttonList">
               <div
                 v-for="(item, index) in detailForm.interActifyButtonsList"
                 :key="item.id"
                 class="button-item"
-                :class="{'button-active': buttonActiveIndex === item.buttonId}"
+                :class="{'button-active': buttonActiveIndex === index}"
                 @click="clickOperateButton(index)"
               >
-                <i class="el-icon-caret-right" :class="{'caret-active': buttonActiveIndex === item.buttonId}" style="margin-right: 5px;color: #85ce61; "></i>
-                <span class="button-id">{{ item.buttonId }}</span>
-                <!-- {{ item.isActive }} -->
-                <el-input
-                  v-model="item.name"
-                  size="mini"
-                  style="width: 200px;"
-                  :maxlength="10"
-                  :ref="'editInput_' + index"
-                  v-if="item.showEditInput"
-                  @blur="item.showEditInput = false"
-                >
-                </el-input>
-                <el-button
-                  v-else
-                  style="width: 200px; position: relative; overflow: hidden;"
-                  :type="buttonActiveIndex === item.buttonId ? 'success' : ''"
-                >
-                  {{ item.name }}
-                  <i
-                    class="el-icon-edit el-icon--right"
-                    @click="updateEditInput(index)"
-                  ></i>
-                  <span v-if="item.isActive === 1" class="default-i-active"></span>
-                </el-button>
-                <el-button type="text" @click="deleteButton(index)" class="el-icon-close delete"></el-button>
+                <!-- 自创的按钮 -->
+                <template v-if="item.type ===1">
+
+                  <i class="el-icon-caret-right" :class="{'caret-active': buttonActiveIndex === index}" style="margin-right: 5px;color: #85ce61; "></i>
+                  <span class="button-id">{{ item.buttonId }}</span>
+                  <!-- {{ item.isActive }} -->
+                  <el-input
+                    v-model="item.name"
+                    size="mini"
+                    style="width: 200px;"
+                    :maxlength="10"
+                    :ref="'editInput_' + index"
+                    v-if="item.showEditInput"
+                    @blur="item.showEditInput = false"
+                  >
+                  </el-input>
+                  <el-button
+                    v-else
+                    style="width: 200px; position: relative; overflow: hidden;"
+                    :type="buttonActiveIndex === index ? 'success' : ''"
+                  >
+                    {{ item.name }}
+                    <i
+                      class="el-icon-edit el-icon--right"
+                      @click="updateEditInput(index)"
+                    ></i>
+                    <span v-if="item.isActive === 1" class="default-i-active"></span>
+                  </el-button>
+                  <el-button type="text" @click="deleteButton(index)" class="el-icon-close delete"></el-button>
+                </template>
+
+                <!-- 默认按钮 -->
+                <template v-else>
+                  <i class="el-icon-caret-right" :class="{'caret-active': buttonActiveIndex === index}" style="margin-right: 5px;color: #85ce61; "></i>
+                  <span class="button-id">{{ item.buttonId }}</span>
+
+                  <el-button
+                    style="width: 200px; position: relative; overflow: hidden; border-style: dotted;"
+                    :type="buttonActiveIndex === index ? 'success' : ''"
+                  >
+                    {{ item.name }}
+                    <span v-if="item.isActive === 1" class="default-i-active"></span>
+                  </el-button>
+                </template>
               </div>
             </draggable>
           </div>
 
         </div>
-        <template v-if="buttonDetail.buttonId">
+        <template>
           <div class="add-button-wrap detail-button-wrap">
             <div>按钮详情</div>
           </div>
@@ -99,6 +140,7 @@
             <el-form-item label="按钮ID：" style="margin-bottom: 3px;">
               {{ buttonDetail.buttonId }}
               <el-checkbox
+                v-if="buttonDetail.type === 1"
                 v-model="checked"
                 :true-label="1"
                 :false-label="0"
@@ -111,6 +153,7 @@
               :list="buttonDetail.nextNodeList"
               :skillList="skillList"
               :childNodeList="childNodeList"
+              :attrList="attrList"
               desc="操作"
               :isLimitOnly="false"
               @del="deleteOperate"
@@ -138,6 +181,10 @@ export default {
       default: () => []
     },
     childNodeList: {
+      type: Array,
+      default: () => []
+    },
+    attrList: {
       type: Array,
       default: () => []
     },
@@ -174,21 +221,19 @@ export default {
         ]
       },
       buttonDetail: {}, // 按钮详情
-      buttonActiveIndex: '', // 所选按钮id
+      buttonActiveIndex: '', // 所选按钮 index
       checked: 0
     }
   },
   computed: {
-    // checked () {
-    //   return this.defaultButtonId === this.buttonDetail.buttonId
-    // }
+
   },
   methods: {
     checkedChange (val) {
       console.log('val--->', val)
       const list = this.detailForm.interActifyButtonsList
-      this.detailForm.interActifyButtonsList = list.map(item => {
-        if (val && item.buttonId === this.buttonActiveIndex) {
+      this.detailForm.interActifyButtonsList = list.map((item, index) => {
+        if (val && index === this.buttonActiveIndex) {
           return {
             ...item,
             isActive: 1
@@ -212,8 +257,9 @@ export default {
       return res
     },
     addButton () {
-      console.debug('addButton')
-      if (this.detailForm.interActifyButtonsList.length >= 4) {
+      // console.debug('addButton')
+      const filterCommonBtnList = this.detailForm.interActifyButtonsList.filter(item => item.type === 1)
+      if (filterCommonBtnList.length >= 4) {
         this.$message.warning('最多添加4个按钮')
         return
       }
@@ -223,7 +269,8 @@ export default {
       // })
       this.$set(this.detailForm, 'interActifyButtonsList', [...this.detailForm.interActifyButtonsList, {
         name: '按钮',
-        type: 1
+        type: 1,
+        isActive: 1
       }])
     },
     updateSkillPicked (data) {
@@ -240,9 +287,10 @@ export default {
       this.buttonDetail.nextNodeList.splice(levelIndex, 1)
     },
     addOperate () {
-      console.debug('addOperate')
+      // console.debug('addOperate')
+      console.debug('addOperate', this.detailForm.interActifyButtonsList)
       const list = this.detailForm.interActifyButtonsList
-      const index = list.findIndex(item => item.buttonId === this.buttonActiveIndex)
+      const index = this.buttonActiveIndex
       // this.buttonActiveIndex = obj ? obj.buttonId : ''
       const buttonItem = list[index]
       if (!buttonItem?.nextNodeList) {
@@ -261,15 +309,18 @@ export default {
     clickOperateButton (index) {
       const list = this.detailForm.interActifyButtonsList
       if (list && list.length > 0) {
-        this.buttonActiveIndex = list[index].buttonId
+        this.buttonActiveIndex = index
         this.buttonDetail = list[index]
 
-        if (list && list.length > 0) {
-          const obj = list.find(item => item.buttonId === this.buttonDetail.buttonId)
-          this.checked = obj.isActive
-        }
+        const obj = list.find(item => item.buttonId === this.buttonDetail.buttonId)
+        this.checked = obj.isActive
       }
     },
+    // clickDefaultButton (obj) {
+    //   this.buttonActiveIndex = obj.buttonId
+    //   this.buttonDetail = obj
+    //   this.checked = obj.isActive
+    // },
     initTransformData (data) {
       data.interActifyButtonsList.forEach((buttonItem, buttonIndex) => {
         if (buttonItem.type === 2 || buttonItem.type === 3) {
@@ -289,7 +340,11 @@ export default {
           })
         }
       })
-      data.interActifyButtonsList = data.interActifyButtonsList.filter(item => item.type !== 2 && item.type !== 3)
+      // this.defaultButtonList = data.interActifyButtonsList.filter(item => item.type === 2 || item.type === 3) // 【用户返回】按钮
+      // data.interActifyButtonsList = data.interActifyButtonsList.filter(item => item.type !== 2 && item.type !== 3)
+      // console.log('this.defaultButtonList--->', data.interActifyButtonsList)
+      // console.log('this.defaultButtonList--->', this.defaultButtonList)
+      // this.disappearButtonObj = data.interActifyButtonsList.filter(item => item.type === 3) // 【自动消失】按钮
       return data
     },
     initData () {
@@ -377,8 +432,8 @@ export default {
         delaySeconds: Number(delaySeconds) || 0,
         content,
         interActifyButtonsList: [
-          ...interActifyButtonsList,
-          ...staticButtonsList
+          ...interActifyButtonsList
+          // ...staticButtonsList
         ],
         versionId: this.$props.versionId
       }
@@ -569,7 +624,6 @@ export default {
   opacity 1
 }
 .default-btn {
-  color: #f00;
   display: grid;
   grid-template-columns: auto auto;
   grid-gap: 10px
@@ -577,6 +631,8 @@ export default {
   font-size: 12px;
   border-radius: 3px;
   .item {
+    position: relative;
+    overflow: hidden;
     display: inline-block;
     height 31.6px
     line-height 31.6px
@@ -591,6 +647,11 @@ export default {
     border: 1px dashed #ababab;
     color: #c1c1c1;
   }
+  .default-button-active {
+    background: #67C23A
+    color: #fff
+  }
+
 }
 .button-id{
   font-size 12px
