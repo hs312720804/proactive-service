@@ -28,11 +28,13 @@
               :tagIds.sync="item.tagIds"
               :parentIndex="index"
             ></TagsRule>
-            <span class="text">进入分支:</span>
+            <el-form-item label="进入分支">
+            </el-form-item>
             <Behavior
               :list="item.nextNodeList"
               :skillList="skillList"
               :childNodeList="childNodeList"
+              :attrList="attrList"
               :parentIndex="index"
               desc="调用"
               :isLimitOnly="false"
@@ -48,11 +50,13 @@
       <div class="gurantee-box">
         <p class="title">兜底</p>
         <div class="flex-box">
-          <span class="text">进入分支</span>
+          <el-form-item label="进入分支">
+          </el-form-item>
           <Behavior
             :list="nextNodeList"
             :skillList="skillList"
             :childNodeList="childNodeList"
+            :attrList="attrList"
             desc="调用"
             :isLimitOnly="false"
             @del="deleteBackupItem"
@@ -81,6 +85,10 @@ export default {
       default: () => []
     },
     childNodeList: {
+      type: Array,
+      default: () => []
+    },
+    attrList: {
       type: Array,
       default: () => []
     },
