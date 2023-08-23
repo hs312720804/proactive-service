@@ -1,10 +1,10 @@
 <template>
   <div
     class="graph-info-detail-component"
-    style="animation: all 0.5s;"
-    :style="{width: nodeType === 'judge' ? '500px' : '400px'}"
+
     :class="{'detail-component-hide': !showDetail}"
   >
+    <!-- :style="{width: nodeType === 'judge' ? '500px' : '400px'}" -->
     <!-- <el-drawer
       ref="drawer"
       custom-class="detail-drawer"
@@ -425,6 +425,7 @@ export default {
   border: 10px solid #f6f6f6;
   box-sizing: border-box;
   box-shadow: 0 8px 10px -5px rgba(0,0,0,.2),0 16px 24px 2px rgba(0,0,0,.14),0 6px 30px 5px rgba(0,0,0,.12);
+  transition: width 0.5s
   >>>.detail-drawer {
     .el-drawer__header {
       font-weight bold
@@ -433,16 +434,17 @@ export default {
     }
   }
 }
+.detail-component-hide {
+  width: 0
+  border: 0
+}
 .title {
   font-weight bold
   font-size 16px
   color #5f95ff
   padding: 15px 15px 0 10px;
 }
-.detail-component-hide {
-  width: 0
-  border: 0
-}
+
 .flex-item {
   font-size: 30px;
   color: #000000;

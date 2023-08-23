@@ -211,10 +211,10 @@ export default {
 
           obj = {
             ...commonObj,
-            label: item.context ? `${item.context}--${item.nodeId}` : item.title,
+            label: item.context ? `${item.context}` : item.title,
             attrs: {
               title: {
-                text: item.title
+                text: `${item.title}    id:${item.nodeId}`
               }
             },
             ports,
