@@ -270,7 +270,7 @@ export default {
       this.$set(this.detailForm, 'interActifyButtonsList', [...this.detailForm.interActifyButtonsList, {
         name: '按钮',
         type: 1,
-        isActive: 1
+        isActive: filterCommonBtnList.length === 0 ? 1 : 0 // 第一个的话，设置为默认落焦，反之不设置；
       }])
     },
     updateSkillPicked (data) {
