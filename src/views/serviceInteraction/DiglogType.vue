@@ -18,7 +18,11 @@
         <el-input v-model="form.serviceName" placeholder="请输入"></el-input>
       </el-form-item>
       <el-form-item label="服务ID" prop="serviceKey">
-        <el-input v-model="form.serviceKey" placeholder="服务的唯一标识，仅支持字母、数字、下划线，首字符必须为字母"></el-input>
+        <el-input
+          v-model="form.serviceKey"
+          placeholder="服务的唯一标识，仅支持字母、数字、下划线，首字符必须为字母"
+          :disabled="diglogConfig.diglogType === 'edit'"
+        ></el-input>
       </el-form-item>
       <el-form-item class="upload-icon" label="图标" prop="imageUrl">
         <el-upload
