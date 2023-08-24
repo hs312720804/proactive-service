@@ -39,3 +39,17 @@ export function getServiceAPI (params) {
     params
   })
 }
+
+export function getSwitchStatesAPI () {
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/setting/admin/getSwitch'
+  })
+}
+export function updateStateAPI (params) {
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/setting/admin/setSwitch',
+    params
+  })
+}

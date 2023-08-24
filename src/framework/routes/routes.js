@@ -49,6 +49,11 @@ export default function createRoutes (frameRoutes = []) {
       name: 'interaction-detail',
       component: () => import(/* webpackChunkName: "service" */ '@/views/serviceInteraction/Detail.vue')
     },
+    {
+      path: '/all-switch-state',
+      name: 'all-switch-state',
+      component: () => import(/* webpackChunkName: "service" */ '@/views/serviceState/List.vue')
+    },
     // {
     //   path: '/baseListTest',
     //   name: 'baseListTest',
