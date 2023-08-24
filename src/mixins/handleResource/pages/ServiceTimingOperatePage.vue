@@ -99,7 +99,8 @@ export default {
       try {
         const res = await getServicesListAPI({
           page: 1,
-          pageSize: 1000
+          pageSize: 1000,
+          status: 1
         })
         if (res.code === 1000) {
           this.serviceList = res.data
