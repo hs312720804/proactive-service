@@ -138,7 +138,8 @@ export default {
       judgeDetailData: {},
       startDetailData: {},
       drawerRef: null,
-      show: false
+      show: false,
+      subscribeStore: null
     }
   },
   watch: {
@@ -163,7 +164,32 @@ export default {
       immediate: true
     }
   },
+  mounted () {
+    this.initVuexListen()
+  },
+  destroyed () {
+    this.subscribeStore && this.subscribeStore()
+  },
   methods: {
+    initVuexListen () {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const self = this
+      this.subscribeStore = store.subscribe(async (mutation, state) => {
+        const payload = mutation.payload
+        const type = mutation.type
+        // 只处理当前tab中的数据，其他tab中的监听，直接返回，不处理
+        if (payload.serviceId && payload.serviceId !== this.serviceId) return
+
+        if (type === 'flow/setNodeList') {
+          // 触发时机:
+          // 1. 画布初始化时
+          // 2. 新添加节点到画布
+          // 3. 删除画布节点
+          // 当触发这些情况，会重新调接口获取最新的可选节点list
+          self.getNodeSelectList(self.versionId)
+        }
+      })
+    },
     // 获取可调用的属性列表
     async getInteractifyTagAttr () {
       const res = await getInteractifyTagAttrAPI()
