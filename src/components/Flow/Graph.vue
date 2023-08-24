@@ -40,6 +40,7 @@ export default {
   inject: ['serviceId'],
   data () {
     return {
+      subscribeStore: null,
       needToLayout: true,
       LINE_HEIGHT: 24,
       NODE_WIDTH: 150,
@@ -268,6 +269,7 @@ export default {
               }
             },
             data: {
+              type: 'end',
               ...item
             }
           }
@@ -466,7 +468,7 @@ export default {
         validateNode: async (node, options) => {
           const { type, ctype } = node.getData()
           const nodeList = this.graph.getNodes().filter((item) => item.getData().type === type)
-          const nodeTitle = `${ctype}${nodeList.length + 1}`
+          const nodeTitleSet = `${ctype}${nodeList.length + 1}`
           const keyV = {
             judge: addJudgeNodeAPI,
             dialogue: addDialogueNodeAPI,
@@ -476,17 +478,17 @@ export default {
 
           try {
             const res = await keyV[type]({
-              title: nodeTitle,
+              title: nodeTitleSet,
               versionId: this.versionId
             })
             if (res.code === 1000) {
-              const { nodeId } = res.data
+              const { nodeId, title } = res.data
               node.setData({
                 nodeId: nodeId.toString()
               })
               // 设置title，更新属性
               node.setAttrs({
-                title: { text: nodeTitle }
+                title: { text: title || nodeTitleSet }
               })
               return true
             }
@@ -578,6 +580,7 @@ export default {
       node = this.graph.createNode({
         shape: keyV[type],
         label: ctype,
+        conversionRateStr: ' ',
         data: {
           type,
           ctype
@@ -758,7 +761,7 @@ export default {
       }
     },
     initVuexListen () {
-      store.subscribe(async (mutation, state) => {
+      this.subscribeStore = store.subscribe(async (mutation, state) => {
         const payload = mutation.payload
         const type = mutation.type
         const layoutType = 'notNeedToLayout'
@@ -932,6 +935,9 @@ export default {
     store.commit('flow/updateStatuTitle', {
       serviceId: this.serviceId
     })
+  },
+  destroyed () {
+    this.subscribeStore && this.subscribeStore()
   },
   activated () {
     if (this.graph && this.graph.getCellCount() > 0) {
