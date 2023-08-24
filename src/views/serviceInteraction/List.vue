@@ -30,6 +30,8 @@
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item :command="'open_' + index">打开</el-dropdown-item>
               <el-dropdown-item :command="'anylise_' + index">分析</el-dropdown-item>
+              <el-dropdown-item :command="'edit_' + index">编辑</el-dropdown-item>
+              <el-dropdown-item :command="'attrConfig_' + index">属性配置</el-dropdown-item>
               <!-- status 1上架 0下架 -->
               <!-- v-permission="accessMap.offShell" -->
               <el-dropdown-item
@@ -59,89 +61,29 @@
         <p class="add-desc">添加服务</p>
       </li>
     </ul>
-    <el-dialog
-      title="新建服务"
-      :visible.sync="showAddServiceDialog"
-      width="50%"
-      :close-on-click-modal="false"
-      @close="closeAddServiceDialog"
-    >
-      <el-form
-        :model="servicesForm"
-        :rules="rule"
-        ref="servicesForm"
-      >
-        <el-form-item
-          label="服务名"
-          label-width="150"
-          prop="serviceName"
-        >
-          <el-input
-            v-model="servicesForm.serviceName"
-            placeholder="请输入"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item
-          label="服务标识"
-          label-width="150"
-          prop="serviceKey"
-        >
-          <el-input
-            v-model="servicesForm.serviceKey"
-            placeholder="请输入"
-            autocomplete="off"
-          ></el-input>
-        </el-form-item>
-        <el-form-item
-          label="描述"
-          label-width="150"
-        >
-          <el-input
-            autocomplete="off"
-            :rows="5"
-            v-model="servicesForm.remark"
-            placeholder="请输入备注"
-            type="textarea"
-          ></el-input>
-        </el-form-item>
-      </el-form>
-      <span
-        slot="footer"
-        class="dialog-footer"
-      >
-        <el-button @click="showAddServiceDialog = false">取 消</el-button>
-        <el-button
-          type="primary"
-          @click="confirmAddService"
-        >确 定</el-button>
-      </span>
-    </el-dialog>
+    <!-- 属性配置会话框 -->
+    <AttrConfig v-model="attrConfigDialog" :serId="listArr[activeIndex]?.id"></AttrConfig>
+    <!-- 编辑服务 || 新增服务 会话框 -->
+    <DiglogType v-model="editDialog" :diglogConfig="diglogConfig" @updateServeList="initList"></DiglogType>
   </div>
 </template>
 <script>
-import { getServicesListAPI, addServicesAPI, deleteServicesAPI, onlineServiceAPI, offlineServiceAPI, getServiceAPI } from '@/services/services'
+import DiglogType from './DiglogType'
+import AttrConfig from './AttrConfig'
+import { getServicesListAPI, deleteServicesAPI, onlineServiceAPI, offlineServiceAPI, getServiceAPI } from '@/services/services'
 export default {
+  components: {
+    DiglogType,
+    AttrConfig
+  },
   data () {
     return {
+      editDialog: false,
+      attrConfigDialog: false,
+      diglogConfig: {}, // 传入新增和编辑的对象
       showAddServiceDialog: false,
       listArr: [],
-      activeIndex: -1,
-      servicesForm: {
-        serviceName: '',
-        serviceKey: '',
-        remark: ''
-      },
-      rule: {
-        serviceName: [
-          { required: true, message: '请输入服务名', trigger: 'blur' },
-          { min: 1, max: 50, message: '不可超过50字符', trigger: 'blur' }
-        ],
-        serviceKey: [
-          { required: true, message: '请输入服务标识', trigger: 'blur' },
-          { pattern: /^[a-zA-Z][\w]{0,49}$/, message: '仅支持字母、数字、下划线,首字符必须为字母,不可超过50字符', trigger: 'blur' }
-        ]
-      }
+      activeIndex: -1
     }
   },
   computed: {
@@ -204,6 +146,19 @@ export default {
       } catch (error) {
         console.error('onShelve error', error)
       }
+    },
+    // 服务编辑
+    edit () {
+      this.editDialog = true
+      this.diglogConfig = {
+        title: '服务编辑',
+        diglogType: 'edit',
+        serId: this.listArr[this.activeIndex]?.id
+      }
+    },
+    // 属性配置
+    attrConfig () {
+      this.attrConfigDialog = true
     },
     async withDraw () { // 下架
       try {
@@ -277,6 +232,12 @@ export default {
         case 'anylise':
           this.anylise()
           break
+        case 'edit':
+          this.edit()
+          break
+        case 'attrConfig':
+          this.attrConfig()
+          break
         case 'withDraw':
           this.withDraw()
           break
@@ -292,30 +253,10 @@ export default {
       }
     },
     add () {
-      this.showAddServiceDialog = true
-    },
-    confirmAddService () {
-      this.$refs.servicesForm.validate(async valid => {
-        if (valid) {
-          this.showAddServiceDialog = false
-          const res = await addServicesAPI(this.servicesForm)
-          console.debug('addServicesAPI res', res)
-          if (res.code === 1000) {
-            this.initList()
-            this.$message({
-              type: 'success',
-              message: '添加成功!'
-            })
-          }
-        } else {
-          return false
-        }
-      })
-    },
-    closeAddServiceDialog () {
-      this.servicesForm = {
-        serviceName: '',
-        remark: ''
+      this.editDialog = true
+      this.diglogConfig = {
+        title: '新增服务',
+        diglogType: 'add'
       }
     }
     // async getFirstService (payload) {
