@@ -2,6 +2,7 @@
   <div class="detail-page-wrapper">
     <el-page-header @back="goBack" content="交互详情"></el-page-header>
     <el-tabs
+      v-if="show"
       style="margin-top: 10px;"
       v-model="activeTabId"
       type="card"
@@ -35,15 +36,22 @@ export default {
       activeTabId: '',
       tabsArr: [],
       tabIndex: 2,
-      mode: 'edit'
+      mode: 'edit',
+      show: true
     }
   },
+
   methods: {
     init () {
+      this.show = false
       this.tabsArr = store.getters.tabsArr
       this.activeTabId = store.getters.activeTab.id.toString()
       // console.debug(this.$route)
       this.mode = this.$route.query.mode
+      // 每次 actived 的时候，初始化组件
+      this.$nextTick(() => {
+        this.show = true
+      })
     },
     updateTabActiveIndex () {
       // store.commit('services/updateTabActiveIndex', )

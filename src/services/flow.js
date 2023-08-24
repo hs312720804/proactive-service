@@ -102,3 +102,10 @@ export function getNodeSelectListAPI (params) { // 获取当前版本节点下�
     params
   })
 }
+export function getInteractifyTagAttrAPI (params) { // 获取属性下拉框数据
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/interactify/tag/attr',
+    params
+  })
+}

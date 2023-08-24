@@ -16,6 +16,7 @@
         >
           <el-option label="调用技能" :value="1"></el-option>
           <el-option label="调用节点" :value="2" :disabled="disableAdd"></el-option>
+          <el-option label="修改属性" :value="3"></el-option>
         </el-select>
         <el-select
           class="short-select-width"
@@ -47,6 +48,35 @@
             :value="nodeItem.nodeId"
           ></el-option>
         </el-select>
+
+        <template v-else-if="item.callType === 3">
+          <el-select
+            class="short-select-width"
+            v-model="item.nextAttrId"
+            placeholder="属性名称"
+            @change="updateNodePicked"
+            filterable
+          >
+            <el-option
+              v-for="nodeItem in attrList"
+              :key="nodeItem.attrId"
+              :label="nodeItem.attrName"
+              :value="nodeItem.attrId"
+            ></el-option>
+          </el-select>
+          <el-form-item>
+            <el-input
+              style="margin-top: 5px;height: 30px; width: 110px"
+              type="text"
+              v-model="item.attrParam"
+              placeholder="属性值"
+              clearable
+            >
+            </el-input>
+          </el-form-item>
+
+        </template>
+
         <template v-if="item.callType === 1 && item.nextSkillId && getCurrentSkillItem(index).paramList.length > 0">
           <el-form-item
             v-for="(paramItem) in getCurrentSkillItem(index).paramList"
@@ -86,6 +116,10 @@ export default {
       type: Array,
       default: () => []
     },
+    attrList: { // 数据来源 - 节点列表
+      type: Array,
+      default: () => []
+    },
     list: { // 数据来源 - 下一节点列表
       type: Array,
       default: () => []
@@ -107,7 +141,6 @@ export default {
     }
   },
   watch: {
-    //
   },
   methods: {
     getCurrentSkillItem (index) {

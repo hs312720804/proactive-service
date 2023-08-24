@@ -22,7 +22,7 @@ import { DagreLayout } from '@antv/layout' // 层次布局
 import FlowComposition from '@/components/Flow/Composition'
 import Operate from '@/components/Flow/Operate'
 import { addJudgeNodeAPI, addDialogueNodeAPI, addEndNodeAPI, deleteNodeAPI, getVersionIdAPI, getTreeDataAPI } from '@/services/flow'
-import { getStatuTitleAPI } from '@/services/services'
+// import { getStatuTitleAPI } from '@/services/services'
 import { getAnyliseTreeAPI } from '@/services/anylise'
 import initRegister from './index.js'
 export default {
@@ -159,7 +159,8 @@ export default {
           3: 'custom-polygon', // 菱形（判断）
           4: 'c-rect', // 标准矩形（技能）
           5: 'end', // 结束  type: 'end'
-          6: 'implement' // 连线
+          6: 'implement', // 连线
+          8: 'c-attrs' // 属性节点
         }
         const commonObj = {
           id: item.nodeId, // String，节点的唯一标识
@@ -210,10 +211,10 @@ export default {
 
           obj = {
             ...commonObj,
-            label: item.context ? `${item.context}--${item.nodeId}` : item.title,
+            label: item.context ? `${item.context}` : item.title,
             attrs: {
               title: {
-                text: item.title
+                text: `${item.title}    id:${item.nodeId}`
               }
             },
             ports,
@@ -244,6 +245,16 @@ export default {
             data: {
               ...item,
               type: 'skill'
+            }
+          }
+          cells.push(obj)
+        } else if (item.nodeType === 8) { // 属性
+          const obj = {
+            ...commonObj,
+            label: item.title,
+            data: {
+              ...item,
+              type: 'attr'
             }
           }
           cells.push(obj)
@@ -670,11 +681,10 @@ export default {
       })
       this.graph.on('node:click', ({ e, x, y, node, view }) => { // 节点点击事件
         // const aaa = this.graph.getCellById(node.id)
-        console.log('node-->', node)
-        const { type, nodeId, nodeType } = node.getData()
-        console.debug('click: node.getData(): ', node.getData())
+        const { type, nodeId, nodeType } = node.data
+        // console.debug('click: node.getData(): ', node.getData())
         // 【技能】、【结束】 节点不能点击打开详情
-        if ((type !== 'skill' || nodeType !== 4) && !node.hasParent() && type !== 'end') {
+        if ((type !== 'skill' || nodeType !== 4) && !node.hasParent() && type !== 'end' && type !== 'attr') {
           this.$emit('updateDetail', true)
           // save to vuex
           store.commit('flow/setCellRenderData', node)
@@ -750,17 +760,13 @@ export default {
       store.subscribe(async (mutation, state) => {
         const payload = mutation.payload
         const type = mutation.type
-        // debugger
-        // console.log('payload---------?>>>', payload)
-        // console.log('mutation.payload.serviceId', mutation.payload.serviceId)
-        // console.log('this.serviceId', this.serviceId)
-        // console.log('----------------------------------------')
         const layoutType = 'notNeedToLayout'
+        // 只处理当前tab中的数据，其他tab中的监听，直接返回，不处理
         if (payload.serviceId && payload.serviceId !== this.serviceId) return
 
         if (type === 'flow/updateStartNodeLink' ||
-            type === 'flow/updateDialogueDetail' ||
-            type === 'flow/updateJudgeNodeDetail') {
+        type === 'flow/updateDialogueDetail' ||
+        type === 'flow/updateJudgeNodeDetail') {
           await this.getTreeData(layoutType)
           store.commit('flow/updateStatuTitle', {
             serviceId: this.serviceId
@@ -790,82 +796,82 @@ export default {
         }
       })
     },
-    initVuexListen2 () {
-      store.subscribe(async (mutation, state) => {
-        const payload = mutation.payload
-        console.log('mutation.payload.serviceId', mutation.payload.serviceId)
-        console.log('this.serviceId', this.serviceId)
-        console.log('----------------------------------------')
-        if (mutation.type === 'flow/updateStartNodeLink') {
-          // console.debug('mutation type triggle,', mutation.type)
-          if (mutation.payload.serviceId !== this.serviceId) return
-          // this.updateStartNodeLink(mutation.payload)
-          // ------------------
-          if (payload.serviceId !== this.serviceId) return
-          // setTimeout(() => {
-          await this.getTreeData()
-          store.commit('flow/updateStatuTitle', {
-            serviceId: this.serviceId
-          })
-          this.$message.success('更新成功')
-          console.log('更新成功1')
-          this.$nextTick(() => {
-            this.logGraph()
-          })
-        }
-        if (mutation.type === 'flow/updateDialogueDetail') {
-          // this.updateDialogueNodeRender(mutation.payload)
-          // console.debug('updateDialogueNodeRender: ')
-          // setTimeout(() => {
-          await this.getTreeData()
-          store.commit('flow/updateStatuTitle', {
-            serviceId: this.serviceId
-          })
-          this.$message.success('更新成功')
-          console.log('更新成功2')
-          // }, 500)
-          this.$nextTick(() => {
-            this.logGraph()
-          })
-        }
-        if (mutation.type === 'flow/updateJudgeNodeDetail') {
-          // this.updateJudgeNodeRender(mutation.payload)
-          // console.debug('updateJudgeNodeRender: ')
-          // setTimeout(() => {
-          await this.getTreeData()
-          store.commit('flow/updateStatuTitle', {
-            serviceId: this.serviceId
-          })
-          this.$message.success('更新成功3')
-          this.$nextTick(() => {
-            this.logGraph()
-          })
-        }
-        if (mutation.type === 'flow/updateGraphTree') {
-          if (mutation.payload.serviceId !== this.serviceId) return
-          console.debug('mutation updateGraphTree getTreeData')
-          await this.getTreeData().then(() => {
-            // setTimeout(() => {
-            this.getVersionId()
-            // }, 800)
-            return store.commit('flow/updateVersionId', {
-              serviceId: this.serviceId
-            })
-          })
+    // initVuexListen2 () {
+    //   store.subscribe(async (mutation, state) => {
+    //     const payload = mutation.payload
+    //     console.log('mutation.payload.serviceId', mutation.payload.serviceId)
+    //     console.log('this.serviceId', this.serviceId)
+    //     console.log('----------------------------------------')
+    //     if (mutation.type === 'flow/updateStartNodeLink') {
+    //       // console.debug('mutation type triggle,', mutation.type)
+    //       if (mutation.payload.serviceId !== this.serviceId) return
+    //       // this.updateStartNodeLink(mutation.payload)
+    //       // ------------------
+    //       if (payload.serviceId !== this.serviceId) return
+    //       // setTimeout(() => {
+    //       await this.getTreeData()
+    //       store.commit('flow/updateStatuTitle', {
+    //         serviceId: this.serviceId
+    //       })
+    //       this.$message.success('更新成功')
+    //       console.log('更新成功1')
+    //       this.$nextTick(() => {
+    //         this.logGraph()
+    //       })
+    //     }
+    //     if (mutation.type === 'flow/updateDialogueDetail') {
+    //       // this.updateDialogueNodeRender(mutation.payload)
+    //       // console.debug('updateDialogueNodeRender: ')
+    //       // setTimeout(() => {
+    //       await this.getTreeData()
+    //       store.commit('flow/updateStatuTitle', {
+    //         serviceId: this.serviceId
+    //       })
+    //       this.$message.success('更新成功')
+    //       console.log('更新成功2')
+    //       // }, 500)
+    //       this.$nextTick(() => {
+    //         this.logGraph()
+    //       })
+    //     }
+    //     if (mutation.type === 'flow/updateJudgeNodeDetail') {
+    //       // this.updateJudgeNodeRender(mutation.payload)
+    //       // console.debug('updateJudgeNodeRender: ')
+    //       // setTimeout(() => {
+    //       await this.getTreeData()
+    //       store.commit('flow/updateStatuTitle', {
+    //         serviceId: this.serviceId
+    //       })
+    //       this.$message.success('更新成功3')
+    //       this.$nextTick(() => {
+    //         this.logGraph()
+    //       })
+    //     }
+    //     if (mutation.type === 'flow/updateGraphTree') {
+    //       if (mutation.payload.serviceId !== this.serviceId) return
+    //       console.debug('mutation updateGraphTree getTreeData')
+    //       await this.getTreeData().then(() => {
+    //         // setTimeout(() => {
+    //         this.getVersionId()
+    //         // }, 800)
+    //         return store.commit('flow/updateVersionId', {
+    //           serviceId: this.serviceId
+    //         })
+    //       })
 
-          this.$nextTick(() => {
-            this.logGraph()
-          })
-          // setTimeout(() => {
-          // })
-        }
-        if (mutation.type === 'flow/setAnyliseFilterForm') {
-          // console.debug('setAnyliseFilterForm: ', mutation.payload)
-          if (mutation.payload.serviceId !== this.serviceId) return
-          this.getAnyliseTreeData(mutation.payload)
-        }
-      })
-    },
+    //       this.$nextTick(() => {
+    //         this.logGraph()
+    //       })
+    //       // setTimeout(() => {
+    //       // })
+    //     }
+    //     if (mutation.type === 'flow/setAnyliseFilterForm') {
+    //       // console.debug('setAnyliseFilterForm: ', mutation.payload)
+    //       if (mutation.payload.serviceId !== this.serviceId) return
+    //       this.getAnyliseTreeData(mutation.payload)
+    //     }
+    //   })
+    // },
     async getVersionId () {
       try {
         const res = await getVersionIdAPI({
@@ -883,7 +889,7 @@ export default {
         const res = await getTreeDataAPI({
           serviceId: Number(this.serviceId)
         })
-        console.debug('getTreeData res: ', res)
+
         if (res.code === 1000) {
           this.tree = res.data
           this.needToLayout = type !== 'notNeedToLayout'
@@ -914,7 +920,6 @@ export default {
   created () {
     if (this.isEdit) {
       this.getVersionId()
-      // console.debug('created getTreeData')
       this.getTreeData()
     }
   },
@@ -931,15 +936,14 @@ export default {
     if (this.graph && this.graph.getCellCount() > 0) {
       this.graph.clearCells()
     }
-    if (!this.isEdit) {
-      store.commit('flow/initAnyliseData', {
-        serviceId: this.serviceId
-      })
-    } else {
-      // console.debug('activated isEdit getTreeData')
+    if (this.isEdit) {
       this.getVersionId()
       this.getTreeData()
       store.commit('flow/updateStatuTitle', {
+        serviceId: this.serviceId
+      })
+    } else {
+      store.commit('flow/initAnyliseData', {
         serviceId: this.serviceId
       })
     }
