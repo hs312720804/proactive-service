@@ -5,9 +5,78 @@
 //   5: 'end' // 结束  type: 'end'
 //   6: 'implement' // 连线
 
-function initRegister (Graph) {
+// config 改变rect默认设置 ， 全局修改
+function initGlobalConfig (Shape, ObjectExt) {
+  const commonConfig = {
+    markup: [
+      {
+        tagName: 'text',
+        selector: 'conversionRateStr'
+      }
+    ],
+    attrs: {
+      conversionRateStr: {
+        fontWeight: 'bold',
+        fill: 'red',
+        fontSize: 14
+      }
+    },
+    propHooks: { // 自定义选项
+      conversionRateStr (metadata) {
+        const { conversionRateStr, ...others } = metadata
+        // console.log('1111111111---------->', conversionRateStr)
+        if (conversionRateStr) {
+          ObjectExt.setByPath(others, 'attrs/conversionRateStr/text', conversionRateStr)
+        }
+        return others
+      }
+    }
+  }
+  Shape.Rect.config({
+    ...commonConfig,
+    attrs: {
+      conversionRateStr: {
+        ...commonConfig.attrs.conversionRateStr,
+        refX: 150, // x 轴偏移量
+        refY: 0,
+        textAnchor: 'start', // 水平对齐
+        textVerticalAnchor: 'top' // 垂直对齐
+      }
+    }
+  })
+  console.log('Shape', Shape)
+  Shape.Ellipse.config({ // config 改变rect默认设置 ， 全局修改
+    ...commonConfig,
+    attrs: {
+      conversionRateStr: {
+        ...commonConfig.attrs.conversionRateStr,
+        refX: -15, // x 轴偏移量
+        refY: 25,
+        textAnchor: 'end', // 水平对齐
+        textVerticalAnchor: 'middle' // 垂直对齐
+      }
+    }
+  })
+
+  Shape.Circle.config({ // config 改变rect默认设置 ， 全局修改
+    ...commonConfig,
+    attrs: {
+      conversionRateStr: {
+        ...commonConfig.attrs.conversionRateStr,
+        refX: 70, // x 轴偏移量
+        refY: 30,
+        textAnchor: 'start', // 水平对齐
+        textVerticalAnchor: 'middle' // 垂直对齐
+      }
+    }
+  })
+}
+
+function initRegister (Graph, Shape, ObjectExt) {
   const LINE_HEIGHT = 24
   const NODE_WIDTH = 150
+  // config 改变rect默认设置 ， 全局修改
+  initGlobalConfig(Shape, ObjectExt)
   // 自定义连线
   Graph.registerEdge(
     'implement',
@@ -64,6 +133,10 @@ function initRegister (Graph) {
         {
           tagName: 'text',
           selector: 'title'
+        },
+        {
+          tagName: 'text',
+          selector: 'conversionRateStr'
         }
       ],
       attrs: {
@@ -85,6 +158,11 @@ function initRegister (Graph) {
           refX: 0,
           // textAlign: 'left'
           textAnchor: 'start'
+        },
+        conversionRateStr: {
+          refX: -15, // x 轴偏移量
+          refY: 25,
+          textAnchor: 'end' // 水平对齐
         }
       },
       ports: {
@@ -322,6 +400,10 @@ function initRegister (Graph) {
         {
           tagName: 'text',
           selector: 'label'
+        },
+        {
+          tagName: 'text',
+          selector: 'conversionRateStr'
         }
       ],
       attrs: {
@@ -367,6 +449,10 @@ function initRegister (Graph) {
         {
           tagName: 'text',
           selector: 'label'
+        },
+        {
+          tagName: 'text',
+          selector: 'conversionRateStr'
         }
       ],
       attrs: {
@@ -404,6 +490,20 @@ function initRegister (Graph) {
       y: 0, // Number，必选，节点位置的 y 值
       width: 100, // Number，可选，节点大小的 width 值
       height: 50, // Number，可选，节点大小的 height 值
+      markup: [
+        {
+          tagName: 'ellipse',
+          selector: 'body'
+        },
+        {
+          tagName: 'text',
+          selector: 'label'
+        },
+        {
+          tagName: 'text',
+          selector: 'conversionRateStr'
+        }
+      ],
       attrs: {
         body: {
           fill: '#eff4ff',
@@ -444,6 +544,10 @@ function initRegister (Graph) {
         {
           tagName: 'text',
           selector: 'title'
+        },
+        {
+          tagName: 'text',
+          selector: 'conversionRateStr'
         }
       ],
       attrs: {

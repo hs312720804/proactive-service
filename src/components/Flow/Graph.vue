@@ -167,11 +167,18 @@ export default {
           nodeType: item.nodeType,
           shape: keyV[item.nodeType] // 使用 ellipse 渲染
         }
-
+        // debugger
+        const str = item.conversionRateStr
+        // 分析字段，除了判断，其他都有
+        let conversionRateStr = ' '// 必须是空格，不能为空字符串，不然会渲染成 label
+        if (str) {
+          conversionRateStr = str.split('/n').join('\n\n')
+        }
         if (item.nodeType === 1) { // 开始
           obj = {
             ...commonObj,
             label: item.title,
+            conversionRateStr,
             data: {
               type: 'start',
               ...item
@@ -212,6 +219,7 @@ export default {
           obj = {
             ...commonObj,
             label: item.context ? `${item.context}` : item.title,
+            conversionRateStr,
             attrs: {
               title: {
                 text: `${item.title}    id:${item.nodeId}`
@@ -238,29 +246,22 @@ export default {
             }
           }
           cells.push(obj)
-        } else if (item.nodeType === 4) { // 技能
+        } else if (item.nodeType === 4 || item.nodeType === 8) { // 技能 、属性
           const obj = {
             ...commonObj,
             label: item.title,
+            conversionRateStr,
             data: {
               ...item,
-              type: 'skill'
-            }
-          }
-          cells.push(obj)
-        } else if (item.nodeType === 8) { // 属性
-          const obj = {
-            ...commonObj,
-            label: item.title,
-            data: {
-              ...item,
-              type: 'attr'
+              type: item.nodeType === 4 ? 'skill' : 'attr'
             }
           }
           cells.push(obj)
         } else if (item.nodeType === 5) { // 结束 end
           const obj = {
             ...commonObj,
+            conversionRateStr,
+            // label: item.title
             attrs: {
               title: {
                 text: item.title
@@ -362,7 +363,7 @@ export default {
 
     initGraph () {
       // 注册节点，连线等
-      const RegisterGraph = initRegister(Graph)
+      const RegisterGraph = initRegister(Graph, Shape, ObjectExt)
       // eslint-disable-next-line @typescript-eslint/no-this-alias
 
       this.graph = new RegisterGraph({
