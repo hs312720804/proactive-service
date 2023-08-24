@@ -1,26 +1,21 @@
 <template>
   <div class="detail-page-wrapper">
-    <el-form>
+    <el-form label-position="left" label-width="140px">
       <el-form-item label="当前交互服务状态:">
         <el-switch v-model="form.interInterfaceState"
-                   active-text=""
-                   inactive-text=""
                    @change="onSwitchChange('INTER_INTERFACE_STATE', form.interInterfaceState)"
         >
         </el-switch>
-        <span>{{ form.interInterfaceState ? '打开' : '关闭' }}</span>
+        <span class="switch-text">{{ form.interInterfaceState ? '打开' : '关闭' }}</span>
       </el-form-item>
       <el-form-item label="当前时机服务状态:">
         <el-switch
-          style="display: block"
           v-model="form.interMomentState"
           active-color="#13ce66"
           inactive-color="#ff4949"
-          active-text=""
-          inactive-text=""
           @change="onSwitchChange('INTER_MOMENT_STATE', form.interMomentState)"
         ></el-switch>
-        <span>{{ form.interMomentState ? '打开' : '关闭' }}</span>
+        <span class="switch-text">{{ form.interMomentState ? '打开' : '关闭' }}</span>
       </el-form-item>
     </el-form>
   </div>
@@ -62,7 +57,6 @@ export default {
         stateValue: stateValue ? 1 : 0
       }
       try {
-        debugger
         console.log(params)
         await updateStateAPI(params)
         console.log(`${stateKey} turned ${stateValue ? 'on' : 'off'}`)
@@ -74,31 +68,13 @@ export default {
 }
 </script>
 <style lang="stylus" scoped>
-.detail-page-wrapper {
-    width 100%
-    // height 100%
-    background-color #fff
-    padding 20px
-    box-sizing border-box
-    // >>>.el-page-header {
-    //     .el-page-header__title {
-    //         font-size 16px
-    //     }
-    // }
-}
-.el-form-item {
-  display: flex;
-  align-items: center;
-}
-
-.el-form-item__content {
-  display: flex;
-  align-items: center;
-}
-
-.el-form-item__label,
-.el-switch,
-span {
-  margin-right: 10px;
-}
+.detail-page-wrapper
+  width 100%
+  background-color #fff
+  padding 20px
+  box-sizing border-box
+  .switch-text
+    display: inline-block
+    margin-left: 10px
+    color: #a0a0a0
 </style>
