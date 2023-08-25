@@ -10,7 +10,7 @@
         <el-button
           plain
           @click="uploadVersion"
-          :disabled="!accessMap.alive"
+          v-permission.disabled="'alive'"
         >上线</el-button>
         <div
           class="more"
@@ -42,12 +42,6 @@ export default {
   props: {
     serviceId: {
       type: Number
-    },
-    accessMap: {
-      type: Object,
-      default: () => {
-        return {}
-      }
     }
   },
   data () {

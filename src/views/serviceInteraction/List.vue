@@ -124,7 +124,7 @@ export default {
         router = this.$mainState.router
       }
       router.push({
-        path: '/interaction-detail',
+        name: 'interaction-detail',
         query: {
           mode: 'edit'
         }
