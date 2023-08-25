@@ -12,6 +12,7 @@
           @click="uploadVersion"
           :disabled="!accessMap.alive"
         >上线</el-button>
+        {{ accessMap }}
         <div
           class="more"
           @click.stop
