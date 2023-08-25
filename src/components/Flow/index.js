@@ -458,9 +458,13 @@ function initRegister (Graph, Shape, ObjectExt) {
       attrs: {
         body: {
           strokeWidth: 1,
-          fill: '#f9d591',
-          // fill: '#ffecc8',
-          stroke: '#e3dac8',
+          // fill: '#f9d591', // 黄色
+          // // fill: '#ffecc8',
+          // stroke: '#e3dac8',
+          // fill: '#98d7bc', // 绿色
+          // stroke: '#68c79e',
+          fill: '#d0ddf9', // 紫色
+          stroke: '#a4c2ff',
           rx: 10, // 圆角矩形
           ry: 10
         },

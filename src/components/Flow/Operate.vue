@@ -43,7 +43,6 @@ export default {
   bottom 10px
   right 0
   width 80px
-  height 160px
   display flex
   flex-direction column
   justify-content center
@@ -59,11 +58,12 @@ export default {
     margin 0 auto
     height 60px
     font-size 60px
-    line-height 60px
+    line-height 55px
     text-align center
     cursor pointer
     user-select none
     margin-top 20px
+    overflow hidden
   }
   .reduce {
     font-size: 97px;
