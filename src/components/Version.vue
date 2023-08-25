@@ -42,13 +42,18 @@ export default {
   props: {
     serviceId: {
       type: Number
+    },
+    accessMap: {
+      type: Object,
+      default: () => {
+        return {}
+      }
     }
   },
   data () {
     return {
       editStatuStr: '未编辑',
-      versionId: 0,
-      accessMap: {}
+      versionId: 0
     }
   },
   methods: {
@@ -126,12 +131,8 @@ export default {
     }
   },
   mounted () {
-    this.accessMap = this.$store.getters.getAccessMap()
     this.initVuexListen()
     this.getVersionId()
-  },
-  activated  () {
-    this.accessMap = this.$store.getters.getAccessMap()
   }
 }
 </script>
