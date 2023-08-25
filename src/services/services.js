@@ -48,6 +48,20 @@ export function getServiceAPI (params) {
   })
 }
 
+export function getSwitchStatesAPI () {
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/setting/admin/getSwitch'
+  })
+}
+export function updateStateAPI (params) {
+  return fetch({
+    method: 'get',
+    url: 'proactive_admin_api/setting/admin/setSwitch',
+    params
+  })
+}
+
 export function getStatuTitleAPI (params) { // 根据服务id获取右上角标题
   return fetch({
     method: 'get',
