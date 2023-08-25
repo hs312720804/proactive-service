@@ -134,6 +134,7 @@ export default {
   mounted () {
     this.initVuexListen()
     this.getVersionId()
+    console.log('////////////////', this.accessMap)
   }
 }
 </script>
