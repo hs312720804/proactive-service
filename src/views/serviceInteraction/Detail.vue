@@ -22,7 +22,7 @@
         <Version
           v-show="mode === 'edit'"
           :serviceId="item.id"
-          :accessMap=$store.getters.getAccessMap()
+          :accessMap="$store.getters.getAccessMap()"
         ></Version>
         <Flowchart :serviceId="item.id"></Flowchart>
       </el-tab-pane>
@@ -106,6 +106,7 @@ export default {
   },
   created () {
     this.init()
+    console.log('隐藏菜单权限:', this.$store.getters.getAccessMap())
   },
   activated () {
     this.init()
