@@ -157,6 +157,7 @@
                   filterable
                   clearable
                   placeholder="请选择属性值"
+                  @change="$event => attrChange($event, cache['attr_match'].list, childItem)"
                 >
                   <template v-if="cache['attr_match']">
                     <el-option
@@ -480,6 +481,12 @@ export default {
     }
   },
   methods: {
+    attrChange (val, list, item) {
+      const obj = list.find(item => val === item.attrKey)
+
+      item.tagType = obj?.attrType || ''
+      item.defaultVal = obj?.defaultVal || ''
+    },
     handleRemoveRule (rule, childRule) { // 删除当前规则
       const ruleJson = this.renderJson
       rule.rules.splice(rule.rules.indexOf(childRule), 1)
@@ -650,7 +657,7 @@ export default {
       }
     },
     getDynamicTagRuleInfo (tagInfo) { // 动态表单的添加规则 的数据结构 生成初始化规则用到
-      const { tagId, tagKey } = tagInfo
+      const { tagId, tagKey, inputType } = tagInfo
       let data = null
       switch (tagKey) {
         case 'button_click': // 按钮点击
@@ -677,6 +684,15 @@ export default {
             intervalEndVal: '', // 区间时间 end
             inferRegionStartVal: '', // 区间推理时间 start
             inferRegionEndVal: '' // 区间推理时间 end
+          }
+          break
+        default:
+          break
+      }
+      switch (inputType) {
+        case 'attr_match': // 属性值满足
+          data = {
+            defaultVal: '' // 下拉框属性
           }
           break
         default:
