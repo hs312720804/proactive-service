@@ -47,13 +47,8 @@ export default {
   data () {
     return {
       editStatuStr: '未编辑',
-      versionId: 0
-    }
-  },
-  computed: {
-    // 所有权限
-    accessMap () {
-      return this.$store.getters.getAccessMap()
+      versionId: 0,
+      accessMap: {}
     }
   },
   methods: {
@@ -131,8 +126,12 @@ export default {
     }
   },
   mounted () {
+    this.accessMap = this.$store.getters.getAccessMap()
     this.initVuexListen()
     this.getVersionId()
+  },
+  activated  () {
+    this.accessMap = this.$store.getters.getAccessMap()
   }
 }
 </script>
