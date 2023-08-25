@@ -62,9 +62,16 @@
       </li>
     </ul>
     <!-- 属性配置会话框 -->
-    <AttrConfig v-model="attrConfigDialog" :serId="listArr[activeIndex]?.id"></AttrConfig>
+    <AttrConfig
+      v-model="attrConfigDialog"
+      :serId="listArr[activeIndex]?.id"
+    ></AttrConfig>
     <!-- 编辑服务 || 新增服务 会话框 -->
-    <DiglogType v-model="editDialog" :diglogConfig="diglogConfig" @updateServeList="initList"></DiglogType>
+    <DiglogType
+      v-model="editDialog"
+      :diglogConfig="diglogConfig"
+      @updateServeList="initList"
+    ></DiglogType>
   </div>
 </template>
 <script>
@@ -112,7 +119,11 @@ export default {
       console.log('openService')
       const targetTabInfo = this.listArr[this.activeIndex]
       this.$store.commit('services/addTab', targetTabInfo)
-      this.$router.push({
+      let router = this.$router
+      if (window.__POWERED_BY_QIANKUN__) {
+        router = this.$mainState.router
+      }
+      router.push({
         path: '/interaction-detail',
         query: {
           mode: 'edit'
@@ -124,7 +135,11 @@ export default {
       const targetTabInfo = this.listArr[this.activeIndex]
       // console.debug('anylise targetTabInfo', targetTabInfo)
       this.$store.commit('services/addTab', targetTabInfo)
-      this.$router.push({
+      let router = this.$router
+      if (window.__POWERED_BY_QIANKUN__) {
+        router = this.$mainState.router
+      }
+      router.push({
         path: '/interaction-detail',
         query: {
           mode: 'anylise'
