@@ -22,7 +22,7 @@
         <Version
           v-show="mode === 'edit'"
           :serviceId="item.id"
-          :accessMap="accessMap"
+          :accessMap=$store.getters.getAccessMap()
         ></Version>
         <Flowchart :serviceId="item.id"></Flowchart>
       </el-tab-pane>
@@ -45,12 +45,6 @@ export default {
       tabIndex: 2,
       mode: 'edit',
       show: true
-    }
-  },
-
-  computed: {
-    accessMap () {
-      return this.$store.getters.getAccessMap()
     }
   },
 
