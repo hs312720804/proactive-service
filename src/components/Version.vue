@@ -12,7 +12,6 @@
           @click="uploadVersion"
           :disabled="!accessMap.alive"
         >上线</el-button>
-        {{ accessMap }}
         <div
           class="more"
           @click.stop
@@ -134,7 +133,6 @@ export default {
   mounted () {
     this.initVuexListen()
     this.getVersionId()
-    console.log('////////////////', this.accessMap)
   }
 }
 </script>
