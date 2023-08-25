@@ -3,10 +3,10 @@
     <div class="version-wrapper">
       <span class="edit-statu-title"> {{ editStatuStr }}</span>
       <div class="button-group-wrapper">
-        <el-button
+        <!-- <el-button
           type="primary"
           @click="$message.success('保存成功')"
-        >保存</el-button>
+        >保存</el-button> -->
         <el-button
           plain
           @click="uploadVersion"
