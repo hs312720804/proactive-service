@@ -22,8 +22,8 @@
       <el-form-item label="属性名" prop="attrName">
         <el-input v-model="attrConfigForm.attrName" style="width: 100px"></el-input>
       </el-form-item>
-      <el-form-item label="参数类型" prop="attrType">
-        <el-select v-model="attrConfigForm.attrType" placeholder="请选择" @change="handleTypeChange" style="width: 120px">
+      <el-form-item label="参数类型" prop="inputType">
+        <el-select v-model="attrConfigForm.inputType" placeholder="请选择" @change="handleTypeChange" style="width: 120px">
           <el-option
             v-for="item in attrConfigTypes"
             :key="item.value"
@@ -69,7 +69,7 @@
       <el-table-column prop="attrKey" label="key"></el-table-column>
       <el-table-column prop="attrName" label="属性名"></el-table-column>
       <el-table-column prop="defValue" label="默认值"></el-table-column>
-      <el-table-column prop="attrType" label="类型" :formatter="typeFormatter"></el-table-column>
+      <el-table-column prop="inputType" label="类型" :formatter="typeFormatter"></el-table-column>
       <el-table-column prop="createrUserName" label="创建人" width="200"></el-table-column>
       <el-table-column label="操作" width="80">
         <template slot-scope="scope">
@@ -125,7 +125,7 @@ const attrConfigDialog = computed({
 const attrConfigForm = reactive({
   attrKey: '', // 属性key
   attrName: '', // 属性名
-  attrType: 2, // 参数类型，默认为整数类型
+  inputType: 2, // 参数类型，默认为整数类型
   defValue: '' // 默认值
 })
 
@@ -137,7 +137,7 @@ const attrConfigRule = {
   attrName: [
     { required: true, message: '属性名不能为空', trigger: 'blur' }
   ],
-  attrType: [
+  inputType: [
     { required: true, message: '参数类型不能为空', trigger: 'blur' }
   ],
   attrKey: [
@@ -231,7 +231,7 @@ const compete = () => { attrConfigDialog.value = false }
 // 选择参数类型后切换默认值的form-item展示，如选择时间类型，defVal的form-item展示time-picker
 const showDefaultValItem = computed(() => {
   return function (type) {
-    return attrConfigForm.attrType === type
+    return attrConfigForm.inputType === type
   }
 })
 
@@ -262,7 +262,7 @@ const handleClose = (formName) => {
 
 // 属性类型格式化
 const typeFormatter = (row) => {
-  return attrConfigTypes.find((option) => option.value === row.attrType).label
+  return attrConfigTypes.find((option) => option.value === row.inputType).label
 }
 
 // 属性配置参数类型选择器改变时的处理函数
