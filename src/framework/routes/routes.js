@@ -50,6 +50,11 @@ export default function createRoutes (frameRoutes = []) {
       component: () => import(/* webpackChunkName: "service" */ '@/views/serviceInteraction/Detail.vue')
     },
     {
+      path: '/all-switch-state',
+      name: 'all-switch-state',
+      component: () => import(/* webpackChunkName: "service" */ '@/views/serviceState/List.vue')
+    },
+    {
       path: '/service-timing',
       name: 'service-timing',
       component: () => import(/* webpackChunkName: "LowcodeEngine" */ '@/views/LowcodeEngine/Index.vue')

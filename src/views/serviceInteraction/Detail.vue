@@ -1,6 +1,9 @@
 <template>
   <div class="detail-page-wrapper">
-    <el-page-header @back="goBack" content="交互详情"></el-page-header>
+    <el-page-header
+      @back="goBack"
+      content="交互详情"
+    ></el-page-header>
     <el-tabs
       v-if="show"
       style="margin-top: 10px;"
@@ -16,7 +19,10 @@
         :closable="true"
         :lazy="true"
       >
-        <Version v-show="mode === 'edit'" :serviceId="item.id"></Version>
+        <Version
+          v-show="mode === 'edit'"
+          :serviceId="item.id"
+        ></Version>
         <Flowchart :serviceId="item.id"></Flowchart>
       </el-tab-pane>
     </el-tabs>
@@ -43,6 +49,7 @@ export default {
 
   methods: {
     init () {
+      console.log('权限', this.$store.getters.getAccessMap())
       this.show = false
       this.tabsArr = store.getters.tabsArr
       this.activeTabId = store.getters.activeTab.id.toString()
@@ -85,7 +92,7 @@ export default {
         store.commit('services/removeTab', index)
       }
       this.activeTabId = activeTabId
-    //   this.tabsArr = tabs.filter(tab => tab.id !== tabId)
+      //   this.tabsArr = tabs.filter(tab => tab.id !== tabId)
     },
     addTab (targetName) {
       const newTabName = ++this.tabIndex + ''
@@ -106,16 +113,15 @@ export default {
 }
 </script>
 <style lang="stylus" scoped>
-.detail-page-wrapper {
-    width 100%
-    // height 100%
-    background-color #fff
-    padding 20px
-    box-sizing border-box
-    // >>>.el-page-header {
-    //     .el-page-header__title {
-    //         font-size 16px
-    //     }
-    // }
-}
+.detail-page-wrapper
+  width 100%
+  // height 100%
+  background-color #fff
+  padding 20px
+  box-sizing border-box
+  // >>>.el-page-header {
+  // .el-page-header__title {
+  // font-size 16px
+  // }
+  // }
 </style>

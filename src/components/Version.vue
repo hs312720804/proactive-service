@@ -10,7 +10,7 @@
         <el-button
           plain
           @click="uploadVersion"
-          :disabled="!accessMap.alive"
+          v-permission.disabled="'alive'"
         >上线</el-button>
         <div
           class="more"
@@ -48,12 +48,6 @@ export default {
     return {
       editStatuStr: '未编辑',
       versionId: 0
-    }
-  },
-  computed: {
-    // 所有权限
-    accessMap () {
-      return this.$store.getters.getAccessMap()
     }
   },
   methods: {
