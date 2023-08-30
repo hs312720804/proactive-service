@@ -93,6 +93,45 @@ function initRegister (Graph, Shape, ObjectExt) {
             offsetX: -10
           }
         }
+      },
+      // 默认标签的样式
+      defaultLabel: {
+        markup: [
+          {
+            tagName: 'rect',
+            selector: 'body'
+          },
+          {
+            tagName: 'text',
+            selector: 'label'
+          }
+        ],
+        attrs: {
+          label: {
+            fill: 'black',
+            fontSize: 10,
+            textAnchor: 'middle',
+            textVerticalAnchor: 'middle',
+            pointerEvents: 'none'
+          },
+          body: {
+            ref: 'label',
+            fill: '#fff',
+            rx: 3,
+            ry: 3,
+            refWidth: 1,
+            refHeight: 1,
+            refX: 0,
+            refY: 0
+          }
+        },
+        position: {
+          distance: 100,
+          options: {
+            absoluteDistance: true,
+            reverseDistance: true
+          }
+        }
       }
     },
     true
