@@ -104,7 +104,7 @@ export default {
           } else if (d.data.nodeType === 4) { // 普通方框
             return 1
           } else {
-            return 1
+            return 10
           }
         },
         ranksepFunc: (d) => { // 横向间距
@@ -307,6 +307,7 @@ export default {
           // console.log('allCellList---->', allCellList)
           // console.log('aaa', aaa, source)
           // console.log('bbb', bbb, target)
+          const lineText = item.lineText ? item?.lineText.split('/n').join('\n') : ''
           if (aaa && bbb) {
             sourceData = {
               cell: aaa.parentId ? aaa.parentId : aaa.nodeId,
@@ -326,7 +327,7 @@ export default {
               target: {
                 ...targetData
               },
-              label: item?.lineText
+              label: lineText
             }
             cells.push(obj)
           }

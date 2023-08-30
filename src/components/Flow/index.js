@@ -126,7 +126,7 @@ function initRegister (Graph, Shape, ObjectExt) {
           }
         },
         position: {
-          distance: 100,
+          distance: 85,
           options: {
             absoluteDistance: true,
             reverseDistance: true
