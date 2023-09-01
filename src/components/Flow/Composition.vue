@@ -71,7 +71,6 @@ export default {
   font-size 14px
   line-height 30px
   color #fff
-  padding-left 10px
   user-select none
   text-align: center;
 }
