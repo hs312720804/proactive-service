@@ -312,8 +312,8 @@ export default {
         this.buttonActiveIndex = index
         this.buttonDetail = list[index]
 
-        const obj = list.find(item => item.buttonId === this.buttonDetail.buttonId)
-        this.checked = obj.isActive
+        // const obj = list.find(item => item.buttonId === this.buttonDetail.buttonId)
+        this.checked = this.buttonDetail.isActive
       }
     },
     // clickDefaultButton (obj) {
