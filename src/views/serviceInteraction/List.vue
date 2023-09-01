@@ -107,7 +107,7 @@ export default {
           this.listArr = res.data.map((item) => {
             return {
               ...item,
-              img: 'https://images.pexels.com/photos/4321069/pexels-photo-4321069.jpeg?auto=compress&cs=tinysrgb&w=800'
+              img: item.imageUrl || 'https://images.pexels.com/photos/4321069/pexels-photo-4321069.jpeg?auto=compress&cs=tinysrgb&w=800'
             }
           })
         }
