@@ -177,6 +177,8 @@ const handleComplete = async () => {
       })
       // 关闭对话框
       FormDialog.value = false
+      // 重新请求服务列表数据
+      emit('updateServeList')
     } else {
       proxy.$message({
         message: data.msg,
