@@ -486,6 +486,7 @@ export default {
 
       item.tagType = obj?.attrType || ''
       item.defaultVal = obj?.defaultVal || ''
+      item.attrName = obj?.attrName || ''
     },
     handleRemoveRule (rule, childRule) { // 删除当前规则
       const ruleJson = this.renderJson
@@ -692,7 +693,8 @@ export default {
       switch (inputType) {
         case 'attr_match': // 属性值满足
           data = {
-            defaultVal: '' // 下拉框属性
+            defaultVal: '', // 下拉框属性
+            attrName: '' // 属性中文名
           }
           break
         default:
