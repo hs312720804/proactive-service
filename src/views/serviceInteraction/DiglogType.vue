@@ -158,6 +158,11 @@ const handleIconUpload = async ({ file }) => {
     console.log(fileList.value)
   } else {
     fileList.value = []
+    proxy.$message({
+      message: res?.msg || '上传失败',
+      type: 'error',
+      duration: 1000
+    })
   }
 }
 
@@ -216,7 +221,9 @@ const beforeIconUpload = (file) => {
 }
 
 // 点击移除icon图标
-const handleIconRemove = (file, list) => {
+const handleIconRemove = (removeFile, fileList) => {
+  // removeFile被移除的图片对象
+  // fileList即最新的fileList
   fileList.value = []
   form.value.imageUrl = ''
 }
