@@ -38,6 +38,7 @@
       @updateDetail="updateDetail"
     ></Graph>
     <Detail
+      ref="detail"
       v-if="showDetail"
       class="detail-wrapper"
       :showNodeDetail.sync="showNodeDetail"
@@ -85,6 +86,7 @@ export default {
   methods: {
     updateDetail (data) {
       this.showNodeDetail = data
+      this.$refs.detail.showDetail = true // 手动打开详情弹窗
     },
     search () {
       if (this.anyliseFilterForm.time) {
