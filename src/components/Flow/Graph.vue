@@ -135,7 +135,11 @@ export default {
       graph.fromJSON(model)
 
       if (this.needToLayout) {
-        graph.scaleContentToFit().centerContent() // 居中显示画布
+        if (data.nodes.length > 5) { // 居中显示，使内容充满画布视口。
+          graph.scaleContentToFit().centerContent()
+        } else { // 节点数量比较少的时候，不要全画布平铺，居中展示即可
+          graph.centerContent()
+        }
       }
 
       // graph.on('render:done', () => {
