@@ -453,7 +453,7 @@ export default {
   box-sizing: border-box;
   box-shadow: 0 8px 10px -5px rgba(0,0,0,.2),0 16px 24px 2px rgba(0,0,0,.14),0 6px 30px 5px rgba(0,0,0,.12);
   transition: width 0.5s
-  z-index: 9999;
+  z-index: 1001;
   >>>.detail-drawer {
     .el-drawer__header {
       font-weight bold
