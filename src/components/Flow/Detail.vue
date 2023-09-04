@@ -1,7 +1,6 @@
 <template>
   <div
     class="graph-info-detail-component"
-
     :class="{'detail-component-hide': !showDetail}"
   >
     <!-- :style="{width: nodeType === 'judge' ? '500px' : '400px'}" -->
@@ -123,7 +122,8 @@ export default {
   data () {
     return {
       attrList: [],
-      showDetail: true,
+      showDetail: true, // 显示详情弹窗
+      show: false, // 为了刷新数据
       direction: 'rtl',
       showBool: this.showNodeDetail,
       // nodeType: store.getters.nodeType,
@@ -138,7 +138,6 @@ export default {
       judgeDetailData: {},
       startDetailData: {},
       drawerRef: null,
-      show: false,
       subscribeStore: null
     }
   },
@@ -152,9 +151,11 @@ export default {
         this.showDetail = true
         console.log('val------>', val)
         this.show = false
+        // 刷新数据
         this.getVersionId()
-        this.getSkillList()
+        this.getSkillList() // 获取 skill list
         this.getInteractifyTagAttr() // 获取属性list
+        this.getNodeSelectList(this.versionId) // 获取 node list
         await this.reFill()
         this.initDrawerRef()
         this.$nextTick(() => {
